@@ -1,0 +1,12 @@
+# Jangan push file backup gede
+*.wpress
+*.zip
+*.tar.gz
+
+# Jangan push file log/error php
+error_log
+debug.log
+
+# Abaikan file temporary OS
+.DS_Store
+Thumbs.db
