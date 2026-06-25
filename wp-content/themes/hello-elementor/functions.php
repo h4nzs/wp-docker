@@ -8131,10 +8131,18 @@ function render_article_sidebar_content($content) {
                     $rp_title = get_the_title($rp->ID);
                     $rp_date  = get_the_date('d F Y', $rp->ID);
                     $rp_link  = get_permalink($rp->ID);
+                    $rp_thumb = get_the_post_thumbnail_url($rp->ID, 'thumbnail');
                 ?>
-                <li>
-                    <a href="<?php echo esc_url($rp_link); ?>"><?php echo esc_html($rp_title); ?></a>
-                    <span class="lx-related-date"><?php echo esc_html($rp_date); ?></span>
+                <li class="lx-related-item">
+                    <a href="<?php echo esc_url($rp_link); ?>" class="lx-related-link">
+                        <?php if ($rp_thumb) : ?>
+                            <img src="<?php echo esc_url($rp_thumb); ?>" alt="" class="lx-related-thumb">
+                        <?php endif; ?>
+                        <span class="lx-related-text">
+                            <span class="lx-related-title"><?php echo esc_html($rp_title); ?></span>
+                            <span class="lx-related-date"><?php echo esc_html($rp_date); ?></span>
+                        </span>
+                    </a>
                 </li>
                 <?php endforeach; ?>
             </ul>
@@ -8143,7 +8151,7 @@ function render_article_sidebar_content($content) {
 
         <?php if ($ad_active) : ?>
         <div class="lx-sidebar-section lx-sidebar-ad">
-            <h3 class="lx-sidebar-title">Sponsored</h3>
+            <h3 class="lx-sidebar-title">Featured</h3>
             <?php if (!empty($ad_link)) : ?>
                 <a href="<?php echo esc_url($ad_link); ?>" target="_blank" rel="noopener">
                     <img src="<?php echo esc_url($ad_image); ?>" alt="Iklan" style="width:100%;height:auto;border-radius:8px;">
@@ -8190,22 +8198,43 @@ function render_article_sidebar_content($content) {
         padding: 0;
         margin: 0;
     }
-    .lx-related-list li {
-        padding: 10px 0;
+    .lx-related-item {
+        padding: 12px 0;
         border-bottom: 1px solid #2a2a2a;
     }
-    .lx-related-list li:last-child {
+    .lx-related-item:last-child {
         border-bottom: none;
     }
-    .lx-related-list a {
-        color: #fff;
+    .lx-related-link {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
         text-decoration: none;
-        font-size: 14px;
-        line-height: 1.4;
+        transition: opacity 0.2s;
+    }
+    .lx-related-link:hover {
+        opacity: 0.85;
+    }
+    .lx-related-thumb {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 6px;
+        flex-shrink: 0;
+    }
+    .lx-related-text {
+        flex: 1;
+        min-width: 0;
+    }
+    .lx-related-title {
         display: block;
+        color: #fff;
+        font-size: 13px;
+        line-height: 1.4;
+        font-weight: 500;
         transition: color 0.2s;
     }
-    .lx-related-list a:hover {
+    .lx-related-link:hover .lx-related-title {
         color: #d4af37;
     }
     .lx-related-date {
