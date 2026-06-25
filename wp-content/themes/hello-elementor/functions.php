@@ -8005,6 +8005,232 @@ function popup_ad_render_frontend() {
 add_action('wp_footer', 'popup_ad_render_frontend', 9999);
 
 // ============================================================
+// SISTEM SIDEBAR ARTIKEL (Artikel Terkait + Iklan Per Artikel)
+// ============================================================
+
+function lx_sidebar_ad_meta_box() {
+    add_meta_box(
+        'lx_sidebar_ad',
+        'Iklan Sidebar Artikel',
+        'lx_sidebar_ad_meta_box_html',
+        'post',
+        'side',
+        'default'
+    );
+}
+add_action('add_meta_boxes', 'lx_sidebar_ad_meta_box');
+
+function lx_sidebar_ad_meta_box_html($post) {
+    wp_nonce_field('lx_sidebar_ad_save', 'lx_sidebar_ad_nonce');
+
+    $image = get_post_meta($post->ID, '_sidebar_ad_image', true);
+    $link  = get_post_meta($post->ID, '_sidebar_ad_link', true);
+    $active = get_post_meta($post->ID, '_sidebar_ad_active', true);
+    ?>
+    <p>
+        <label for="lx_sidebar_ad_image" style="font-weight:600;">URL Gambar Iklan:</label>
+        <input type="text" id="lx_sidebar_ad_image" name="lx_sidebar_ad_image"
+               value="<?php echo esc_attr($image); ?>" style="width:100%;margin-top:5px;" placeholder="https://..." />
+    </p>
+    <p style="margin-top:8px;">
+        <button type="button" class="button" id="lx_sidebar_ad_upload">Pilih Gambar</button>
+    </p>
+    <?php if ($image) : ?>
+    <p style="margin-top:8px;">
+        <img src="<?php echo esc_url($image); ?>" style="width:100%;height:auto;border-radius:4px;border:1px solid #ddd;">
+    </p>
+    <?php endif; ?>
+    <p style="margin-top:12px;">
+        <label for="lx_sidebar_ad_link" style="font-weight:600;">Link Tujuan (Opsional):</label>
+        <input type="url" id="lx_sidebar_ad_link" name="lx_sidebar_ad_link"
+               value="<?php echo esc_attr($link); ?>" style="width:100%;margin-top:5px;" placeholder="https://..." />
+    </p>
+    <p style="margin-top:12px;">
+        <label>
+            <input type="checkbox" name="lx_sidebar_ad_active" value="1" <?php checked($active, '1'); ?> />
+            Tampilkan iklan di sidebar artikel ini
+        </label>
+    </p>
+    <script>
+    jQuery(document).ready(function($) {
+        var uploader = wp.media({
+            title: 'Pilih Gambar Iklan Sidebar',
+            button: { text: 'Gunakan' },
+            multiple: false
+        });
+        $('#lx_sidebar_ad_upload').on('click', function(e) {
+            e.preventDefault();
+            uploader.open();
+        });
+        uploader.on('select', function() {
+            var attachment = uploader.state().get('selection').first().toJSON();
+            $('#lx_sidebar_ad_image').val(attachment.url);
+        });
+    });
+    </script>
+    <?php
+}
+
+function lx_sidebar_ad_save_meta($post_id) {
+    if (!isset($_POST['lx_sidebar_ad_nonce']) || !wp_verify_nonce($_POST['lx_sidebar_ad_nonce'], 'lx_sidebar_ad_save')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (!current_user_can('edit_post', $post_id)) return;
+
+    $fields = [
+        '_sidebar_ad_image'  => 'esc_url_raw',
+        '_sidebar_ad_link'   => 'esc_url_raw',
+        '_sidebar_ad_active' => fn($v) => isset($_POST['lx_sidebar_ad_active']) ? '1' : '0',
+    ];
+
+    foreach ($fields as $meta_key => $sanitize) {
+        if ($meta_key === '_sidebar_ad_active') {
+            update_post_meta($post_id, $meta_key, $sanitize(null));
+        } elseif (isset($_POST[str_replace('_sidebar_ad_', 'lx_sidebar_ad_', $meta_key)])) {
+            $value = $sanitize($_POST[str_replace('_sidebar_ad_', 'lx_sidebar_ad_', $meta_key)]);
+            update_post_meta($post_id, $meta_key, $value);
+        }
+    }
+}
+add_action('save_post', 'lx_sidebar_ad_save_meta');
+
+function render_article_sidebar_content($content) {
+    if (!is_single() || !in_the_loop() || !is_main_query()) {
+        return $content;
+    }
+
+    ob_start();
+
+    // 1. Related posts
+    $categories = get_the_category();
+    $related = [];
+    if (!empty($categories)) {
+        $cat_ids = wp_list_pluck($categories, 'term_id');
+        $related_query = new WP_Query([
+            'category__in'        => $cat_ids,
+            'post__not_in'        => [get_the_ID()],
+            'posts_per_page'      => 5,
+            'ignore_sticky_posts' => true,
+        ]);
+        $related = $related_query->posts;
+    }
+
+    // 2. Sidebar ad — per artikel via post meta
+    $ad_image = get_post_meta(get_the_ID(), '_sidebar_ad_image', true);
+    $ad_link  = get_post_meta(get_the_ID(), '_sidebar_ad_link', true);
+    $ad_active = get_post_meta(get_the_ID(), '_sidebar_ad_active', true) === '1' && !empty($ad_image);
+
+    ?>
+    <aside class="lx-article-sidebar">
+        <?php if (!empty($related)) : ?>
+        <div class="lx-sidebar-section">
+            <h3 class="lx-sidebar-title">Artikel Terkait</h3>
+            <ul class="lx-related-list">
+                <?php foreach ($related as $rp) :
+                    $rp_title = get_the_title($rp->ID);
+                    $rp_date  = get_the_date('d F Y', $rp->ID);
+                    $rp_link  = get_permalink($rp->ID);
+                ?>
+                <li>
+                    <a href="<?php echo esc_url($rp_link); ?>"><?php echo esc_html($rp_title); ?></a>
+                    <span class="lx-related-date"><?php echo esc_html($rp_date); ?></span>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+        <?php endif; ?>
+
+        <?php if ($ad_active) : ?>
+        <div class="lx-sidebar-section lx-sidebar-ad">
+            <h3 class="lx-sidebar-title">Sponsored</h3>
+            <?php if (!empty($ad_link)) : ?>
+                <a href="<?php echo esc_url($ad_link); ?>" target="_blank" rel="noopener">
+                    <img src="<?php echo esc_url($ad_image); ?>" alt="Iklan" style="width:100%;height:auto;border-radius:8px;">
+                </a>
+            <?php else : ?>
+                <img src="<?php echo esc_url($ad_image); ?>" alt="Iklan" style="width:100%;height:auto;border-radius:8px;">
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+    </aside>
+
+    <style>
+    .lx-article-wrap {
+        display: flex;
+        gap: 40px;
+        align-items: flex-start;
+    }
+    .lx-article-wrap > .lx-content-main {
+        flex: 1;
+        min-width: 0;
+    }
+    .lx-article-sidebar {
+        width: 300px;
+        flex-shrink: 0;
+    }
+    .lx-sidebar-section {
+        background: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .lx-sidebar-title {
+        color: #d4af37;
+        font-size: 16px;
+        margin: 0 0 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #333;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .lx-related-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .lx-related-list li {
+        padding: 10px 0;
+        border-bottom: 1px solid #2a2a2a;
+    }
+    .lx-related-list li:last-child {
+        border-bottom: none;
+    }
+    .lx-related-list a {
+        color: #fff;
+        text-decoration: none;
+        font-size: 14px;
+        line-height: 1.4;
+        display: block;
+        transition: color 0.2s;
+    }
+    .lx-related-list a:hover {
+        color: #d4af37;
+    }
+    .lx-related-date {
+        display: block;
+        color: #888;
+        font-size: 11px;
+        margin-top: 4px;
+    }
+    @media (max-width: 768px) {
+        .lx-article-wrap {
+            flex-direction: column;
+        }
+        .lx-article-sidebar {
+            width: 100%;
+        }
+    }
+    </style>
+    <?php
+    $sidebar_html = ob_get_clean();
+
+    return '<div class="lx-article-wrap"><div class="lx-content-main">' . $content . '</div>' . $sidebar_html . '</div>';
+}
+add_filter('the_content', 'render_article_sidebar_content');
+
+// ============================================================
 // SISTEM KATEGORI PORTOFOLIO (MANY-TO-MANY)
 // ============================================================
 

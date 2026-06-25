@@ -2,12 +2,12 @@
 
 ## Gambaran Umum
 
-Situs WordPress (`profesional-indonesia.com`) dengan sistem **Personel** (registrasi fotografer/videografer). Berjalan via Docker secara lokal. Semua logika kustom ada di `functions.php` tema aktif (9022 baris).
+Situs WordPress (`profesional-indonesia.com`) dengan sistem **Personel** (registrasi fotografer/videografer). Berjalan via Docker secara lokal untuk folder ini. Semua logika kustom ada di `functions.php` tema aktif (9022 baris pada saat dokumentasi ini dibuat).
 
 ## Memulai Cepat
 
 ```bash
-docker compose up -d          # MySQL 8.0 + WordPress on :8080
+docker compose up -d          # MySQL 8.0 + WordPress on :8080 (default)
 docker compose down           # hentikan container
 ```
 
@@ -363,6 +363,8 @@ Semua via `admin-ajax.php`:
 | `wp_footer` | `popup_ad_render_frontend` | 9999 | :8005 |
 | `wp_footer` | `inject_load_more_to_default_wp_widgets` | 99 | :8816 |
 | `wp_footer` | anonim (JS arsip video) | | :6475 |
+| `add_meta_boxes` | `lx_sidebar_ad_meta_box` | | :8011 |
+| `save_post` | `lx_sidebar_ad_save_meta` | | :8057 |
 
 ### AJAX Hooks
 | Hook | Callback | Baris |
@@ -430,7 +432,6 @@ Semua via `admin-ajax.php`:
 
 ## Keanehan & Celah
 
-- **⚠️ Domain produksi hardcoded**: Semua link `detail-personel/?kode=` dan redirect registrasi sudah diperbaiki pakai `home_url()` — jangan hardcode domain lagi
 - **Shortcode `form_login_personel` didaftarkan dua kali** (:2255, :2257) — duplikat tidak berbahaya
 - **Tidak ada regenerasi session** setelah login — potensi session fixation
 - **Debug output reset password** (~:7484) memperlihatkan token saat validasi gagal — hapus sebelum produksi
@@ -439,3 +440,22 @@ Semua via `admin-ajax.php`:
 - **Filter menu** (`custom_personel_menu_filter` :4333) menyisipkan link dashboard ke navigasi utama saat personel login
 - **`inject_load_more_to_default_wp_widgets`** (:8817) — menambahkan tombol "MUAT LEBIH BANYAK" ke grid posting Elementor/WP
 - **Cache SpeedyCache**: `advanced-cache.php.bak` adalah cadangan cache bootstrap SpeedyCache
+
+## Sistem Sidebar Artikel
+
+Sidebar otomatis muncul di halaman artikel (`is_single()`) via filter `the_content`.
+
+### Komponen
+1. **Artikel Terkait**: 5 posting terbaru dari kategori yang sama (query: `WP_Query` dengan `category__in`)
+2. **Iklan Sidebar**: 1 slot gambar per artikel, disimpan sebagai **post meta** (`_sidebar_ad_image`, `_sidebar_ad_link`, `_sidebar_ad_active`)
+
+### Admin (Meta Box)
+- Meta box **Iklan Sidebar Artikel** di sidebar editor postingan (`add_meta_box` hook)
+- Field: URL gambar (media uploader), URL link, checkbox aktif
+- Fungsi: `lx_sidebar_ad_meta_box()` :8011 (render), `lx_sidebar_ad_save_meta()` :8057 (simpan)
+- Disimpan sebagai post meta via `save_post` hook
+
+### Layout
+- Desktop: flex dua kolom (konten ~70%, sidebar 300px fixed)
+- Mobile: tumpuk vertikal
+- CSS di-inline via `the_content` filter
