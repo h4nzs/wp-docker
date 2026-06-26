@@ -6,6 +6,8 @@
  * @copyright 2022 Google LLC
  * @license   https://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  * @link      https://sitekit.withgoogle.com
+ *
+ * phpcs:disable PHPCS.Commenting.RequireDocTagDescription -- Pre-existing violations; tracked for follow-up cleanup.
  */
 
 namespace Google\Site_Kit\Core\Modules;
@@ -95,7 +97,7 @@ class Datapoint {
 	}
 
 	/**
-	 * Gets the service identifier.
+	 * Gets the service identifier or object.
 	 *
 	 * @since 1.77.0
 	 *

@@ -547,40 +547,42 @@ class Helper_Functions {
 
 		$vimeo_data = get_transient( 'premium_vimeo_' . $video_id );
 
-		if ( $vimeo_data === false ) {
+		if ( false === $vimeo_data ) {
 
-			$vimeo_data = wp_remote_get(
-				'http://www.vimeo.com/api/v2/video/' . intval( $video_id ) . '.php',
+			$response = wp_remote_get(
+				'https://vimeo.com/api/oembed.json?url=' . rawurlencode( 'https://vimeo.com/' . intval( $video_id ) ) . '&width=1280',
 				array(
 					'timeout'   => 5,
 					'sslverify' => true,
 				)
 			);
 
-			if ( is_wp_error( $vimeo_data ) ) {
+			if ( is_wp_error( $response ) ) {
 				return false;
 			}
 
-			if ( isset( $vimeo_data['response']['code'] ) ) {
+			$status_code = wp_remote_retrieve_response_code( $response );
 
-				if ( 200 === $vimeo_data['response']['code'] ) {
+			if ( 200 === $status_code ) {
 
-					$response  = maybe_unserialize( $vimeo_data['body'] );
-					$thumbnail = isset( $response[0]['thumbnail_large'] ) ? $response[0]['thumbnail_large'] : false;
+				$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-					$data = array(
-						'src'      => $thumbnail,
-						'url'      => $response[0]['user_url'],
-						'portrait' => $response[0]['user_portrait_huge'],
-						'title'    => $response[0]['title'],
-						'user'     => $response[0]['user_name'],
-					);
-
-					set_transient( 'premium_vimeo_' . $video_id, $data, WEEK_IN_SECONDS );
-
-					return $data;
-
+				if ( ! is_array( $body ) ) {
+					return false;
 				}
+
+				$vimeo_data = array(
+					'src'      => isset( $body['thumbnail_url'] ) ? $body['thumbnail_url'] : false,
+					'url'      => isset( $body['author_url'] ) ? $body['author_url'] : false,
+					'portrait' => false,
+					'title'    => isset( $body['title'] ) ? $body['title'] : false,
+					'user'     => isset( $body['author_name'] ) ? $body['author_name'] : false,
+				);
+
+				set_transient( 'premium_vimeo_' . $video_id, $vimeo_data, WEEK_IN_SECONDS );
+
+				return $vimeo_data;
+
 			}
 		}
 
@@ -658,7 +660,7 @@ class Helper_Functions {
 	 *
 	 * @param string $period transient expiration period.
 	 *
-	 * @return string $expire_time expire time in seconds.
+	 * @return int $expire_time expire time in seconds.
 	 */
 	public static function transient_expire( $period ) {
 
@@ -790,9 +792,9 @@ class Helper_Functions {
 	 * @since 0.0.1
 	 * @access public
 	 *
-	 * @param int    $image_id Image ID.
-	 * @param string $image_url Image URL.
-	 * @param array  $image_size Image sizes array.
+	 * @param int          $image_id Image ID.
+	 * @param string       $image_url Image URL.
+	 * @param string|array $image_size Image size name or [ width, height ] array.
 	 *
 	 * @return array $data image data.
 	 */
@@ -1289,7 +1291,7 @@ class Helper_Functions {
 			'section',
 		);
 
-		return in_array( $template_name, $template_list );
+		return in_array( $template_name, $template_list, true );
 	}
 
 	/**
@@ -1370,10 +1372,10 @@ class Helper_Functions {
 
 		if ( count( $devices ) ) {
 			foreach ( $devices as $index => $device ) {
-				array_push( $classes, 'elementor-hidden-' . $device );
+				$classes[] = 'elementor-hidden-' . $device;
 			}
 
-			array_push( $classes, 'premium-addons-element' );
+			$classes[] = 'premium-addons-element';
 		}
 
 		return $classes;
@@ -1722,7 +1724,7 @@ class Helper_Functions {
 
 		$papro_activated = self::check_papro_version();
 
-		if ( ! $papro_activated && ! in_array( $settings['premium_button_hover_effect'], array( 'none', 'style1', 'style2' ) ) ) {
+		if ( ! $papro_activated && ! in_array( $settings['premium_button_hover_effect'], array( 'none', 'style1', 'style2' ), true ) ) {
 			return '';
 		}
 
@@ -2098,18 +2100,23 @@ class Helper_Functions {
 	 */
 	public static function get_enabled_widgets_names() {
 
+		static $names_list = null;
+
 		$enabled_elements = self::get_enabled_widgets();
 
 		$enabled_names = array();
 
-		$map_file = PREMIUM_ADDONS_PATH . 'includes/helpers/widget-name-map.php';
+		if ( null === $names_list ) {
 
-		if ( file_exists( $map_file ) ) {
+			$map_file = PREMIUM_ADDONS_PATH . 'includes/helpers/widget-name-map.php';
 
-			$map        = include $map_file;
-			$names_list = is_array( $map ) ? $map : array();
-		} else {
-			$names_list = array();
+			if ( file_exists( $map_file ) ) {
+
+				$map        = include $map_file;
+				$names_list = is_array( $map ) ? $map : array();
+			} else {
+				$names_list = array();
+			}
 		}
 
 		foreach ( $enabled_elements as $key ) {
@@ -2269,5 +2276,38 @@ class Helper_Functions {
 		);
 
 		return wp_kses( $svg, $allowed_tags );
+	}
+
+	/**
+	 * Resolve the per-item badge text for a given post.
+	 *
+	 * @since 4.11.78
+	 * @param int   $post_id  Post ID to resolve terms for.
+	 * @param array $settings Parent widget's settings array.
+	 * @return false|string
+	 */
+	public static function get_per_item_badge_text( $post_id, $settings ) {
+
+		if ( 'yes' !== ( $settings['premium_global_badge_switcher'] ?? '' ) ) {
+			return false;
+		}
+
+		if ( 'yes' !== ( $settings['pa_badge_per_item'] ?? '' ) ) {
+			return false;
+		}
+
+		$taxonomy = isset( $settings['pa_badge_per_item_source'] ) && '' !== $settings['pa_badge_per_item_source']
+			? $settings['pa_badge_per_item_source']
+			: 'category';
+
+		$terms = get_the_terms( $post_id, $taxonomy );
+
+		if ( ! $terms || is_wp_error( $terms ) ) {
+			return '';
+		}
+
+		$names = wp_list_pluck( $terms, 'name' );
+
+		return implode( ', ', $names );
 	}
 }

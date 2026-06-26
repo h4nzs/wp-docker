@@ -6,6 +6,8 @@
  * @copyright 2026 Google LLC
  * @license   https://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  * @link      https://sitekit.withgoogle.com
+ *
+ * phpcs:disable PHPCS.Commenting.RequireDocTagDescription -- Pre-existing violations; tracked for follow-up cleanup.
  */
 
 namespace Google\Site_Kit\Core\Email_Reporting;
@@ -75,7 +77,7 @@ class Cron_Health_Check {
 		);
 
 		foreach ( $frequencies as $frequency ) {
-			$scheduled = $this->scheduler->get_initiator_timestamp( $frequency );
+			$scheduled = $this->scheduler->get_initiator_timestamp_for_frequency( $frequency );
 
 			if ( false === $scheduled ) {
 				continue;

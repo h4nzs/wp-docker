@@ -10,8 +10,6 @@ use PremiumAddons\Includes\Helper_Functions;
 use PremiumAddons\Admin\Includes\Admin_Helper;
 use PremiumAddons\Admin\Includes\Admin_Bar;
 
-require_once PREMIUM_ADDONS_PATH . 'widgets/dep/urlopen.php';
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -235,7 +233,7 @@ class Assets_Manager {
 			'pafe' . $dynamic_asset_id,
 			Helper_Functions::get_safe_url( PREMIUM_ASSETS_URL . '/' . 'pafe' . $dynamic_asset_id . '.css' ),
 			array(),
-			time()
+			get_post_modified_time()
 		);
 
 		// If no JS file found, then generate it.
@@ -249,7 +247,7 @@ class Assets_Manager {
 				'pafe' . $dynamic_asset_id,
 				Helper_Functions::get_safe_url( PREMIUM_ASSETS_URL . '/' . 'pafe' . $dynamic_asset_id . '.js' ),
 				array(),
-				time(),
+				get_post_modified_time(),
 				true
 			);
 		}
@@ -334,7 +332,7 @@ class Assets_Manager {
 
 						if ( in_array( $widget_type, $pa_names, true ) && ! in_array( $widget_type, $pa_elems, true ) ) {
 
-							array_push( $pa_elems, $widget_type );
+							$pa_elems[] = $widget_type;
 
 						}
 					}
@@ -668,6 +666,12 @@ class Assets_Manager {
 	 */
 	public function get_pro_widgets_names() {
 
+		static $pro_names = null;
+
+		if ( null !== $pro_names ) {
+			return $pro_names;
+		}
+
 		$pro_elements = Admin_Helper::get_pro_elements();
 		$pro_names    = array();
 
@@ -828,11 +832,11 @@ class Assets_Manager {
 
 		$documents = is_object( Plugin::$instance->documents ) ? Plugin::$instance->documents->get( $post_id ) : array();
 
-		if ( ! in_array( get_post_status( $post_id ), array( 'publish', 'private' ) ) || ( is_object( $documents ) && ! $documents->is_built_with_elementor() ) ) {
+		if ( ! in_array( get_post_status( $post_id ), array( 'publish', 'private' ), true ) || ( is_object( $documents ) && ! $documents->is_built_with_elementor() ) ) {
 			return false;
 		}
 
-		if ( in_array( get_post_meta( $post_id, '_elementor_template_type', true ), array( 'kit' ) ) ) {
+		if ( in_array( get_post_meta( $post_id, '_elementor_template_type', true ), array( 'kit' ), true ) ) {
 			return false;
 		}
 

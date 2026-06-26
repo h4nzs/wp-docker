@@ -59,7 +59,7 @@ class Mini_Cart extends Widget_Base {
 	 * @since 1.0.0
 	 * @access public
 	 *
-	 * @return string Widget keywords.
+	 * @return array Widget keywords.
 	 */
 	public function get_keywords() {
 		return array( 'pa', 'premium', 'mini cart', 'cart', 'woocommerce' );
@@ -5342,8 +5342,22 @@ class Mini_Cart extends Widget_Base {
 				$cart_settings['cartDelay'] = $settings['cart_delay'];
 			}
 
-			if ( 'yes' === get_option( 'woocommerce_calc_taxes' ) && in_array( 'yes', array( $settings['show_tax_label'], $settings['show_footer_tax_label'] ), true ) ) {
-				$cart_settings['taxLabel'] = WC()->countries->inc_tax_or_vat();
+			$tax_config = $this->get_tax_display_config( $settings );
+
+			$trigger_label_enabled = $tax_config['show_trigger_label']
+				|| ( 'yes' === get_option( 'woocommerce_calc_taxes' ) && 'yes' === $settings['show_tax_label'] );
+
+			$footer_label_enabled = $tax_config['show_footer_label']
+				|| ( 'yes' === get_option( 'woocommerce_calc_taxes' ) && 'yes' === $settings['show_footer_tax_label'] );
+
+			if ( $trigger_label_enabled || $footer_label_enabled ) {
+				$tax_label_text = ! empty( $tax_config['label'] )
+					? $tax_config['label']
+					: ( $tax_config['exclude_tax'] ? WC()->countries->ex_tax_or_vat() : WC()->countries->inc_tax_or_vat() );
+
+				$cart_settings['taxLabel']            = $tax_label_text;
+				$cart_settings['triggerLabelEnabled'] = $trigger_label_enabled;
+				$cart_settings['footerLabelEnabled']  = $footer_label_enabled;
 			}
 
 			if ( 'yes' === $settings['cross_sells'] ) {
@@ -5367,7 +5381,7 @@ class Mini_Cart extends Widget_Base {
 		}
 
 		?>
-			<div <?php echo wp_kses_post( $this->get_render_attribute_string( 'cart_outer_wrapper' ) ); ?>>
+			<div <?php $this->print_render_attribute_string( 'cart_outer_wrapper' ); ?>>
 				<div class="pa-woo-mc__inner-container">
 					<div class="pa-woo-mc__icon-wrapper">
 						<?php
@@ -5404,7 +5418,7 @@ class Mini_Cart extends Widget_Base {
 																													<?php
 							}
 							?>
-								<span <?php echo wp_kses_post( $this->get_render_attribute_string( 'trigger_subtotal' ) ); ?>>
+								<span <?php $this->print_render_attribute_string( 'trigger_subtotal' ); ?>>
 									<?php
 									if ( $counting_effect ) {
 										?>
@@ -5417,9 +5431,16 @@ class Mini_Cart extends Widget_Base {
 										echo wp_kses_data( WC()->cart ? $subtotal_display['subtotal_amount'] : '' );
 									}
 
-									if ( $subtotal_display['includes_tax'] && 'yes' === $settings['show_tax_label'] ) {
+									$tax_config         = $subtotal_display['tax_config'];
+									$show_trigger_label = $tax_config['show_trigger_label']
+										|| ( $subtotal_display['includes_tax'] && 'yes' === $settings['show_tax_label'] );
+
+									if ( $show_trigger_label ) {
+										$tax_label_text = ! empty( $tax_config['label'] )
+											? $tax_config['label']
+											: ( $tax_config['exclude_tax'] ? WC()->countries->ex_tax_or_vat() : WC()->countries->inc_tax_or_vat() );
 										?>
-										<small class="pa-woo-mc__tax-label"><?php echo wp_kses_data( WC()->countries->inc_tax_or_vat() ); ?></small>
+										<small class="pa-woo-mc__tax-label"><?php echo wp_kses_data( $tax_label_text ); ?></small>
 										<?php
 									}
 									?>
@@ -5460,7 +5481,7 @@ class Mini_Cart extends Widget_Base {
 					)
 				);
 				?>
-				<div <?php echo wp_kses_post( $this->get_render_attribute_string( 'overlay' ) ); ?>></div>
+				<div <?php $this->print_render_attribute_string( 'overlay' ); ?>></div>
 								<?php
 			}
 		}
@@ -5495,7 +5516,7 @@ class Mini_Cart extends Widget_Base {
 		}
 
 		?>
-			<span <?php echo wp_kses_post( $this->get_render_attribute_string( 'count_badge' ) ); ?>>
+			<span <?php $this->print_render_attribute_string( 'count_badge' ); ?>>
 				<?php
 				if ( $counting_effect ) {
 					?>
@@ -5557,7 +5578,7 @@ class Mini_Cart extends Widget_Base {
 					)
 				);
 				?>
-						<div <?php echo wp_kses_post( $this->get_render_attribute_string( 'cart_lottie' ) ); ?>></div>
+						<div <?php $this->print_render_attribute_string( 'cart_lottie' ); ?>></div>
 					<?php
 
 				break;
@@ -5573,7 +5594,7 @@ class Mini_Cart extends Widget_Base {
 		$progress_bar  = 'yes' === $settings['mc_progressbar'];
 
 		?>
-			<div <?php echo wp_kses_post( $this->get_render_attribute_string( 'cart_menu_content' ) ); ?>>
+			<div <?php $this->print_render_attribute_string( 'cart_menu_content' ); ?>>
 				<?php
 				if ( $render_header ) {
 					$this->render_cart_header( $settings, $cart_type );
@@ -5671,8 +5692,9 @@ class Mini_Cart extends Widget_Base {
 		$raw_subtotal   = floatval( WC()->cart->get_subtotal() );
 
 		$includes_tax = false;
+		$tax_config   = $this->get_tax_display_config( $settings );
 
-		if ( 'yes' === get_option( 'woocommerce_calc_taxes' ) ) {
+		if ( 'yes' === get_option( 'woocommerce_calc_taxes' ) && ! $tax_config['exclude_tax'] ) {
 			$raw_subtotal += WC()->cart->get_taxes_total();
 			$includes_tax  = true;
 		}
@@ -5684,7 +5706,36 @@ class Mini_Cart extends Widget_Base {
 			'raw_subtotal_amount' => $raw_subtotal_amount,
 			'subtotal_amount'     => $subtotal_amount,
 			'includes_tax'        => $includes_tax,
+			'tax_config'          => $tax_config,
 		);
+	}
+
+	/**
+	 * Get the tax display configuration via the pa_mini_cart_tax_display filter.
+	 *
+	 * Allows developers to control how taxes are displayed in the mini cart subtotals.
+	 *
+	 * @since 4.11.0
+	 *
+	 * @param array $settings Widget settings.
+	 *
+	 * @return array {
+	 *     @type bool   $exclude_tax        Whether to show subtotal without taxes. Default false.
+	 *     @type bool   $show_trigger_label  Whether to show the tax label on the trigger subtotal. Default false.
+	 *     @type bool   $show_footer_label   Whether to show the tax label on the footer subtotal. Default false.
+	 *     @type string $label               Custom label text override. Default '' (uses WC built-in).
+	 * }
+	 */
+	private function get_tax_display_config( $settings ) {
+
+		$defaults = array(
+			'exclude_tax'        => false,
+			'show_trigger_label' => false,
+			'show_footer_label'  => false,
+			'label'              => '',
+		);
+
+		return apply_filters( 'pa_mini_cart_tax_display', $defaults, $this->get_id(), $settings );
 	}
 
 	/**
@@ -5707,7 +5758,7 @@ class Mini_Cart extends Widget_Base {
 		}
 
 		?>
-		<div <?php echo wp_kses_post( $this->get_render_attribute_string( 'cart_header' ) ); ?>>
+		<div <?php $this->print_render_attribute_string( 'cart_header' ); ?>>
 			<?php
 
 			if ( 'layout-3' === $layout ) {
@@ -5789,7 +5840,7 @@ class Mini_Cart extends Widget_Base {
 			}
 		}
 		?>
-		<div <?php echo wp_kses_post( $this->get_render_attribute_string( 'cart_footer' ) ); ?>>
+		<div <?php $this->print_render_attribute_string( 'cart_footer' ); ?>>
 			<?php if ( $subtotal ) : ?>
 			<div class="pa-woo-mc__cart-subtotal">
 				<?php if ( 'layout-3' === $layout || $subtotal_heading ) : ?>
@@ -5799,9 +5850,16 @@ class Mini_Cart extends Widget_Base {
 				<span class="pa-woo-mc__subtotal">
 					<?php echo wp_kses_data( WC()->cart ? $subtotal_display['subtotal_amount'] : '' ); ?>
 					<?php
-					if ( $subtotal_display['includes_tax'] && 'yes' === $settings['show_footer_tax_label'] ) {
+					$tax_config        = $subtotal_display['tax_config'];
+					$show_footer_label = $tax_config['show_footer_label']
+						|| ( $subtotal_display['includes_tax'] && 'yes' === $settings['show_footer_tax_label'] );
+
+					if ( $show_footer_label ) {
+						$tax_label_text = ! empty( $tax_config['label'] )
+							? $tax_config['label']
+							: ( $tax_config['exclude_tax'] ? WC()->countries->ex_tax_or_vat() : WC()->countries->inc_tax_or_vat() );
 						?>
-							<small class="pa-woo-mc__tax-label"><?php echo wp_kses_data( WC()->countries->inc_tax_or_vat() ); ?></small>
+							<small class="pa-woo-mc__tax-label"><?php echo wp_kses_data( $tax_label_text ); ?></small>
 							<?php
 					}
 					?>

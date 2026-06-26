@@ -118,25 +118,22 @@ class Manager extends Base_Object {
 	}
 
 	private function install_compare( $version ) {
-        // FIX PHP 8.2: Paksa $version jadi string biar nggak error kalau nilainya null
-        $version = (string) $version;
+		$installs_history = Upgrade_Manager::get_installs_history();
 
-        $installs_history = Upgrade_Manager::get_installs_history();
+		if ( empty( $installs_history ) ) {
+			// Fresh installation: upgrade manager hasn't written history yet on this first request.
+			// Use the current plugin version as the effective first-install version.
+			return version_compare( ELEMENTOR_VERSION, $version, '>=' );
+		}
 
-        if ( empty( $installs_history ) ) {
-            // Fresh installation: upgrade manager hasn't written history yet on this first request.
-            // Use the current plugin version as the effective first-install version.
-            return version_compare( ELEMENTOR_VERSION, $version, '>=' );
-        }
+		$cleaned_version = preg_replace( '/-(beta|cloud|dev)\d*$/', '', key( $installs_history ) );
 
-        $cleaned_version = preg_replace( '/-(beta|cloud|dev)\d*$/', '', key( $installs_history ) );
-
-        return version_compare(
-            $cleaned_version,
-            $version,
-            '>='
-        );
-    }
+		return version_compare(
+			$cleaned_version,
+			$version,
+			'>='
+		);
+	}
 
 	/**
 	 * Combine 'tag' and 'tags' into one property.
@@ -381,6 +378,15 @@ class Manager extends Base_Object {
 				'default_active' => true,
 				'minimum_installation_version' => '3.30.0',
 			],
+		] );
+
+		$this->add_feature( [
+			'name' => 'e_panel_promotions',
+			'title' => esc_html__( 'Panel Promotions', 'elementor' ),
+			'description' => esc_html__( 'Enable experimental rendering for targeted promotions within the elements panels.', 'elementor' ),
+			'release_status' => self::RELEASE_STATUS_DEV,
+			'default' => self::STATE_ACTIVE,
+			'type' => self::TYPE_HIDDEN,
 		] );
 	}
 

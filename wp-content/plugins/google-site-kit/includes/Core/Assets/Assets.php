@@ -6,6 +6,8 @@
  * @copyright 2021 Google LLC
  * @license   https://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  * @link      https://sitekit.withgoogle.com
+ *
+ * phpcs:disable PHPCS.Commenting.RequireDocTagDescription -- Pre-existing violations; tracked for follow-up cleanup.
  */
 
 namespace Google\Site_Kit\Core\Assets;
@@ -14,6 +16,7 @@ use Google\Site_Kit\Context;
 use Google\Site_Kit\Core\Modules\Module_Sharing_Settings;
 use Google\Site_Kit\Core\Permissions\Permissions;
 use Google\Site_Kit\Core\Storage\Options;
+use Google\Site_Kit\Core\Util\Date;
 use Google\Site_Kit\Core\Util\Feature_Flags;
 use WP_Dependencies;
 use WP_Post_Type;
@@ -330,6 +333,10 @@ final class Assets {
 			'googlesitekit-notifications',
 		);
 
+		if ( Feature_Flags::enabled( 'pdfGeneration' ) ) {
+			array_push( $dependencies, 'googlesitekit-datastore-pdf' );
+		}
+
 		if ( 'dashboard' === $context || 'dashboard-sharing' === $context ) {
 			array_push( $dependencies, 'googlesitekit-components' );
 		}
@@ -574,6 +581,15 @@ final class Assets {
 				)
 			),
 			new Script(
+				'googlesitekit-datastore-pdf',
+				array(
+					'src'          => $base_url . 'js/googlesitekit-datastore-pdf.js',
+					'dependencies' => array(
+						'googlesitekit-data',
+					),
+				)
+			),
+			new Script(
 				'googlesitekit-modules',
 				array(
 					'src'          => $base_url . 'js/googlesitekit-modules.js',
@@ -795,7 +811,7 @@ final class Assets {
 			'webStoriesActive'  => defined( 'WEBSTORIES_VERSION' ),
 			'postTypes'         => $this->get_post_types(),
 			'storagePrefix'     => $this->get_storage_prefix(),
-			'referenceDate'     => apply_filters( 'googlesitekit_reference_date', null ),
+			'referenceDate'     => Date::reference_date(),
 			'productPostType'   => $this->get_product_post_type(),
 			'anyoneCanRegister' => (bool) get_option( 'users_can_register' ),
 			'isMultisite'       => is_multisite(),
