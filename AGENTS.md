@@ -21,6 +21,7 @@ docker compose down           # hentikan container
 
 - **Tema aktif**: `wp-content/themes/hello-elementor/` (Hello Elementor v3.4.7)
 - **Tidak ada child theme** — semua kustomisasi langsung di tema induk
+- **Bypass Elementor Header/Footer**: Berkas `header.php` dan `footer.php` dimodifikasi dengan menghapus pengecekan `elementor_theme_do_location` agar header/footer kustom berbasis PHP dirender secara langsung dan tidak tertimpa oleh template Elementor Pro Theme Builder.
 - **Semua logika Personel**: `wp-content/themes/hello-elementor/functions.php` (9022 baris)
 - **Sistem modul tema**: `theme.php` + `modules/admin-home/` (kerangka HelloTheme — bukan kustom)
 - **Dependensi CDN**: DataTables (tabel admin), Select2 (dropdown), Swiper.js (karosel)
@@ -157,6 +158,8 @@ Format: `{NOMOR}-{HURUF_POSISI}` mis. `0001-FDE`
 | `[carousel_event_terbaru]` | :6692 | Karosel posting event (Swiper) |
 | `[carousel_home_porto]` | :7085 | Karosel portofolio homepage (Swiper) |
 | `[personel_reset_form]` | :7599 | Form reset password |
+| `[landing_content]` | :9452 | Merender seluruh konten landing page secara dinamis (Data DB + Post Event + Porto Masonry) |
+| `[portfolio_content]` | :9992 | Merender seluruh konten halaman portofolio secara dinamis (toggles, filters, search, sort, grid, load more) |
 
 ---
 
@@ -335,6 +338,21 @@ Semua via `admin-ajax.php`:
 
 ---
 
+## Landing Page Dinamis (`[landing_content]`)
+
+Shortcode `[landing_content]` digunakan untuk merender seluruh konten landing utama secara dinamis menggunakan aset terpisah `landing.css` and `landing.js`.
+
+### Komponen Utama
+1. **Statistik Roster Real-time**: Mengambil jumlah riil dari tabel `wp9y_personel` untuk menghitung personel terdaftar berstatus `approved` serta pembagian berdasarkan peran (`Fotografer`, `Videografer`, `Drone`, `Editor`, `VFX`, `Animator`).
+2. **Layanan Kreatif Dinamis**: Mengambil halaman-halaman layanan kreatif dari database (`Company Profile`, `Wedding & Pre-Wedding`, `Event Production`, `Dokumentasi Event`, `Video & Foto Produk`, `Video Klip`) secara otomatis menggunakan slug-slug halaman tersebut. Menampilkan permalink dinamis, judul halaman dinamis, deskripsi berbasis ekskrip halaman dengan fallback, serta gambar uploader featured image. Jika featured image tidak diatur, sistem otomatis mem-parse konten halaman (atau shortcode template Elementor yang dimuat di dalamnya) untuk mengekstrak tag `<img>` pertama sebagai gambar kartu. Jika tidak ditemukan, sistem akan menggunakan gambar Unsplash sebagai fallback.
+3. **Kebutuhan Event (Tanpa Carousel)**: Mengambil data post WordPress di bawah kategori "Kebutuhan Event" secara langsung dan menampilkannya dalam grid responsif dua kolom.
+4. **Portofolio Pilihan (Masonry Grid Padat)**:
+   - Mengambil 5 foto portofolio terbaru (`wp9y_portofolio`) dan 2 video terbaru (`wp9y_portofolio_video`) dari database (Total 7 item).
+   - Menggunakan grid track berbasis CSS (`grid-auto-rows: 240px;` dan `height: 100%;` ditambah `grid-auto-flow: dense;`) untuk memastikan seluruh kartu portofolio berukuran proporsional dan ter-pack secara rapat tanpa menyisakan ruang/celah kosong (gap) di dalam sel masonry.
+   - Menyediakan data fallback otomatis via Unsplash apabila jumlah karya yang disetujui di database kurang dari jumlah slot.
+
+---
+
 ## Referensi Hook WordPress
 
 ### Actions (semua baris merujuk ke panggilan `add_action`)
@@ -379,6 +397,8 @@ Semua via `admin-ajax.php`:
 | `wp_ajax_nopriv_load_more_porto_video` | `ajax_video_handler_fixed` | :6284 |
 | `wp_ajax_update_rekomendasi` | `lx_handle_update_rekomendasi` | :6908 |
 | `wp_ajax_update_show_sosmed` | `lx_handle_update_show_sosmed` | :6944 |
+| `wp_ajax_portfolio_content_ajax` | `portfolio_content_ajax_handler` | :10091 |
+| `wp_ajax_nopriv_portfolio_content_ajax` | `portfolio_content_ajax_handler` | :10092 |
 
 ### Filters
 | Hook | Callback | Baris |
@@ -403,6 +423,7 @@ Semua via `admin-ajax.php`:
 | `carousel_event_terbaru` | `render_carousel_event_terbaru` | :6692 |
 | `carousel_home_porto` | `render_carousel_home_porto_split` | :7085 |
 | `personel_reset_form` | `personel_reset_password_form_shortcode` | :7599 |
+| `portfolio_content` | `render_portfolio_content_shortcode` | :10095 |
 
 ---
 

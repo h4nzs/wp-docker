@@ -150,6 +150,13 @@ if ( ! function_exists( 'hello_elementor_scripts_styles' ) ) {
 			);
 		}
 
+		wp_enqueue_style(
+			'hello-elementor-main-style',
+			get_stylesheet_uri(),
+			[],
+			file_exists( get_template_directory() . '/style.css' ) ? filemtime( get_template_directory() . '/style.css' ) : HELLO_ELEMENTOR_VERSION
+		);
+
 		if ( hello_elementor_display_header_footer() ) {
 			wp_enqueue_style(
 				'hello-elementor-header-footer',
@@ -9068,7 +9075,8 @@ function render_portfolio_category_filter_bar($type = 'foto') {
 // ============================================================
 // INJECT AJAX LOAD MORE TO DEFAULT WP / ELEMENTOR POST WIDGETS
 // ============================================================
-add_action('wp_footer', 'inject_load_more_to_default_wp_widgets', 99);
+// Deactivated:
+// add_action('wp_footer', 'inject_load_more_to_default_wp_widgets', 99);
 function inject_load_more_to_default_wp_widgets() {
     if (is_admin()) return;
     ?>
@@ -9275,3 +9283,909 @@ function inject_load_more_to_default_wp_widgets() {
     </script>
     <?php
 }
+
+/**
+ * Register and enqueue assets for Personel Directory
+ */
+function enqueue_personel_directory_assets() {
+    wp_register_style('leaflet-css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', [], '1.9.4');
+    wp_register_style('font-awesome-cdn', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css', [], '6.5.1');
+    wp_register_style('personel-directory-css', get_stylesheet_directory_uri() . '/assets/css/directory.css', ['leaflet-css', 'font-awesome-cdn'], '1.0.0');
+
+    wp_register_script('leaflet-js', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', [], '1.9.4', true);
+    wp_register_script('personel-directory-js', get_stylesheet_directory_uri() . '/assets/js/directory.js', ['jquery', 'leaflet-js'], '1.0.0', true);
+}
+add_action('wp_enqueue_scripts', 'enqueue_personel_directory_assets');
+
+/**
+ * Render Personel Directory shortcode [personel_directory]
+ */
+function render_personel_directory_shortcode() {
+    wp_enqueue_style('leaflet-css');
+    wp_enqueue_style('font-awesome-cdn');
+    wp_enqueue_style('personel-directory-css');
+    wp_enqueue_script('leaflet-js');
+    wp_enqueue_script('personel-directory-js');
+
+    ob_start();
+    ?>
+    <div id="app-body">
+      <div id="map-panel">
+        <div id="map"></div>
+        <div id="map-count-badge">Menampilkan <span id="map-shown-count">0</span> marker di peta</div>
+      </div>
+      <div id="accordion-panel">
+        <div id="accordion-panel-header">
+          <div class="panel-header-row">
+            <span class="panel-title">Daftar Personel</span>
+            <span class="panel-count">Total: <strong id="total-count-num">0</strong> ditemukan</span>
+          </div>
+          <div class="filter-container-panel">
+            <div class="filter-search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" id="search-input" placeholder="Cari nama, lokasi..." autocomplete="off"/>
+            </div>
+            <div class="filter-dropdowns-row">
+              <select class="filter-select" id="filter-category">
+                <option value="">Semua Kategori</option>
+                <option value="Fotografer">Fotografer</option>
+                <option value="Videografer">Videografer</option>
+                <option value="Drone">Drone</option>
+                <option value="Editor">Editor</option>
+                <option value="Animator">Animator</option>
+              </select>
+              <select class="filter-select" id="filter-gender">
+                <option value="">Semua Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+              <select class="filter-select" id="filter-province">
+                <option value="">Semua Provinsi</option>
+                <option value="DKI Jakarta">DKI Jakarta</option>
+                <option value="Jawa Barat">Jawa Barat</option>
+                <option value="Jawa Timur">Jawa Timur</option>
+                <option value="Jawa Tengah">Jawa Tengah</option>
+                <option value="Banten">Banten</option>
+                <option value="Bali">Bali</option>
+                <option value="DI Yogyakarta">DI Yogyakarta</option>
+                <option value="Sumatera Utara">Sumatera Utara</option>
+                <option value="Sumatera Selatan">Sumatera Selatan</option>
+                <option value="Sumatera Barat">Sumatera Barat</option>
+                <option value="Riau">Riau</option>
+                <option value="Lampung">Lampung</option>
+                <option value="Jambi">Jambi</option>
+                <option value="Bengkulu">Bengkulu</option>
+                <option value="Kalimantan Barat">Kalimantan Barat</option>
+                <option value="Kalimantan Timur">Kalimantan Timur</option>
+                <option value="Kalimantan Selatan">Kalimantan Selatan</option>
+                <option value="Kalimantan Tengah">Kalimantan Tengah</option>
+                <option value="Sulawesi Selatan">Sulawesi Selatan</option>
+                <option value="Sulawesi Tengah">Sulawesi Tengah</option>
+                <option value="Sulawesi Utara">Sulawesi Utara</option>
+                <option value="Gorontalo">Gorontalo</option>
+                <option value="Sulawesi Tenggara">Sulawesi Tenggara</option>
+                <option value="Sulawesi Barat">Sulawesi Barat</option>
+                <option value="Nusa Tenggara Barat">Nusa Tenggara Barat</option>
+                <option value="Nusa Tenggara Timur">Nusa Tenggara Timur</option>
+                <option value="Maluku">Maluku</option>
+                <option value="Papua">Papua</option>
+                <option value="Papua Barat">Papua Barat</option>
+                <option value="Maluku Utara">Maluku Utara</option>
+              </select>
+              <select class="filter-select" id="filter-city">
+                <option value="">Semua Kota</option>
+                <option value="Jakarta Timur">Jakarta Timur</option>
+                <option value="Jakarta Pusat">Jakarta Pusat</option>
+                <option value="Jakarta Selatan">Jakarta Selatan</option>
+                <option value="Jakarta Barat">Jakarta Barat</option>
+                <option value="Jakarta Utara">Jakarta Utara</option>
+                <option value="Bandung">Bandung</option>
+                <option value="Bogor">Bogor</option>
+                <option value="Bekasi">Bekasi</option>
+                <option value="Depok">Depok</option>
+                <option value="Tangerang">Tangerang</option>
+                <option value="Gresik">Gresik</option>
+                <option value="Surabaya">Surabaya</option>
+                <option value="Banyuwangi">Banyuwangi</option>
+                <option value="Malang">Malang</option>
+                <option value="Madiun">Madiun</option>
+                <option value="Semarang">Semarang</option>
+                <option value="Solo">Solo</option>
+                <option value="Yogyakarta">Yogyakarta</option>
+                <option value="Serang">Serang</option>
+                <option value="Denpasar">Denpasar</option>
+                <option value="Medan">Medan</option>
+                <option value="Palembang">Palembang</option>
+                <option value="Pekanbaru">Pekanbaru</option>
+                <option value="Padang">Padang</option>
+                <option value="Bandar Lampung">Bandar Lampung</option>
+                <option value="Jambi">Jambi</option>
+                <option value="Bengkulu">Bengkulu</option>
+                <option value="Pontianak">Pontianak</option>
+                <option value="Balikpapan">Balikpapan</option>
+                <option value="Samarinda">Samarinda</option>
+                <option value="Banjarmasin">Banjarmasin</option>
+                <option value="Palangkaraya">Palangkaraya</option>
+                <option value="Makassar">Makassar</option>
+                <option value="Palu">Palu</option>
+                <option value="Manado">Manado</option>
+                <option value="Gorontalo">Gorontalo</option>
+                <option value="Kendari">Kendari</option>
+                <option value="Mamuju">Mamuju</option>
+                <option value="Mataram">Mataram</option>
+                <option value="Kupang">Kupang</option>
+                <option value="Ambon">Ambon</option>
+                <option value="Jayapura">Jayapura</option>
+                <option value="Sorong">Sorong</option>
+                <option value="Ternate">Ternate</option>
+              </select>
+            </div>
+            <button id="btn-reset-filter"><i class="fas fa-times-circle"></i> Reset Filter</button>
+          </div>
+        </div>
+        <div id="accordion-list">
+          <div id="empty-state">
+            <i class="fas fa-search-minus"></i>
+            <h3>Tidak ada hasil</h3>
+            <p>Coba ubah filter atau kata kunci pencarian</p>
+          </div>
+        </div>
+        <div class="pagination-wrapper" id="pagination-wrapper">
+          <div class="pagination-info" id="pagination-info">Menampilkan 1–8 dari 65 personel</div>
+          <div class="pagination-controls" id="pagination-controls">
+            <button class="page-btn page-prev" id="btn-prev"><i class="fas fa-chevron-left"></i></button>
+            <button class="page-btn page-next" id="btn-next"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('personel_directory', 'render_personel_directory_shortcode');
+
+
+/**
+ * Register and enqueue assets for Landing Page
+ */
+function enqueue_landing_page_assets() {
+    $css_version = file_exists( get_stylesheet_directory() . '/assets/css/landing.css' ) ? filemtime( get_stylesheet_directory() . '/assets/css/landing.css' ) : '1.0.0';
+    wp_register_style('landing-css', get_stylesheet_directory_uri() . '/assets/css/landing.css', [], $css_version);
+    wp_register_script('landing-js', get_stylesheet_directory_uri() . '/assets/js/landing.js', [], '1.0.0', true);
+}
+add_action('wp_enqueue_scripts', 'enqueue_landing_page_assets');
+
+/**
+ * Render Landing Content shortcode [landing_content]
+ */
+function render_landing_content_shortcode() {
+    wp_enqueue_style('landing-css');
+    wp_enqueue_script('landing-js');
+
+    global $wpdb;
+    // Get live database counts
+    $count_total = $wpdb->get_var("SELECT COUNT(*) FROM wp9y_personel WHERE status = 'approved'");
+    $count_foto = $wpdb->get_var("SELECT COUNT(*) FROM wp9y_personel WHERE status = 'approved' AND posisi LIKE '%F%'");
+    $count_video = $wpdb->get_var("SELECT COUNT(*) FROM wp9y_personel WHERE status = 'approved' AND posisi LIKE '%V%'");
+    $count_drone = $wpdb->get_var("SELECT COUNT(*) FROM wp9y_personel WHERE status = 'approved' AND posisi LIKE '%D%'");
+    $count_editor = $wpdb->get_var("SELECT COUNT(*) FROM wp9y_personel WHERE status = 'approved' AND posisi LIKE '%E%'");
+    $count_vfx = $wpdb->get_var("SELECT COUNT(*) FROM wp9y_personel WHERE status = 'approved' AND posisi LIKE '%X%'");
+    $count_animator = $wpdb->get_var("SELECT COUNT(*) FROM wp9y_personel WHERE status = 'approved' AND posisi LIKE '%A%'");
+
+    ob_start();
+    ?>
+    <style>
+      /* Ensure scrollbar and layout flow normally */
+      body {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+      }
+      .portfolio-dynamic-carousel, .event-dynamic-carousel {
+        margin-top: 30px;
+        width: 100%;
+      }
+      /* 1. Paksa body dan element utama memenuhi layar */
+      body, html {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: hidden;
+      }
+
+      /* 2. Hancurkan batasan lebar (max-width) pembungkus bawaan tema */
+      .site,
+      .site-content,
+      .container,
+      .content-area,
+      .main-content,
+      #content,
+      #primary,
+      .page-wrap,
+      .wrap {
+          max-width: 100% !important;
+          width: 100% !important;
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+      }
+
+      /* 3. Jika shortcode Anda dibungkus dalam artikel/post container */
+      article, .entry-content {
+          max-width: 100% !important;
+          width: 100% !important;
+          padding: 0 !important;
+          margin: 0 !important;
+      }
+    </style>
+    <!-- Background glowing fluid blobs -->
+<div class="fluid-glow glow-left"></div>
+<div class="fluid-glow glow-right"></div>
+
+
+
+<!-- HERO SECTION -->
+<header class="hero-wrapper">
+  <div class="hero-bg-overlay"></div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <span class="hero-eyebrow">Dipercaya 50+ perusahaan di Indonesia</span>
+      <h1>Solusi Video &amp; <br><span>Event Profesional</span> untuk Brand Anda</h1>
+      <p class="hero-sub">Fotografi, videografi, pilot drone, hingga produksi event end-to-end — dikerjakan tim kreatif berpengalaman yang tersebar di seluruh Indonesia.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn-fluid-primary btn-enlarged">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+          Konsultasi Gratis
+        </a>
+        <a href="#portofolio" class="btn-fluid-secondary btn-enlarged-secondary">Lihat Portofolio</a>
+      </div>
+      
+      <div class="hero-stats-row">
+        <div class="stat-bubble">
+          <h3>500+</h3>
+          <span>Personel Kreatif</span>
+        </div>
+        <div class="stat-bubble">
+          <h3>1.200+</h3>
+          <span>Project Selesai</span>
+        </div>
+        <div class="stat-bubble">
+          <h3>20+</h3>
+          <span>Klien Korporat</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="hero-visual-area">
+      <div class="fluid-blob">
+        <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=600&q=80" alt="videographer at event">
+      </div>
+      <div class="floating-blob-label">
+        <h4>Live Event Production</h4>
+        <span>Multicam · Lighting · Streaming</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- LAYANAN KREATIF -->
+<section id="layanan">
+  <div class="sec-header reveal">
+    <span class="sec-tag">Our Services</span>
+    <h2>Layanan <span>Kreatif</span></h2>
+    <p class="sec-desc">Solusi produksi media &amp; event yang lengkap, dari konsep awal hingga pengiriman hasil akhir dengan kualitas terbaik.</p>
+  </div>
+
+  <div class="search-container">
+    <div class="search-box">
+      <input type="text" placeholder="Halo, layanan apa yang Anda butuhkan?">
+      <button class="search-btn">Cari Layanan</button>
+    </div>
+  </div>
+
+  <div class="services-flex-grid">
+    <?php
+    $services_data = [
+        'event-production-event-organizer' => [
+            'num' => '01 — UNGGULAN',
+            'title' => 'Event Production',
+            'desc' => 'Multicam live streaming, videotron, sound system, MC, panggung, backdrop, lighting, dan kebutuhan event lainnya — lengkap dalam satu tim.',
+            'img' => 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=700&q=80'
+        ],
+        'jasa-pembuatan-video-company-profile' => [
+            'num' => '02',
+            'title' => 'Company Profile',
+            'desc' => 'Video company profile, foto corporate, &amp; profile cetak yang merepresentasikan brand Anda secara profesional, meningkatkan kredibilitas di mata klien.',
+            'img' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=700&q=80'
+        ],
+        'wedding-prawedding' => [
+            'num' => '03',
+            'title' => 'Wedding &amp; Pre-Wedding',
+            'desc' => 'Dokumentasi momen pernikahan dan pre-wedding dengan sentuhan sinematik profesional, menangkap setiap emosi dan hasil yang elegan abadi.',
+            'img' => 'https://images.unsplash.com/photo-1519741497674-611481863552?w=700&q=80'
+        ],
+        'dokumentasi-event' => [
+            'num' => '04',
+            'title' => 'Dokumentasi Event',
+            'desc' => 'Video highlight &amp; foto liputan event lengkap, live streaming multicam untuk gathering, konser musik, seminar nasional, hingga outbound corporate.',
+            'img' => 'https://images.unsplash.com/photo-1506157786151-b8491531f063?w=700&q=80'
+        ],
+        'video-produk-branding-iklan' => [
+            'num' => '05',
+            'title' => 'Video &amp; Foto Produk',
+            'desc' => 'Visual produk komersial berkualitas tinggi untuk iklan, e-commerce, dan katalog, dirancang agar brand Anda tampil premium dan menarik pembeli.',
+            'img' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=700&q=80'
+        ],
+        'video-klip' => [
+            'num' => '06',
+            'title' => 'Video Klip',
+            'desc' => 'Produksi video musik/klip sinematik untuk musisi, band, atau kebutuhan promosi kreatif dengan konsep visual yang kuat dan memukau.',
+            'img' => 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=700&q=80'
+        ]
+    ];
+
+    $service_pages = get_posts([
+        'post_type'      => 'page',
+        'post_status'    => 'publish',
+        'post_name__in'  => array_keys($services_data),
+        'posts_per_page' => -1
+    ]);
+
+    foreach ($services_data as $slug => $fallback) :
+        $page_match = null;
+        foreach ($service_pages as $page) {
+            if ($page->post_name === $slug) {
+                $page_match = $page;
+                break;
+            }
+        }
+
+        $title = $page_match ? get_the_title($page_match->ID) : $fallback['title'];
+        $link = $page_match ? get_permalink($page_match->ID) : '#';
+        $desc = ($page_match && !empty($page_match->post_excerpt)) ? $page_match->post_excerpt : $fallback['desc'];
+        $img = $fallback['img'];
+        if ($page_match) {
+            if (has_post_thumbnail($page_match->ID)) {
+                $img = get_the_post_thumbnail_url($page_match->ID, 'large');
+            } else {
+                // Parse page content for image tags
+                $content = $page_match->post_content;
+                // If content contains an Elementor template shortcode, load its content
+                if (preg_match('/\[elementor-template id="([0-9]+)"\]/', $content, $matches)) {
+                    $template_post = get_post($matches[1]);
+                    if ($template_post) {
+                        $content = $template_post->post_content;
+                    }
+                }
+                // Extract first image src
+                if (preg_match('/<img[^>]+src=["\']([^"\']+)["\']/', $content, $img_matches)) {
+                    $img = $img_matches[1];
+                }
+            }
+        }
+    ?>
+    <div class="svc-card reveal">
+      <div class="svc-img-wrapper">
+        <img src="<?php echo esc_url($img); ?>" alt="<?php echo esc_attr($title); ?>">
+      </div>
+      <div class="svc-details">
+        <span class="svc-num"><?php echo esc_html($fallback['num']); ?></span>
+        <h3><?php echo esc_html($title); ?></h3>
+        <p><?php echo esc_html($desc); ?></p>
+        <a href="<?php echo esc_url($link); ?>" class="svc-link">Lihat detail</a>
+      </div>
+    </div>
+    <?php endforeach; ?>
+  </div>
+</section>
+
+<!-- PERSONEL KREATIF -->
+<section id="personel">
+  <div class="sec-header reveal">
+    <span class="sec-tag">Our Team</span>
+    <h2>Personel <span>Kreatif</span></h2>
+    <p class="sec-desc">Tim fotografer, videografer, pilot drone, dan editor handal kami tersebar di seluruh Indonesia, siap menyesuaikan gaya visual kreasi Anda.</p>
+  </div>
+
+  <div class="bubble-roster-layout">
+    <!-- Bubble 1 -->
+    <div class="bubble-card reveal">
+      <div class="bubble-avatar-frame">
+        <img src="https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=100&q=80" alt="fotografer"></div><div class="bubble-info"><h4>Fotografer</h4><p>Model · Produk · Event · Corporate</p><span class="bubble-badge"><?php echo $count_foto; ?> Tersedia</span>
+      </div>
+    </div>
+
+    <!-- Bubble 2 -->
+    <div class="bubble-card reveal">
+      <div class="bubble-avatar-frame">
+        <img src="https://images.unsplash.com/photo-1551817958-20204d6ab212?w=100&q=80" alt="videografer"></div><div class="bubble-info"><h4>Videografer</h4><p>Live event · Dokumentasi · Sinematik</p><span class="bubble-badge"><?php echo $count_video; ?> Tersedia</span>
+      </div>
+    </div>
+
+    <!-- Bubble 3 -->
+    <div class="bubble-card reveal">
+      <div class="bubble-avatar-frame">
+        <img src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=100&q=80" alt="drone"></div><div class="bubble-info"><h4>Pilot Drone</h4><p>Aerial · FPV · Mapping · Enterprise</p><span class="bubble-badge"><?php echo $count_drone; ?> Tersedia</span>
+      </div>
+    </div>
+
+    <!-- Bubble 4 -->
+    <div class="bubble-card reveal">
+      <div class="bubble-avatar-frame">
+        <img src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=100&q=80" alt="editor"></div><div class="bubble-info"><h4>Editor</h4><p>Color grading · Motion · Sound design</p><span class="bubble-badge"><?php echo $count_editor; ?> Tersedia</span>
+      </div>
+    </div>
+
+    <!-- Bubble 5 -->
+    <div class="bubble-card reveal">
+      <div class="bubble-avatar-frame">
+        <img src="https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=100&q=80" alt="vfx"></div><div class="bubble-info"><h4>VFX Artist</h4><p>Compositing · CGI · Animasi efek</p><span class="bubble-badge"><?php echo $count_vfx; ?> Tersedia</span>
+      </div>
+    </div>
+
+    <!-- Bubble 6 -->
+    <div class="bubble-card reveal">
+      <div class="bubble-avatar-frame">
+        <img src="https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=100&q=80" alt="animator"></div><div class="bubble-info"><h4>Animator</h4><p>2D/3D · Blender · Cinema 4D</p><span class="bubble-badge"><?php echo $count_animator; ?> Tersedia</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEBUTUHAN EVENT -->
+<section id="event">
+  <div class="sec-header reveal">
+    <span class="sec-tag">Event Articles</span>
+    <h2>Kebutuhan <span>Event</span></h2>
+    <p class="sec-desc">Sewa logistik event berkualitas tinggi — dipandu dengan artikel edukasi untuk mempersiapkan produksi media Anda.</p>
+  </div>
+
+  <div class="event-vouchers-list">
+    <?php
+    $event_query = new WP_Query(array(
+        'post_type'      => 'post',
+        'posts_per_page' => 15,
+        'category_name'  => 'kebutuhan event',
+        'orderby'        => 'date',
+        'order'          => 'DESC'
+    ));
+    if ($event_query->have_posts()) :
+        while ($event_query->have_posts()) : $event_query->the_post(); 
+            $thumb_url = get_the_post_thumbnail_url(get_the_ID(), 'thumbnail');
+            if (!$thumb_url) $thumb_url = 'https://placehold.co/100x100?text=No+Photo';
+            
+            // Extract raw clean plain text excerpt
+            $raw_content = get_the_excerpt();
+            if (!$raw_content) {
+                $raw_content = get_the_content();
+            }
+            $clean_excerpt = wp_strip_all_tags(strip_shortcodes($raw_content));
+            $clean_excerpt = preg_replace('/Baca Selengkapnya|Read More|Baca Panduan|\\[\\.\\.\\.\\\]/i', '', $clean_excerpt);
+            $clean_excerpt = wp_trim_words($clean_excerpt, 15, '...');
+    ?>
+    <div class="voucher-pill reveal">
+      <div class="voucher-left">
+        <div class="voucher-circle-thumb">
+          <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php the_title_attribute(); ?>">
+        </div>
+        <div class="voucher-details">
+          <h4><?php the_title(); ?></h4>
+          <p><?php echo esc_html($clean_excerpt); ?></p>
+        </div>
+      </div>
+      <div class="voucher-right">
+        <a href="<?php the_permalink(); ?>" class="btn-voucher-action">Baca Panduan</a>
+      </div>
+    </div>
+    <?php
+        endwhile;
+        wp_reset_postdata();
+    else :
+    ?>
+        <p style="color:#666; text-align:center; width:100%;">Belum ada panduan event.</p>
+    <?php endif; ?>
+  </div>
+</section>
+
+<!-- PORTOFOLIO -->
+<section id="portofolio">
+  <div class="sec-header reveal">
+    <span class="sec-tag">Our Work</span>
+    <h2>Portofolio <span>Pilihan</span></h2>
+    <p class="sec-desc">Sebagian hasil karya tim kreatif kami untuk berbagai klien korporat dan personal.</p>
+  </div>
+
+  <div class="portfolio-masonry">
+    <?php
+    $photos = $wpdb->get_results("SELECT f.*, p.nama_panggilan FROM wp9y_portofolio f JOIN wp9y_personel p ON f.personel_id = p.id WHERE f.status = 'approved' ORDER BY f.id DESC LIMIT 5");
+    $videos = $wpdb->get_results("SELECT v.*, p.nama_panggilan FROM wp9y_portofolio_video v JOIN wp9y_personel p ON v.personel_id = p.id WHERE v.status = 'approved' ORDER BY v.id DESC LIMIT 2");
+
+    $items = [];
+
+    // Item 1 (tall wide)
+    if (isset($photos[0])) {
+        $items[1] = [
+            'class' => 'port-card tall wide reveal',
+            'url' => $photos[0]->foto_url,
+            'title' => $photos[0]->judul,
+            'creator' => 'by ' . $photos[0]->nama_panggilan,
+            'video' => false
+        ];
+    } else {
+        $items[1] = [
+            'class' => 'port-card tall wide reveal',
+            'url' => 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&q=80',
+            'title' => 'Leadership Portrait',
+            'creator' => 'by Dani · Videografer',
+            'video' => false
+        ];
+    }
+
+    // Item 2 (standard)
+    if (isset($photos[1])) {
+        $items[2] = [
+            'class' => 'port-card standard reveal',
+            'url' => $photos[1]->foto_url,
+            'title' => $photos[1]->judul,
+            'creator' => 'by ' . $photos[1]->nama_panggilan,
+            'video' => false
+        ];
+    } else {
+        $items[2] = [
+            'class' => 'port-card standard reveal',
+            'url' => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400&q=80',
+            'title' => 'Seminar Corporate',
+            'creator' => 'by Bagus · Fotografer',
+            'video' => false
+        ];
+    }
+
+    // Item 3 (standard)
+    if (isset($photos[2])) {
+        $items[3] = [
+            'class' => 'port-card standard reveal',
+            'url' => $photos[2]->foto_url,
+            'title' => $photos[2]->judul,
+            'creator' => 'by ' . $photos[2]->nama_panggilan,
+            'video' => false
+        ];
+    } else {
+        $items[3] = [
+            'class' => 'port-card standard reveal',
+            'url' => 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&q=80',
+            'title' => 'Foto Sports Event',
+            'creator' => 'by Crew · Fotografer',
+            'video' => false
+        ];
+    }
+
+    // Item 4 (tall, video 1)
+    if (isset($videos[0])) {
+        preg_match('/(v=|be\/)([a-zA-Z0-9_-]+)/', $videos[0]->video_url, $m);
+        $yt_id = $m[2] ?? '';
+        $thumb = "https://img.youtube.com/vi/" . esc_attr($yt_id) . "/mqdefault.jpg";
+        $items[4] = [
+            'class' => 'port-card tall reveal',
+            'url' => $thumb,
+            'title' => $videos[0]->judul,
+            'creator' => 'by ' . $videos[0]->nama_panggilan,
+            'video' => true
+        ];
+    } else {
+        $items[4] = [
+            'class' => 'port-card tall reveal',
+            'url' => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&q=80',
+            'title' => 'Video Highlight',
+            'creator' => 'by Crew · Editor',
+            'video' => true
+        ];
+    }
+
+    // Item 5 (standard)
+    if (isset($photos[3])) {
+        $items[5] = [
+            'class' => 'port-card standard reveal',
+            'url' => $photos[3]->foto_url,
+            'title' => $photos[3]->judul,
+            'creator' => 'by ' . $photos[3]->nama_panggilan,
+            'video' => false
+        ];
+    } else {
+        $items[5] = [
+            'class' => 'port-card standard reveal',
+            'url' => 'https://images.unsplash.com/photo-1556125574-d7f27ec36a06?w=400&q=80',
+            'title' => 'Birthday Party',
+            'creator' => 'by Oelin · Fotografer',
+            'video' => false
+        ];
+    }
+
+    // Item 7 (standard, to fill the Row 3 Col 3 grid hole)
+    if (isset($photos[4])) {
+        $items[7] = [
+            'class' => 'port-card standard reveal',
+            'url' => $photos[4]->foto_url,
+            'title' => $photos[4]->judul,
+            'creator' => 'by ' . $photos[4]->nama_panggilan,
+            'video' => false
+        ];
+    } else {
+        $items[7] = [
+            'class' => 'port-card standard reveal',
+            'url' => 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=80',
+            'title' => 'Behind the Scenes',
+            'creator' => 'by Crew · Fotografer',
+            'video' => false
+        ];
+    }
+
+    // Item 6 (wide, video 2)
+    if (isset($videos[1])) {
+        preg_match('/(v=|be\/)([a-zA-Z0-9_-]+)/', $videos[1]->video_url, $m);
+        $yt_id = $m[2] ?? '';
+        $thumb = "https://img.youtube.com/vi/" . esc_attr($yt_id) . "/mqdefault.jpg";
+        $items[6] = [
+            'class' => 'port-card wide reveal',
+            'url' => $thumb,
+            'title' => $videos[1]->judul,
+            'creator' => 'by ' . $videos[1]->nama_panggilan,
+            'video' => true
+        ];
+    } else {
+        $items[6] = [
+            'class' => 'port-card wide reveal',
+            'url' => 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800&q=80',
+            'title' => 'Employee Gathering',
+            'creator' => 'by Oelin · Fotografer',
+            'video' => true
+        ];
+    }
+
+    foreach ($items as $item) :
+    ?>
+    <div class="<?php echo esc_attr($item['class']); ?>">
+      <img src="<?php echo esc_url($item['url']); ?>" alt="<?php echo esc_attr($item['title']); ?>">
+      <?php if ($item['video']) : ?>
+        <div class="port-play-indicator">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+        </div>
+      <?php endif; ?>
+      <div class="port-gradient">
+        <h4><?php echo esc_html($item['title']); ?></h4>
+        <span><?php echo esc_html($item['creator']); ?></span>
+      </div>
+    </div>
+    <?php endforeach; ?>
+  </div>
+  <div class="clients-strip-box reveal">
+    <div class="clients-strip-inner">
+      <span class="clients-label-txt">Trusted By /</span>
+      <div class="clients-track-names">
+        <div>PERTAMINA</div>
+        <div>JASA MARGA</div>
+        <div>HUTAMA KARYA</div>
+        <div>BANK MANDIRI</div>
+        <div>BCA</div>
+        <div>GARUDA INDONESIA</div>
+        <div>PLN</div>
+        <div>WASKITA</div>
+        <div>BYD</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<div class="cta-section-container">
+  <div class="cta-fluid-card reveal-zoom">
+    <h2>Siap Wujudkan Event &amp; Konten Visual Anda?</h2>
+    <p>Konsultasikan kebutuhan produksi media atau event Anda — tim kami siap membantu dari konsep hingga eksekusi.</p>
+    <a href="#" class="btn-cta-dark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+      </svg>
+      Hubungi via WhatsApp
+    </a>
+  </div>
+</div>
+
+
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('landing_content', 'render_landing_content_shortcode');
+
+/**
+ * Register and enqueue assets for Portfolio Page
+ */
+function enqueue_portfolio_page_assets() {
+    $css_version = file_exists( get_stylesheet_directory() . '/assets/css/portfolio.css' ) ? filemtime( get_stylesheet_directory() . '/assets/css/portfolio.css' ) : '1.0.0';
+    $js_version  = file_exists( get_stylesheet_directory() . '/assets/js/portfolio.js' ) ? filemtime( get_stylesheet_directory() . '/assets/js/portfolio.js' ) : '1.0.0';
+    wp_register_style('portfolio-css', get_stylesheet_directory_uri() . '/assets/css/portfolio.css', [], $css_version);
+    wp_register_script('portfolio-js', get_stylesheet_directory_uri() . '/assets/js/portfolio.js', ['jquery'], $js_version, true);
+    wp_localize_script('portfolio-js', 'portfolio_ajax_obj', [
+        'ajax_url' => admin_url('admin-ajax.php')
+    ]);
+}
+add_action('wp_enqueue_scripts', 'enqueue_portfolio_page_assets');
+
+/**
+ * Helper function to render a single portfolio item for [portfolio_content]
+ */
+function render_portfolio_html_item($data, $type) {
+    $nama_depan = strtok($data->nama_panggilan, ' ');
+    $author_name = $nama_depan . '-' . $data->kode_nama;
+    $date_formatted = date('d M Y', strtotime($data->tanggal_kegiatan));
+    
+    if ($type === 'video') {
+        preg_match('/(v=|be\/)([a-zA-Z0-9_-]+)/', $data->video_url, $m);
+        $yt_id = $m[2] ?? '';
+        $thumb = "https://img.youtube.com/vi/{$yt_id}/mqdefault.jpg";
+        $media_url = "https://www.youtube.com/embed/{$yt_id}?modestbranding=1&rel=0";
+    } else {
+        $thumb = $data->foto_url;
+        $media_url = $data->foto_url;
+    }
+    
+    ob_start();
+    ?>
+    <div class="porto-card porto-clickable reveal active" 
+         data-type="<?php echo esc_attr($type); ?>" 
+         data-url="<?php echo esc_url($media_url); ?>"
+         data-title="<?php echo esc_attr($data->judul); ?>"
+         data-desc="<?php echo esc_attr($data->deskripsi); ?>"
+         data-tags="<?php echo esc_attr($data->tags); ?>"
+         data-tahun="<?php echo esc_attr($data->tahun); ?>"
+         data-lokasi="<?php echo esc_attr($data->lokasi); ?>"
+         data-kodenama="<?php echo esc_attr($data->kode_nama); ?>"
+         data-author="<?php echo esc_attr($author_name); ?>"
+         data-tanggal="<?php echo esc_attr($date_formatted); ?>">
+      <div class="porto-card-img-wrap" style="position: relative;">
+        <img src="<?php echo esc_url($thumb); ?>" alt="<?php echo esc_attr($data->judul); ?>" class="porto-card-img" loading="lazy">
+        <?php if ($type === 'video') : ?>
+          <div class="lx-play-btn" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); color: var(--gold); font-size: 28px; text-shadow: 0 0 10px rgba(0,0,0,0.5); transition: background 0.3s;">▶</div>
+        <?php endif; ?>
+      </div>
+      <div class="porto-card-content">
+        <h3 class="porto-card-title"><?php echo esc_html($data->judul); ?></h3>
+        <div class="porto-card-footer">
+          <span class="porto-card-author">
+            <i class="<?php echo ($type === 'video') ? 'fas fa-video' : 'fas fa-camera'; ?>"></i> 
+            <?php echo esc_html($author_name); ?>
+          </span>
+          <span class="porto-card-date"><?php echo esc_html($date_formatted); ?></span>
+        </div>
+      </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * AJAX Handler for Unified Portfolio Shortcode
+ */
+function portfolio_content_ajax_handler() {
+    global $wpdb;
+    
+    $type     = (isset($_POST['type']) && $_POST['type'] === 'video') ? 'video' : 'image';
+    $table    = ($type === 'video') ? 'wp9y_portofolio_video' : 'wp9y_portofolio';
+    $offset   = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
+    $search   = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+    $sort     = isset($_POST['sort']) ? sanitize_text_field($_POST['sort']) : 'terbaru';
+    $category = isset($_POST['category']) ? sanitize_text_field($_POST['category']) : '';
+
+    $join = "";
+    $where_cat = "";
+    if (!empty($category) && $category !== 'semua' && $category !== 'all') {
+        if ($type === 'video') {
+            $join = " JOIN wp9y_portofolio_video_kategori_map m ON t.id = m.video_id 
+                      JOIN wp9y_kategori k ON m.kategori_id = k.id ";
+        } else {
+            $join = " JOIN wp9y_portofolio_kategori_map m ON t.id = m.portofolio_id 
+                      JOIN wp9y_kategori k ON m.kategori_id = k.id ";
+        }
+        $where_cat = $wpdb->prepare(" AND k.slug = %s ", $category);
+    }
+
+    $query = "SELECT t.*, p.nama_panggilan, p.kode_nama FROM $table t 
+              JOIN wp9y_personel p ON t.personel_id = p.id 
+              $join
+              WHERE t.status = 'approved' AND p.status = 'approved' $where_cat";
+
+    if (!empty($search)) {
+        $query .= $wpdb->prepare(" AND (t.judul LIKE %s OR t.lokasi LIKE %s OR p.nama_panggilan LIKE %s OR t.tags LIKE %s)", '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%');
+    }
+
+    switch ($sort) {
+        case 'terlama': 
+            $query .= " ORDER BY t.id ASC"; 
+            break;
+        case 'populer': 
+            $query .= " ORDER BY t.tanggal_kegiatan DESC"; 
+            break;
+        case 'terbaru':
+        default: 
+            $query .= " ORDER BY t.id DESC"; 
+            break;
+    }
+
+    $query .= " LIMIT $offset, 12";
+    $res = $wpdb->get_results($query);
+    
+    if ($res) {
+        foreach ($res as $r) {
+            echo render_portfolio_html_item($r, $type);
+        }
+    } else if ($offset == 0) {
+        echo "<p style='color: var(--text-dim); text-align: center; width: 100%; grid-column: 1/-1; padding: 40px 0;'>Tidak ada portofolio pada kategori ini.</p>";
+    }
+    wp_die();
+}
+add_action('wp_ajax_portfolio_content_ajax', 'portfolio_content_ajax_handler');
+add_action('wp_ajax_nopriv_portfolio_content_ajax', 'portfolio_content_ajax_handler');
+
+/**
+ * Shortcode [portfolio_content] for rendering Unified Portfolio
+ */
+function render_portfolio_content_shortcode() {
+    wp_enqueue_style('portfolio-css');
+    wp_enqueue_script('portfolio-js');
+
+    global $wpdb;
+    $categories = $wpdb->get_results("SELECT nama, slug FROM wp9y_kategori ORDER BY id ASC");
+
+    ob_start();
+    ?>
+    <!-- Background glowing fluid blobs -->
+    <div class="fluid-glow glow-left"></div>
+    <div class="fluid-glow glow-right"></div>
+
+    <main class="porto-section">
+      <!-- Toggle Menu -->
+      <div class="porto-toggle-container reveal active">
+        <div class="porto-toggle-bg">
+          <button class="porto-toggle-btn active">Portofolio Foto</button>
+          <button class="porto-toggle-btn">Portofolio Video</button>
+        </div>
+      </div>
+
+      <!-- Category Filters -->
+      <div class="porto-filters reveal active">
+        <button class="porto-filter-btn active" data-category="semua">Semua Kategori</button>
+        <?php if ($categories) foreach ($categories as $cat) : ?>
+          <button class="porto-filter-btn" data-category="<?php echo esc_attr($cat->slug); ?>"><?php echo esc_html($cat->nama); ?></button>
+        <?php endforeach; ?>
+      </div>
+
+      <!-- Search & Sort -->
+      <div class="porto-controls-area reveal active">
+        <div class="porto-search-wrap">
+          <input type="text" class="porto-search-input" placeholder="Cari nama, lokasi, atau tags...">
+          <button class="porto-search-btn">CARI</button>
+        </div>
+        <div class="porto-sort-wrap">
+          <select class="porto-sort-select">
+            <option value="terbaru">Postingan Terbaru</option>
+            <option value="terlama">Postingan Terlama</option>
+            <option value="populer">Terpopuler</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div class="porto-grid" id="portfolio-grid-container">
+        <!-- Will be loaded dynamically via AJAX -->
+      </div>
+
+      <!-- Load More Button -->
+      <div class="porto-load-wrap">
+        <button class="porto-btn-outline" id="portfolio-load-more">MUAT LEBIH BANYAK</button>
+      </div>
+    </main>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('portfolio_content', 'render_portfolio_content_shortcode');

@@ -46,5 +46,5 @@ $cfg['FirstLevelNavigationItems']	= 200;	// same
 //$cfg['ArbitraryServerRegexp']		= 'Restrict login to MySQL serverDocumentation Restricts the MySQL servers the user can enter when a login to an arbitrary MySQL server is enabled by matching the IP or hostname of the MySQL server to the given regular expression.';
 
 //disable errors if needed
-$cfg['SendErrorReports'] 			= 'never';
+$cfg["SendErrorReports"] = 'ask';
 ?>
