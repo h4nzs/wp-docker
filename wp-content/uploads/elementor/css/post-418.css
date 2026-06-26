@@ -1,0 +1,21 @@
+.elementor-widget-heading .elementor-heading-title{font-family:var( --e-global-typography-primary-font-family ), Sans-serif;font-weight:var( --e-global-typography-primary-font-weight );color:var( --e-global-color-primary );}.elementor-418 .elementor-element.elementor-element-23b2c41e{text-align:center;}.elementor-418 .elementor-element.elementor-element-23b2c41e .elementor-heading-title{font-family:"Roboto", Sans-serif;font-weight:600;}.elementor-widget-text-editor{font-family:var( --e-global-typography-text-font-family ), Sans-serif;font-weight:var( --e-global-typography-text-font-weight );color:var( --e-global-color-text );}.elementor-widget-text-editor.elementor-drop-cap-view-stacked .elementor-drop-cap{background-color:var( --e-global-color-primary );}.elementor-widget-text-editor.elementor-drop-cap-view-framed .elementor-drop-cap, .elementor-widget-text-editor.elementor-drop-cap-view-default .elementor-drop-cap{color:var( --e-global-color-primary );border-color:var( --e-global-color-primary );}/* Start custom CSS for heading, class: .elementor-element-23b2c41e */.judul-garis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.judul-garis:before,
+.judul-garis:after {
+  content: "";
+  width: 100px;
+  height: 2px;
+}
+
+.judul-garis:before {
+  background: linear-gradient(to right, transparent, #d4af37);
+}
+
+.judul-garis:after {
+  background: linear-gradient(to left, transparent, #d4af37);
+}/* End custom CSS */
