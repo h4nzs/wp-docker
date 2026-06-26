@@ -26,8 +26,8 @@ $cfg['Servers'][$i]['auth_type']	= 'signon'; //cookie | signon | ...
 //$cfg['LoginCookieValidity']			= 14400;
 $cfg['Servers'][$i]['SignonSession']= 'SignonSession';
 $cfg['SessionSavePath'] = sys_get_temp_dir(); $cfg['Servers'][$i]['SessionSavePath'] = $cfg['SessionSavePath'];
-$cfg['Servers'][$i]['SignonURL']    = 'https://profesional-indonesia.com/wp-admin/?rand=50761314&goto_wp_phpmyadmin=1';
-$cfg['Servers'][$i]['LogoutURL']    = 'https://profesional-indonesia.com/wp-admin/?rand=48090266&pma_logout=1';
+$cfg['Servers'][$i]['SignonURL']    = 'http://localhost:8080/wp-admin/?rand=50761314&goto_wp_phpmyadmin=1';
+$cfg['Servers'][$i]['LogoutURL']    = 'http://localhost:8080/wp-admin/?rand=48090266&pma_logout=1';
 //$cfg['Servers'][$i]['user']		= 'User for config authDocumentation Leave empty if not using config auth.';
 //$cfg['Servers'][$i]['password']	= 'Password for config authDocumentation Leave empty if not using config auth.';
 $cfg['Servers'][$i]['DisableIS']	= true;  //disable information schema

@@ -1,0 +1,21 @@
+.elementor-widget-heading .elementor-heading-title{font-family:var( --e-global-typography-primary-font-family ), Sans-serif;font-weight:var( --e-global-typography-primary-font-weight );color:var( --e-global-color-primary );}.elementor-427 .elementor-element.elementor-element-616dc776{text-align:center;}.elementor-427 .elementor-element.elementor-element-616dc776 .elementor-heading-title{font-family:"Roboto", Sans-serif;font-weight:600;}.elementor-widget-text-editor{font-family:var( --e-global-typography-text-font-family ), Sans-serif;font-weight:var( --e-global-typography-text-font-weight );color:var( --e-global-color-text );}.elementor-widget-text-editor.elementor-drop-cap-view-stacked .elementor-drop-cap{background-color:var( --e-global-color-primary );}.elementor-widget-text-editor.elementor-drop-cap-view-framed .elementor-drop-cap, .elementor-widget-text-editor.elementor-drop-cap-view-default .elementor-drop-cap{color:var( --e-global-color-primary );border-color:var( --e-global-color-primary );}.elementor-427 .elementor-element.elementor-element-733864e .elementor-wrapper{--video-aspect-ratio:1.77777;}.elementor-widget-author-box .elementor-author-box__name{color:var( --e-global-color-secondary );font-family:var( --e-global-typography-primary-font-family ), Sans-serif;font-weight:var( --e-global-typography-primary-font-weight );}.elementor-widget-author-box .elementor-author-box__bio{color:var( --e-global-color-text );font-family:var( --e-global-typography-text-font-family ), Sans-serif;font-weight:var( --e-global-typography-text-font-weight );}.elementor-widget-author-box .elementor-author-box__button{color:var( --e-global-color-secondary );border-color:var( --e-global-color-secondary );font-family:var( --e-global-typography-accent-font-family ), Sans-serif;font-weight:var( --e-global-typography-accent-font-weight );}.elementor-widget-author-box .elementor-author-box__button:hover{border-color:var( --e-global-color-secondary );color:var( --e-global-color-secondary );}.elementor-427 .elementor-element.elementor-element-6e378d7 .elementor-author-box__name{font-family:"Roboto", Sans-serif;font-size:20px;font-weight:600;}.elementor-427 .elementor-element.elementor-element-440c3c1 .elementor-wrapper{--video-aspect-ratio:1.77777;}.elementor-427 .elementor-element.elementor-element-4d657a6 .elementor-author-box__name{font-family:"Roboto", Sans-serif;font-size:20px;font-weight:600;}.elementor-427 .elementor-element.elementor-element-31818a4 .elementor-wrapper{--video-aspect-ratio:1.77777;}.elementor-427 .elementor-element.elementor-element-f9912f4 .elementor-author-box__name{font-family:"Roboto", Sans-serif;font-size:20px;font-weight:600;}.elementor-427 .elementor-element.elementor-element-464ec70 .elementor-wrapper{--video-aspect-ratio:1.77777;}.elementor-427 .elementor-element.elementor-element-3ea0c4b .elementor-author-box__name{font-family:"Roboto", Sans-serif;font-size:20px;font-weight:600;}.elementor-427 .elementor-element.elementor-element-de447e2 .elementor-wrapper{--video-aspect-ratio:1.77777;}.elementor-427 .elementor-element.elementor-element-384a4ae .elementor-author-box__name{font-family:"Roboto", Sans-serif;font-size:20px;font-weight:600;}.elementor-427 .elementor-element.elementor-element-d503e55{--spacer-size:50px;}.elementor-widget-image .widget-image-caption{color:var( --e-global-color-text );font-family:var( --e-global-typography-text-font-family ), Sans-serif;font-weight:var( --e-global-typography-text-font-weight );}.elementor-427 .elementor-element.elementor-element-4657073 .elementor-author-box__name{font-family:"Roboto", Sans-serif;font-size:20px;font-weight:600;}/* Start custom CSS for heading, class: .elementor-element-616dc776 */.judul-garis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.judul-garis:before,
+.judul-garis:after {
+  content: "";
+  width: 100px;
+  height: 2px;
+}
+
+.judul-garis:before {
+  background: linear-gradient(to right, transparent, #d4af37);
+}
+
+.judul-garis:after {
+  background: linear-gradient(to left, transparent, #d4af37);
+}/* End custom CSS */
