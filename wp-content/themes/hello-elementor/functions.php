@@ -8030,9 +8030,10 @@ add_action('add_meta_boxes', 'lx_sidebar_ad_meta_box');
 function lx_sidebar_ad_meta_box_html($post) {
     wp_nonce_field('lx_sidebar_ad_save', 'lx_sidebar_ad_nonce');
 
-    $image = get_post_meta($post->ID, '_sidebar_ad_image', true);
-    $link  = get_post_meta($post->ID, '_sidebar_ad_link', true);
-    $active = get_post_meta($post->ID, '_sidebar_ad_active', true);
+    $image   = get_post_meta($post->ID, '_sidebar_ad_image', true);
+    $link    = get_post_meta($post->ID, '_sidebar_ad_link', true);
+    $caption = get_post_meta($post->ID, '_sidebar_ad_caption', true);
+    $active  = get_post_meta($post->ID, '_sidebar_ad_active', true);
     ?>
     <p>
         <label for="lx_sidebar_ad_image" style="font-weight:600;">URL Gambar Iklan:</label>
@@ -8047,6 +8048,11 @@ function lx_sidebar_ad_meta_box_html($post) {
         <img src="<?php echo esc_url($image); ?>" style="width:100%;height:auto;border-radius:4px;border:1px solid #ddd;">
     </p>
     <?php endif; ?>
+    <p style="margin-top:12px;">
+        <label for="lx_sidebar_ad_caption" style="font-weight:600;">Judul / Caption:</label>
+        <input type="text" id="lx_sidebar_ad_caption" name="lx_sidebar_ad_caption"
+               value="<?php echo esc_attr($caption); ?>" style="width:100%;margin-top:5px;" placeholder="Mis: Promo Spesial" />
+    </p>
     <p style="margin-top:12px;">
         <label for="lx_sidebar_ad_link" style="font-weight:600;">Link Tujuan (Opsional):</label>
         <input type="url" id="lx_sidebar_ad_link" name="lx_sidebar_ad_link"
@@ -8086,9 +8092,10 @@ function lx_sidebar_ad_save_meta($post_id) {
     if (!current_user_can('edit_post', $post_id)) return;
 
     $fields = [
-        '_sidebar_ad_image'  => 'esc_url_raw',
-        '_sidebar_ad_link'   => 'esc_url_raw',
-        '_sidebar_ad_active' => fn($v) => isset($_POST['lx_sidebar_ad_active']) ? '1' : '0',
+        '_sidebar_ad_image'   => 'esc_url_raw',
+        '_sidebar_ad_link'    => 'esc_url_raw',
+        '_sidebar_ad_caption' => 'sanitize_text_field',
+        '_sidebar_ad_active'  => fn($v) => isset($_POST['lx_sidebar_ad_active']) ? '1' : '0',
     ];
 
     foreach ($fields as $meta_key => $sanitize) {
@@ -8124,9 +8131,10 @@ function render_article_sidebar_content($content) {
     }
 
     // 2. Sidebar ad — per artikel via post meta
-    $ad_image = get_post_meta(get_the_ID(), '_sidebar_ad_image', true);
-    $ad_link  = get_post_meta(get_the_ID(), '_sidebar_ad_link', true);
-    $ad_active = get_post_meta(get_the_ID(), '_sidebar_ad_active', true) === '1' && !empty($ad_image);
+    $ad_image   = get_post_meta(get_the_ID(), '_sidebar_ad_image', true);
+    $ad_link    = get_post_meta(get_the_ID(), '_sidebar_ad_link', true);
+    $ad_caption = get_post_meta(get_the_ID(), '_sidebar_ad_caption', true);
+    $ad_active  = get_post_meta(get_the_ID(), '_sidebar_ad_active', true) === '1' && !empty($ad_image);
 
     ?>
     <aside class="lx-article-sidebar">
@@ -8165,6 +8173,9 @@ function render_article_sidebar_content($content) {
                 </a>
             <?php else : ?>
                 <img src="<?php echo esc_url($ad_image); ?>" alt="Iklan" style="width:100%;height:auto;border-radius:8px;">
+            <?php endif; ?>
+            <?php if ($ad_caption) : ?>
+                <p style="color:#ccc;font-size:13px;margin:10px 0 0;line-height:1.4;"><?php echo esc_html($ad_caption); ?></p>
             <?php endif; ?>
         </div>
         <?php endif; ?>
