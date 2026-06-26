@@ -1,0 +1,364 @@
+/* Base Styles */
+:root {
+  --bg: #09080c;
+  --card-bg: #121017;
+  --gold: #ffd275;
+  --orange: #b38622;
+  --accent: #d4af37;
+  --text-main: #f3f1f6;
+  --text-dim: #9b98a6;
+  --border: rgba(212, 134, 34, 0.08);
+  --grad-primary: linear-gradient(135deg, #b38622 0%, #ffd275 100%);
+  --font-heading: 'Plus Jakarta Sans', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background-color: var(--bg) !important;
+  color: var(--text-main) !important;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  position: relative;
+  line-height: 1.6;
+}
+
+/* Liquid blob background glows */
+.fluid-glow {
+  position: absolute; border-radius: 50%;
+  filter: blur(130px); z-index: 0; pointer-events: none; opacity: 0.15;
+}
+.glow-left { top: 10%; left: -100px; width: 450px; height: 450px; background: var(--orange); }
+.glow-right { top: 50%; right: -150px; width: 500px; height: 500px; background: var(--gold); }
+
+h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: 800; }
+
+/* Floating navbar styles inherited from main style.css */
+
+/* WhatsApp Floating Wrapper */
+.wa-float-wrapper {
+  position: fixed; bottom: 30px; right: 30px; z-index: 2000;
+  display: flex; align-items: center; justify-content: flex-end;
+}
+.wa-pulse-bg {
+  position: absolute;
+  width: 64px; height: 64px; border-radius: 50%;
+  z-index: 1; pointer-events: none; opacity: 0.45; background-color: #25D366;
+  animation: wa-glow-pulse 2s infinite ease-out, wa-pulse-color 6s infinite ease-in-out;
+  right: 0;
+}
+.wa-float-pill {
+  position: relative; z-index: 2;
+  width: 64px; height: 64px; border-radius: 50px;
+  background-color: #25D366;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden; white-space: nowrap; padding: 0 17px; gap: 0;
+  animation: wa-button-pulse 6s infinite ease-in-out;
+}
+.wa-float-pill::before {
+  content: ""; position: absolute; top: -60%; left: -60%;
+  width: 220%; height: 220%; background-color: var(--accent);
+  transform: rotate(-45deg) translateY(-120%);
+  z-index: 1; pointer-events: none;
+  animation: wa-slide-diagonal 6s infinite ease-in-out;
+}
+.wa-icon {
+  font-size: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  position: relative; z-index: 2; animation: wa-content-color 6s infinite ease-in-out;
+}
+.wa-text {
+  font-family: var(--font-heading); font-size: 15px; font-weight: 700;
+  max-width: 0; opacity: 0; transition: max-width 0.35s ease, opacity 0.2s ease, margin-left 0.35s ease;
+  flex-shrink: 0; position: relative; z-index: 2;
+  animation: wa-content-color 6s infinite ease-in-out;
+}
+.wa-float-pill:hover {
+  animation: none; background-color: #25D366; color: #ffffff;
+  transform: scale(1.05); width: 195px; padding: 0 24px 0 20px;
+  box-shadow: 0 10px 35px rgba(37, 211, 102, 0.6);
+}
+.wa-float-pill:hover::before { animation: none; transform: rotate(-45deg) translateY(-120%); opacity: 0; }
+.wa-float-pill:hover .wa-icon, .wa-float-pill:hover .wa-text { animation: none; color: #ffffff; }
+.wa-float-pill:hover .wa-text { max-width: 130px; opacity: 1; margin-left: 12px; }
+
+@keyframes wa-glow-pulse {
+  0% { transform: scale(1); opacity: 0.5; box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+  70% { transform: scale(1.6); opacity: 0; box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+  100% { transform: scale(1); opacity: 0; box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+@keyframes wa-button-pulse {
+  0%, 15%, 85%, 100% { transform: scale(1); box-shadow: 0 8px 30px rgba(37, 211, 102, 0.45); }
+  40%, 60% { transform: scale(1.08); box-shadow: 0 8px 30px rgba(212, 175, 55, 0.6); }
+}
+@keyframes wa-slide-diagonal {
+  0%, 15% { transform: rotate(-45deg) translateY(-120%); }
+  40%, 60% { transform: rotate(-45deg) translateY(0%); }
+  85%, 100% { transform: rotate(-45deg) translateY(-120%); }
+}
+@keyframes wa-content-color {
+  0%, 27.4% { color: #ffffff; }
+  27.5%, 72.5% { color: #121017; }
+  72.6%, 100% { color: #ffffff; }
+}
+@keyframes wa-pulse-color {
+  0%, 27.4% { background-color: #25D366; }
+  27.5%, 72.5% { background-color: var(--accent); }
+  72.6%, 100% { background-color: #25D366; }
+}
+
+/* ===== FOOTER ===== */
+footer {
+  background: #070609; padding: 80px 40px 40px;
+  border-top: 1px solid var(--border);
+  position: relative; z-index: 1;
+}
+.footer-grid {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 50px;
+  max-width: 1100px; margin: 0 auto 60px;
+}
+.footer-brand p { color: var(--text-dim); font-size: 13.5px; line-height: 1.7; margin: 20px 0; max-width: 280px; }
+.footer-socials { display: flex; gap: 12px; }
+.footer-socials a {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-dim); text-decoration: none;
+  transition: all 0.3s;
+}
+.footer-socials a:hover { border-color: var(--gold); color: var(--gold); background: rgba(255, 179, 71, 0.04); }
+.footer-col h5 { color: #fff; font-size: 14.5px; margin-bottom: 24px; font-weight: 700; font-family: var(--font-heading); }
+.footer-col a { display: block; color: var(--text-dim); text-decoration: none; font-size: 13.5px; margin-bottom: 12px; transition: color 0.2s; }
+.footer-col a:hover { color: var(--gold); }
+.footer-bottom {
+  max-width: 1100px; margin: 0 auto; padding-top: 30px; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  color: var(--text-dim); font-size: 13px;
+}
+
+/* Scroll Reveal Animations */
+.reveal {
+  opacity: 0; transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.reveal.active { opacity: 1; transform: translateY(0); }
+.reveal-zoom {
+  opacity: 0; transform: scale(0.9);
+  transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.reveal-zoom.active { opacity: 1; transform: scale(1); }
+
+/* =========================================
+   PORTOFOLIO SPECIFIC STYLES
+   ========================================= */
+.porto-section {
+  padding: 160px 40px 100px;
+  max-width: 1200px; margin: 0 auto;
+  position: relative; z-index: 1;
+}
+.porto-header {
+  text-align: center; margin-bottom: 40px;
+}
+.porto-header h1 {
+  font-size: 48px; color: #fff; margin-bottom: 12px;
+}
+.porto-header p {
+  color: var(--text-dim); font-size: 16px;
+}
+
+/* Toggle Menu */
+.porto-toggle-container {
+  display: flex; justify-content: center; margin-bottom: 40px;
+}
+.porto-toggle-bg {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px; border-radius: 100px;
+  display: inline-flex; gap: 8px;
+}
+.porto-toggle-btn {
+  padding: 14px 32px;
+  border-radius: 100px;
+  font-family: var(--font-heading); font-size: 14.5px; font-weight: 700;
+  color: var(--text-dim);
+  text-decoration: none; cursor: pointer; transition: all 0.3s;
+  border: none; background: transparent;
+}
+.porto-toggle-btn.active {
+  background: #f3f1f6;
+  color: #121017;
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.15);
+}
+.porto-toggle-btn:not(.active):hover {
+  color: #fff;
+}
+
+/* Category Filters */
+.porto-filters {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 50px;
+}
+.porto-filter-btn {
+  padding: 10px 22px;
+  border-radius: 100px;
+  font-family: var(--font-heading); font-size: 13.5px; font-weight: 600;
+  background: #1e1c24;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer; transition: all 0.3s;
+}
+.porto-filter-btn:hover {
+  background: #2a2733;
+}
+.porto-filter-btn.active {
+  background: var(--grad-primary);
+  color: #121017;
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(255, 179, 71, 0.25);
+}
+
+/* Search and Sort */
+.porto-controls-area {
+  display: flex; flex-direction: column; align-items: center; margin-bottom: 50px;
+}
+.porto-search-wrap {
+  display: flex; width: 100%; max-width: 800px;
+  background: linear-gradient(145deg, #16131d, #100e14);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 2px 2px 5px rgba(255,255,255,0.02), 0 10px 30px rgba(0,0,0,0.4);
+  margin-bottom: 20px;
+}
+.porto-search-input {
+  flex: 1; padding: 18px 24px;
+  background: transparent; border: none; outline: none;
+  color: var(--text-main); font-size: 15px; font-family: 'Inter', sans-serif;
+}
+.porto-search-input::placeholder {
+  color: var(--text-dim);
+}
+.porto-search-btn {
+  padding: 0 36px;
+  background: var(--grad-primary);
+  border: none;
+  color: #121017; font-family: var(--font-heading); font-size: 14.5px; font-weight: 800;
+  cursor: pointer; transition: opacity 0.3s;
+}
+.porto-search-btn:hover {
+  opacity: 0.9;
+}
+
+.porto-sort-wrap {
+  display: flex; justify-content: flex-end; width: 100%; max-width: 800px;
+}
+.porto-sort-select {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif; font-size: 13px;
+  outline: none; cursor: pointer;
+}
+.porto-sort-select option {
+  background: var(--bg);
+  color: var(--text-main);
+}
+
+/* Grid Layout */
+.porto-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; max-width: 1200px; margin: 0 auto;
+}
+
+/* Card */
+.porto-card {
+  background: linear-gradient(145deg, #16131d, #100e14);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: inset 2px 2px 5px rgba(255,255,255,0.02), 4px 4px 15px rgba(0,0,0,0.3);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  cursor: pointer;
+}
+.porto-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--gold);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+}
+.porto-card-img {
+  width: 100%; height: 220px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.porto-card:hover .porto-card-img {
+  transform: scale(1.05);
+}
+.porto-card-img-wrap {
+  overflow: hidden; position: relative;
+}
+.porto-card-content {
+  padding: 20px;
+  display: flex; flex-direction: column; flex: 1;
+}
+.porto-card-title {
+  color: var(--gold);
+  font-family: var(--font-heading);
+  font-size: 16px; font-weight: 700;
+  line-height: 1.4; margin-bottom: 16px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  flex: 1;
+}
+.porto-card-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 12px;
+}
+.porto-card-author {
+  font-size: 12.5px; color: var(--text-main); display: flex; align-items: center; gap: 6px; font-weight: 500;
+}
+.porto-card-author i { color: var(--text-dim); font-size: 11px; }
+.porto-card-date {
+  font-size: 12px; color: var(--text-dim);
+}
+
+/* Load More Button Wrapper */
+.porto-load-wrap {
+  display: flex; justify-content: center; margin-top: 50px;
+}
+.porto-btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--gold);
+  padding: 14px 36px;
+  border-radius: 100px;
+  font-family: var(--font-heading);
+  font-weight: 700; font-size: 14px;
+  cursor: pointer; transition: all 0.3s;
+}
+.porto-btn-outline:hover {
+  background: var(--grad-primary);
+  color: #121017;
+  border-color: transparent;
+  box-shadow: 0 5px 20px rgba(255, 179, 71, 0.2);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1200px) {
+  .porto-grid { grid-template-columns: repeat(3, 1fr); padding: 0 20px; }
+}
+@media (max-width: 1024px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 900px) {
+  .porto-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .porto-grid { grid-template-columns: 1fr; }
+  .porto-toggle-btn { padding: 12px 20px; font-size: 13px; }
+  .porto-search-wrap { flex-direction: column; border-radius: 12px; }
+  .porto-search-btn { padding: 16px; border-radius: 0 0 12px 12px; }
+  .porto-search-input { padding: 16px; border-radius: 12px 12px 0 0; }
+  .footer-grid { grid-template-columns: 1fr; gap: 30px; }
+  .footer-bottom { flex-direction: column; gap: 14px; text-align: center; }
+  .porto-section { padding-left: 24px; padding-right: 24px; }
+}

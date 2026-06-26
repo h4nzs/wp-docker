@@ -15,3 +15,410 @@
 	Tags: accessibility-ready, flexible-header, custom-colors, custom-menu, custom-logo, featured-images, rtl-language-support, threaded-comments, translation-ready,
 */
 /* PERSONEL REGISTER FORM */
+
+/* Custom variables for header and footer */
+:root {
+  --bg: #09080c;
+  --card-bg: #121017;
+  --gold: #ffd275;
+  --orange: #b38622;
+  --accent: #d4af37;
+  --text-main: #f3f1f6;
+  --text-dim: #9b98a6;
+  --border: rgba(212, 134, 34, 0.08);
+  --grad-primary: linear-gradient(135deg, #b38622 0%, #ffd275 100%);
+  --font-heading: 'Plus Jakarta Sans', sans-serif;
+}
+
+body {
+  background-color: var(--bg) !important;
+  color: var(--text-main) !important;
+}
+
+/* ===== FLOATING NAVBAR PILL ===== */
+.navbar-container {
+  position: fixed; top: 30px; left: 0; right: 0;
+  z-index: 1000;
+  padding: 12px 24px;
+  display: flex; justify-content: center;
+  pointer-events: none;
+}
+.navbar {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; max-width: 1100px;
+  padding: 8px 24px;
+  background: rgba(18, 16, 23, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+}
+.logo {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 15px; font-weight: 800; color: #fff;
+  letter-spacing: 0.5px;
+}
+.logo span {
+  background: var(--grad-primary);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.logo-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
+.nav-links {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  align-items: center;
+  gap: 24px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nav-links li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.nav-links a {
+  color: #9b98a6 !important;
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-size: 13.5px; font-weight: 600;
+  transition: color 0.3s;
+}
+.nav-links a:hover { color: #fff !important; text-decoration: none; }
+.nav-cta {
+  padding: 8px 20px;
+  border-radius: 50px;
+  background: var(--grad-primary);
+  color: #121017 !important;
+  font-family: var(--font-heading);
+  font-weight: 700; font-size: 13.5px;
+  text-decoration: none;
+  box-shadow: 0 5px 15px rgba(255, 122, 26, 0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.nav-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(255, 122, 26, 0.4); text-decoration: none; }
+
+/* Menu Toggle / Hamburger styles */
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 22px;
+  height: 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1001;
+}
+.menu-toggle .bar {
+  width: 100%;
+  height: 2px;
+  background-color: #fff;
+  border-radius: 2px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nav-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.mobile-cta-li {
+  display: none;
+  width: 100%;
+  text-align: center;
+  margin-top: 10px;
+}
+.nav-cta-mobile {
+  display: block;
+  width: 100%;
+  padding: 12px 24px;
+  border-radius: 50px;
+  background: var(--grad-primary);
+  color: #121017 !important;
+  font-family: var(--font-heading);
+  font-weight: 700; font-size: 14px;
+  text-decoration: none;
+  box-shadow: 0 5px 15px rgba(255, 122, 26, 0.25);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== FOOTER ===== */
+footer {
+  background: #070609; padding: 80px 40px 40px;
+  border-top: 1px solid var(--border);
+}
+.footer-grid {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 50px;
+  max-width: 1100px; margin: 0 auto 60px;
+}
+.footer-brand p { color: var(--text-dim); font-size: 13.5px; line-height: 1.7; margin: 20px 0; max-width: 280px; }
+.footer-socials { display: flex; gap: 12px; }
+.footer-socials a {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-dim); text-decoration: none;
+  transition: all 0.3s;
+}
+.footer-socials a:hover { border-color: var(--gold); color: var(--gold); background: rgba(255, 179, 71, 0.04); }
+
+.footer-col h5 { color: #fff; font-size: 14.5px; margin-bottom: 24px; font-weight: 700; font-family: var(--font-heading); }
+.footer-col a { display: block; color: var(--text-dim); text-decoration: none; font-size: 13.5px; margin-bottom: 12px; transition: color 0.2s; }
+.footer-col a:hover { color: var(--gold); text-decoration: none; }
+
+.footer-bottom {
+  max-width: 1100px; margin: 0 auto; padding-top: 30px; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  color: var(--text-dim); font-size: 13px;
+}
+
+/* WhatsApp Floating Wrapper */
+.wa-float-wrapper {
+  position: fixed; bottom: 30px; right: 30px; z-index: 1100;
+  display: flex; align-items: center; justify-content: flex-end;
+}
+/* Pulsing Background Wave */
+.wa-pulse-bg {
+  position: absolute;
+  width: 64px; height: 64px; border-radius: 50%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.45;
+  background-color: #25D366;
+  /* Combines 2s radar scale pulse with 6s color sync slide */
+  animation: 
+    wa-glow-pulse 2s infinite ease-out,
+    wa-pulse-color 6s infinite ease-in-out;
+  right: 0;
+}
+/* Main Interactive Button */
+.wa-float-pill {
+  position: relative; z-index: 2;
+  width: 64px; height: 64px; border-radius: 50px;
+  background-color: #25D366; /* Base Green */
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 0 17px;
+  gap: 0;
+  /* Scale, shadow and state pulsing */
+  animation: wa-button-pulse 6s infinite ease-in-out;
+}
+/* Sliding Gold Background Overlay */
+.wa-float-pill::before {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background-color: var(--accent); /* Gold color */
+  transform: rotate(-45deg) translateY(-120%); /* Start off-screen top-left */
+  z-index: 1;
+  pointer-events: none;
+  /* Smooth diagonal sliding animation */
+  animation: wa-slide-diagonal 6s infinite ease-in-out;
+}
+.wa-icon {
+  font-size: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  /* Synchronized color transition */
+  animation: wa-content-color 6s infinite ease-in-out;
+}
+.wa-text {
+  font-family: var(--font-heading);
+  font-size: 15px; font-weight: 700;
+  max-width: 0; opacity: 0;
+  transition: max-width 0.35s ease, opacity 0.2s ease, margin-left 0.35s ease;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  /* Synchronized color transition */
+  animation: wa-content-color 6s infinite ease-in-out;
+}
+.wa-float-pill:hover {
+  animation: none; /* Pause pulsing when hovered */
+  background-color: #25D366; /* Lock to WhatsApp green on interaction */
+  color: #ffffff;
+  transform: scale(1.05); /* Stable expanded state */
+  width: 195px;
+  padding: 0 24px 0 20px;
+  box-shadow: 0 10px 35px rgba(37, 211, 102, 0.6);
+}
+.wa-float-pill:hover::before {
+  animation: none;
+  transform: rotate(-45deg) translateY(-120%);
+  opacity: 0;
+}
+.wa-float-pill:hover .wa-icon,
+.wa-float-pill:hover .wa-text {
+  animation: none; /* Stop color shifting on hover */
+  color: #ffffff; /* Lock to white text/icon */
+}
+.wa-float-pill:hover .wa-text {
+  max-width: 130px; opacity: 1;
+  margin-left: 12px;
+}
+
+/* Pulsing Gelombang Animation */
+@keyframes wa-glow-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+  }
+  70% {
+    transform: scale(1.6);
+    opacity: 0;
+    box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+  }
+}
+
+/* Pulsing Container Animation (Scale + Box Shadow Sync) */
+@keyframes wa-button-pulse {
+  0%, 15%, 85%, 100% {
+    transform: scale(1);
+    box-shadow: 0 8px 30px rgba(37, 211, 102, 0.45);
+  }
+  40%, 60% {
+    transform: scale(1.08); /* Gentle scale up when gold covers */
+    box-shadow: 0 8px 30px rgba(212, 175, 55, 0.6);
+  }
+}
+
+/* Diagonal Sliding Animation */
+@keyframes wa-slide-diagonal {
+  0%, 15% {
+    /* Green state: Gold overlay is completely off-screen at top-left */
+    transform: rotate(-45deg) translateY(-120%);
+  }
+  40%, 60% {
+    /* Gold state: Gold overlay slides down and covers the button */
+    transform: rotate(-45deg) translateY(0%);
+  }
+  85%, 100% {
+    /* Return to Green state: Gold overlay slides back up-left to top-left */
+    transform: rotate(-45deg) translateY(-120%);
+  }
+}
+
+/* Content Color Interval Animation */
+@keyframes wa-content-color {
+  0%, 27.4% {
+    color: #ffffff; /* White text/icon on green background */
+  }
+  27.5%, 72.5% {
+    color: #121017; /* Dark text/icon on gold background */
+  }
+  72.6%, 100% {
+    color: #ffffff; /* White text/icon on green background */
+  }
+}
+
+/* Wave Color Sync Animation */
+@keyframes wa-pulse-color {
+  0%, 27.4% {
+    background-color: #25D366;
+  }
+  27.5%, 72.5% {
+    background-color: var(--accent); /* Sync to gold pulse */
+  }
+  72.6%, 100% {
+    background-color: #25D366;
+  }
+}
+
+@media (max-width: 900px) {
+  .menu-toggle {
+    display: flex;
+  }
+  .nav-links {
+    display: none !important;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    right: 24px;
+    left: 24px;
+    background: rgba(18, 16, 23, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 24px;
+    gap: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    z-index: 999;
+  }
+  .nav-links.active {
+    display: flex !important;
+    animation: fadeInDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  .nav-links li {
+    width: 100%;
+    text-align: center;
+  }
+  .nav-links a {
+    display: block;
+    padding: 10px 0;
+    font-size: 15px;
+  }
+  .mobile-cta-li {
+    display: block;
+  }
+  
+  /* Hamburger active state */
+  .menu-toggle.active .bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .menu-toggle.active .bar:nth-child(2) {
+    opacity: 0;
+  }
+  .menu-toggle.active .bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .navbar-container { padding: 8px 12px; }
+  .navbar { padding: 6px 16px; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 600px) {
+  .nav-right-actions .nav-cta {
+    display: none;
+  }
+  .footer-grid { grid-template-columns: 1fr; gap: 30px; }
+  .footer-bottom { flex-direction: column; gap: 14px; text-align: center; }
+}
