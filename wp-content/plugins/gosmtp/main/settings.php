@@ -289,6 +289,11 @@ function gosmtp_settings_page(){
 		do_action('gosmtp_pro_save_notification_settings');
 	}
 
+	// Save SmartRouting Settings
+	if(defined('GOSMTP_PRO_VERSION') && isset($_REQUEST['save_smart_routing_settings'])){
+		do_action('gosmtp_pro_save_smart_routing_settings');
+	}
+
 	// SMTP Settings
 	if(isset($_REQUEST['save_settings'])){
 

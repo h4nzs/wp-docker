@@ -6,6 +6,8 @@
  * @copyright 2025 Google LLC
  * @license   https://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  * @link      https://sitekit.withgoogle.com
+ *
+ * phpcs:disable PHPCS.Commenting.RequireDocTagDescription -- Pre-existing violations; tracked for follow-up cleanup.
  */
 
 namespace Google\Site_Kit\Core\Email_Reporting;
@@ -131,7 +133,7 @@ final class Email_Log {
 		$normalized = array();
 		$keys       = array(
 			'startDate'        => 'startDate',
-			'sendDate'         => 'endDate',
+			'endDate'          => 'endDate',
 			'compareStartDate' => 'compareStartDate',
 			'compareEndDate'   => 'compareEndDate',
 		);
@@ -203,7 +205,15 @@ final class Email_Log {
 			return null;
 		}
 
-		$timestamp = is_numeric( $value ) ? (int) $value : strtotime( $value );
+		if ( is_numeric( $value ) ) {
+			$timestamp = (int) $value;
+		} else {
+			// Parse date strings in site timezone for consistent round-tripping.
+			$timezone  = BC_Functions::wp_timezone();
+			$date      = date_create_immutable( $value, $timezone );
+			$timestamp = $date ? $date->getTimestamp() : false;
+		}
+
 		if ( empty( $timestamp ) || $timestamp < 0 ) {
 			return null;
 		}
@@ -573,7 +583,7 @@ final class Email_Log {
 	 * @return array Normalized timestamps keyed by meta field.
 	 */
 	protected static function normalize_reference_dates( array $raw_dates ) {
-		$keys       = array( 'startDate', 'sendDate', 'compareStartDate', 'compareEndDate' );
+		$keys       = array( 'startDate', 'endDate', 'compareStartDate', 'compareEndDate' );
 		$normalized = array();
 
 		foreach ( $keys as $key ) {
@@ -620,7 +630,12 @@ final class Email_Log {
 		if ( is_numeric( $raw_value ) ) {
 			$timestamp = $raw_value;
 		} else {
-			$timestamp = strtotime( $raw_value );
+			// Parse date strings in the site timezone so the resulting UTC
+			// timestamp represents the correct calendar day when converted
+			// back via format_reference_date().
+			$timezone  = BC_Functions::wp_timezone();
+			$date      = date_create_immutable( $raw_value, $timezone );
+			$timestamp = $date ? $date->getTimestamp() : false;
 		}
 
 		if ( false === $timestamp || $timestamp <= 0 ) {

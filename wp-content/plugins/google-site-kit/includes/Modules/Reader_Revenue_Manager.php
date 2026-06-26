@@ -6,6 +6,8 @@
  * @copyright 2024 Google LLC
  * @license   https://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  * @link      https://sitekit.withgoogle.com
+ *
+ * phpcs:disable PHPCS.Commenting.RequireDocTagDescription -- Pre-existing violations; tracked for follow-up cleanup.
  */
 
 namespace Google\Site_Kit\Modules;
@@ -517,7 +519,8 @@ final class Reader_Revenue_Manager extends Module implements Module_With_Scopes,
 		$content_policy_status = $publication->getContentPolicyStatus();
 
 		if ( $content_policy_status ) {
-			$new_settings['contentPolicyStatus'] = (array) $content_policy_status->toSimpleObject();
+			$new_settings['contentPolicyState'] = $content_policy_status->getContentPolicyState() ?? '';
+			$new_settings['policyInfoLink']     = $content_policy_status->getPolicyInfoLink() ?? '';
 		}
 
 		if ( $new_onboarding_state !== $onboarding_state ) {
@@ -593,7 +596,7 @@ final class Reader_Revenue_Manager extends Module implements Module_With_Scopes,
 		return array(
 			'slug'        => self::MODULE_SLUG,
 			'name'        => _x( 'Reader Revenue Manager', 'Service name', 'google-site-kit' ),
-			'description' => __( 'Reader Revenue Manager helps publishers grow, retain, and engage their audiences, creating new revenue opportunities', 'google-site-kit' ),
+			'description' => __( 'Add simple CTAs to your pages that ask readers to sign up for your newsletter, complete a survey, make a contribution, or subscribe', 'google-site-kit' ),
 			'homepage'    => 'https://publishercenter.google.com',
 		);
 	}
@@ -931,16 +934,13 @@ final class Reader_Revenue_Manager extends Module implements Module_With_Scopes,
 			);
 		}
 
-		if ( isset( $settings['contentPolicyStatus'] ) ) {
-			$content_policy_status = (array) $settings['contentPolicyStatus'];
-			$content_policy_state  = $content_policy_status['contentPolicyState'] ?? '';
+		$content_policy_state = $settings['contentPolicyState'] ?? '';
 
-			$debug_fields['reader_revenue_manager_content_policy_state'] = array(
-				'label' => __( 'Reader Revenue Manager: Content policy state', 'google-site-kit' ),
-				'value' => $content_policy_state,
-				'debug' => $content_policy_state,
-			);
-		}
+		$debug_fields['reader_revenue_manager_content_policy_state'] = array(
+			'label' => __( 'Reader Revenue Manager: Content policy state', 'google-site-kit' ),
+			'value' => $content_policy_state,
+			'debug' => $content_policy_state,
+		);
 
 		return $debug_fields;
 	}

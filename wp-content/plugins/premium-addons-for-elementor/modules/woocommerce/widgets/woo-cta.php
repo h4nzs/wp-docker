@@ -90,7 +90,7 @@ class Woo_CTA extends Widget_Base {
 	 * @since 1.0.0
 	 * @access public
 	 *
-	 * @return string Widget keywords.
+	 * @return array Widget keywords.
 	 */
 	public function get_keywords() {
 		return array( 'pa', 'premium woo cta', 'product', 'woocommerce', 'cart', 'wishlist', 'compare' );
@@ -2017,7 +2017,7 @@ class Woo_CTA extends Widget_Base {
 		}
 		?>
 
-		<img <?php echo wp_kses_post( $this->get_render_attribute_string( 'icon_img' ) ); ?>>
+		<img <?php $this->print_render_attribute_string( 'icon_img' ); ?>>
 
 		<?php
 	}
@@ -2292,7 +2292,10 @@ class Woo_CTA extends Widget_Base {
 							<tr><th>Product</th><th>Price</th><th>Quantity</th></tr>
 							<?php
 							foreach ( $child_products as $child_id ) {
-								$child_product  = wc_get_product( $child_id );
+								$child_product = wc_get_product( $child_id );
+								if ( ! $child_product ) {
+									continue;
+								}
 								$stock_quantity = $child_product->get_stock_quantity();
 								$max_stock      = $stock_quantity ? $stock_quantity : '';
 								if ( $max_stock && ! empty( $product_quantity_message ) ) {

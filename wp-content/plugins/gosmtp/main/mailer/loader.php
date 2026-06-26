@@ -248,6 +248,9 @@ class Loader{
 
 	public function get_from($from = ''){
 		global $phpmailer, $gosmtp;
+
+		// Get original from email for Smart Routing
+		$gosmtp->original_from = $from;
 		
 		$conn_id = $gosmtp->mailer->conn_id;
 		

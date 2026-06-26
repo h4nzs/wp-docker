@@ -2,9 +2,9 @@
 Contributors: softaculous, pagelayer
 Tags: smtp, wordpress smtp, gmail smtp, sendgrid smtp, aws smtp, gmail, outlook, zoho, aws, postmark, sparkpost, mail, mailer, phpmailer, wp_mail, email, mailgun, sendgrid, gmail, sendinblue, wp smtp, sendlayer
 Requires at least: 5.5
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 5.5
-Stable tag: 1.1.9
+Stable tag: 1.2.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -52,17 +52,25 @@ With Email Logging you view all emails sent from your site. This is necessary to
 You can resend any email, from the email log wizard. You can also resend multiple emails in bulk.
 
 === Notifications ===
+
 You can get notified about failed email delivery on your configured channel, we currently support Mail, Slack and Discord.
+
+=== Smart Routing ===
+
+Smart Routing dynamically selects SMTP providers based on content, isolating transactional alerts from marketing to ensure critical emails bypass filters.
+
 
 === Premium Features ===
 - Forward Emails
 - Email Reports
+- Notifications
+- Resend Email
+- Smart Routing
 
 === Coming Soon ===
 - Track Email Views
 - Track Clicks
 - Print Emails
-- Multi Email Provider Support
 - Multisite Support
 
 == Credits ==
@@ -87,6 +95,11 @@ Go To your WordPress install -> Plugins -> Add New Button -> In Search Box searc
 4. **Email Logs Wizard** check the emails sent with this wizard.
 
 == Changelog ==
+
+= 1.2.0 (April 13, 2026) =
+* [Pro-Feature] Smart Routing: Conditionally assign email providers based on message content for optimized delivery.
+* [Task] Tested with WordPress 7.0.
+
 = 1.1.9 (Feb 25, 2026) =
 * [Pro-Feature] Support for notification service Pushover has been added.
 * [Pro-Feature] Support for notification service Webhook has been added.

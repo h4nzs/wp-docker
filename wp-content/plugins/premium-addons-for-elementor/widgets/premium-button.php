@@ -127,7 +127,8 @@ class Premium_Button extends Widget_Base {
 			$settings = $this->get_settings();
 
 			if ( 'yes' === $settings['draw_svg'] ) {
-				array_push( $scripts, 'pa-tweenmax', 'pa-motionpath' );
+				$scripts[] = 'pa-tweenmax';
+				$scripts[] = 'pa-motionpath';
 			}
 
 			if ( 'animation' === $settings['icon_type'] || 'animation' === $settings['slide_icon_type'] ) {
@@ -977,7 +978,6 @@ class Premium_Button extends Widget_Base {
 				'type'      => Controls_Manager::SLIDER,
 				'condition' => array(
 					'premium_button_icon_switcher' => 'yes',
-					// 'premium_button_icon_position' => 'before',
 					'premium_button_hover_effect'  => 'style3',
 				),
 				'range'     => array(
@@ -1067,7 +1067,7 @@ class Premium_Button extends Widget_Base {
 		);
 
 		// Allow admins only to add JS.
-		if ( current_user_can( 'administrator' ) ) {
+		if ( current_user_can( 'manage_options' ) ) {
 			$this->add_control(
 				'premium_button_event_switcher',
 				array(
@@ -1842,7 +1842,7 @@ class Premium_Button extends Widget_Base {
 		?>
 
 
-		<a <?php echo wp_kses_post( $this->get_render_attribute_string( 'button' ) ); ?>>
+		<a <?php $this->print_render_attribute_string( 'button' ); ?>>
 			<div class="premium-button-text-icon-wrapper">
 				<?php if ( 'yes' === $settings['premium_button_icon_switcher'] ) : ?>
 
@@ -1850,24 +1850,21 @@ class Premium_Button extends Widget_Base {
 						<?php if ( 'icon' === $icon_type ) : ?>
 							<?php
 
-								echo Helper_Functions::get_svg_by_icon(
-									$settings['premium_button_icon_selection_updated'],
-									$this->get_render_attribute_string( 'icon' )
-								);// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo Helper_Functions::get_svg_by_icon( $settings['premium_button_icon_selection_updated'], $this->get_render_attribute_string( 'icon' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_svg_by_icon() returns sanitized inline SVG/icon markup.
 
 							?>
 						<?php elseif ( 'svg' === $icon_type ) : ?>
-							<div <?php echo wp_kses_post( $this->get_render_attribute_string( 'icon' ) ); ?>>
-								<?php echo Helper_Functions::sanitize_svg( $this->get_settings_for_display( 'custom_svg' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitize_svg passes through wp_kses with a strict SVG allowlist ?>
+							<div <?php $this->print_render_attribute_string( 'icon' ); ?>>
+								<?php echo Helper_Functions::sanitize_svg( $this->get_settings_for_display( 'custom_svg' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitize_svg() returns wp_kses-sanitized SVG markup. ?>
 							</div>
 						<?php else : ?>
-							<div <?php echo wp_kses_post( $this->get_render_attribute_string( 'lottie' ) ); ?>></div>
+							<div <?php $this->print_render_attribute_string( 'lottie' ); ?>></div>
 						<?php endif; ?>
 					<?php endif; ?>
 				<?php endif; ?>
 
 				<?php if ( ! empty( $button_text ) ) : ?>
-					<span <?php echo wp_kses_post( $this->get_render_attribute_string( 'premium_button_text' ) ); ?>>
+					<span <?php $this->print_render_attribute_string( 'premium_button_text' ); ?>>
 						<?php echo wp_kses_post( $button_text ); ?>
 					</span>
 				<?php endif; ?>
@@ -1881,13 +1878,13 @@ class Premium_Button extends Widget_Base {
 							Icons_Manager::render_icon( $settings['premium_button_style4_icon_selection_updated'], array( 'aria-hidden' => 'true' ) );
 						?>
 					<?php else : ?>
-						<div <?php echo wp_kses_post( $this->get_render_attribute_string( 'slide_lottie' ) ); ?>></div>
+						<div <?php $this->print_render_attribute_string( 'slide_lottie' ); ?>></div>
 					<?php endif; ?>
 				</div>
 			<?php endif; ?>
 
 			<?php if ( 'style6' === $settings['premium_button_hover_effect'] && 'yes' === $mouse_detect ) : ?>
-				<span <?php echo wp_kses_post( $this->get_render_attribute_string( 'style6' ) ); ?>></span>
+				<span <?php $this->print_render_attribute_string( 'style6' ); ?>></span>
 			<?php endif; ?>
 
 			<?php if ( 'style8' === $settings['premium_button_hover_effect'] ) : ?>

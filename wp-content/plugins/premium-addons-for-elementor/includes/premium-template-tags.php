@@ -229,9 +229,9 @@ class Premium_Template_Tags {
 
 
 	/**
-	 * Get taxnomies.
+	 * Get taxonomies.
 	 *
-	 * Get post taxnomies for post type
+	 * Get post taxonomies for post type
 	 *
 	 * @since 3.20.3
 	 * @access public
@@ -332,7 +332,7 @@ class Premium_Template_Tags {
 					array_pop( $words );
 
 					if ( 'dots' === $cta_type ) {
-						array_push( $words, '…' );
+						$words[] = '…';
 					}
 				}
 			}
@@ -637,6 +637,11 @@ class Premium_Template_Tags {
 			)
 		);
 
+		$per_item_text = Helper_Functions::get_per_item_badge_text( $post_id, $settings );
+		if ( false !== $per_item_text ) {
+			$this->add_render_attribute( $tax_key, 'data-pa-badge-text', $per_item_text );
+		}
+
 		$this->add_render_attribute(
 			$wrap_key,
 			'class',
@@ -733,8 +738,15 @@ class Premium_Template_Tags {
 							</div>
 						<?php } ?>
 						<?php
+							$meta_position = $settings['premium_blog_meta_position'] ?? 'below';
+
+						if ( 'cards' !== $skin && 'above' === $meta_position ) {
+							$this->get_post_meta( $target );
+						}
+
 							$this->render_post_title( $target, $key, 'premium-blog-entry-title' );
-						if ( 'cards' !== $skin ) {
+
+						if ( 'cards' !== $skin && 'above' !== $meta_position ) {
 							$this->get_post_meta( $target );
 						}
 
@@ -1533,7 +1545,7 @@ class Premium_Template_Tags {
 			return false;
 		}
 
-		$general    = in_array( $settings['active_cat'], array( '*', '' ) );
+		$general    = in_array( $settings['active_cat'], array( '*', '' ), true );
 		$first_page = in_array( $page_num, array( 1, '' ) );
 
 		if ( $general && $first_page ) {
@@ -1707,15 +1719,17 @@ class Premium_Template_Tags {
 
 					$featured_post = get_post( $post_id, OBJECT );
 
-					global $post;
+					if ( $featured_post ) {
+						global $post;
 
-					$post = $featured_post;
+						$post = $featured_post;
 
-					setup_postdata( $post );
+						setup_postdata( $post );
 
-					$this->render_featured_posts( $featured_post, 'custom' );
+						$this->render_featured_posts( $featured_post, 'custom' );
 
-					wp_reset_postdata();
+						wp_reset_postdata();
+					}
 				}
 			}
 
@@ -1860,6 +1874,11 @@ class Premium_Template_Tags {
 			)
 		);
 
+		$per_item_text = Helper_Functions::get_per_item_badge_text( $post_id, $settings );
+		if ( false !== $per_item_text ) {
+			$this->add_render_attribute( $wrap_key, 'data-pa-badge-text', $per_item_text );
+		}
+
 		?>
 		<div class="premium-smart-listing__featured-posts-wrapper">
 			<<?php echo wp_kses_post( $post_tag . ' ' . $this->get_render_attribute_string( $wrap_key ) ); ?>>
@@ -1942,6 +1961,11 @@ class Premium_Template_Tags {
 				'data-total' => $total,
 			)
 		);
+
+		$per_item_text = Helper_Functions::get_per_item_badge_text( $post_id, $settings );
+		if ( false !== $per_item_text ) {
+			$this->add_render_attribute( $wrap_key, 'data-pa-badge-text', $per_item_text );
+		}
 		?>
 			<<?php echo wp_kses_post( $post_tag . ' ' . $this->get_render_attribute_string( $wrap_key ) ); ?>>
 				<?php

@@ -125,7 +125,8 @@ class Premium_Icon_List extends Widget_Base {
 			if ( ! empty( $settings['list'] ) ) {
 				foreach ( $settings['list'] as $item ) {
 					if ( 'yes' === $item['draw_svg'] ) {
-						array_push( $scripts, 'pa-tweenmax', 'pa-motionpath' );
+						$scripts[] = 'pa-tweenmax';
+						$scripts[] = 'pa-motionpath';
 
 						$draw_js = true;
 					}
@@ -182,7 +183,7 @@ class Premium_Icon_List extends Widget_Base {
 	 * @since 1.0.0
 	 * @access public
 	 *
-	 * @return string Widget keywords.
+	 * @return array Widget keywords.
 	 */
 	public function get_keywords() {
 		return array( 'pa', 'premium', 'premium bullet list', 'icon', 'feature', 'list' );
@@ -2608,7 +2609,7 @@ class Premium_Icon_List extends Widget_Base {
 		}
 
 		?>
-			<ul <?php echo wp_kses_post( $this->get_render_attribute_string( 'box' ) ); ?>>
+			<ul <?php $this->print_render_attribute_string( 'box' ); ?>>
 				<?php
 
 				if ( $settings['list'] ) {
@@ -2723,7 +2724,7 @@ class Premium_Icon_List extends Widget_Base {
 
 						?>
 
-							<li <?php echo wp_kses_post( $this->get_render_attribute_string( $list_content_key ) ); ?>>
+							<li <?php $this->print_render_attribute_string( $list_content_key ); ?>>
 								<div class="premium-bullet-list-text">
 								<?php
 								if ( 'yes' === $item['show_icon'] ) {
@@ -2753,7 +2754,7 @@ class Premium_Icon_List extends Widget_Base {
 									}
 
 									?>
-											<div <?php echo wp_kses_post( $this->get_render_attribute_string( 'wrapper-' . $index ) ); ?>>
+											<div <?php $this->print_render_attribute_string( 'wrapper-' . $index ); ?>>
 											<?php if ( $has_connector && $index < ( $items_count - 1 ) ) { ?>
 													<div class="premium-bullet-list-connector">
 														<div class="premium-icon-connector-content"></div>
@@ -2774,21 +2775,21 @@ class Premium_Icon_List extends Widget_Base {
 													echo '</div>';
 												} else {
 													?>
-														<div <?php echo wp_kses_post( $this->get_render_attribute_string( $animation_key ) ); ?>>
-														<?php echo Helper_Functions::get_svg_by_icon( $item['premium_icon_list_font_updated'] ); ?>
+														<div <?php $this->print_render_attribute_string( $animation_key ); ?>>
+														<?php echo Helper_Functions::get_svg_by_icon( $item['premium_icon_list_font_updated'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_svg_by_icon() returns sanitized inline SVG/icon markup. ?>
 														</div>
 														<?php
 												}
 											} elseif ( 'svg' === $item['icon_type'] ) {
 												?>
-													<div <?php echo wp_kses_post( $this->get_render_attribute_string( $animation_key ) ); ?>>
-													<?php echo Helper_Functions::sanitize_svg( $item['custom_svg'] ); ?>
+													<div <?php $this->print_render_attribute_string( $animation_key ); ?>>
+													<?php echo Helper_Functions::sanitize_svg( $item['custom_svg'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitize_svg() returns wp_kses-sanitized SVG markup. ?>
 													</div>
 													<?php
 											} elseif ( 'text' === $item['icon_type'] ) {
 												?>
 													<div class="premium-bullet-list-icon-text">
-														<p <?php echo wp_kses_post( $this->get_render_attribute_string( $text_icon ) ); ?>>
+														<p <?php $this->print_render_attribute_string( $text_icon ); ?>>
 														<?php echo wp_kses_post( $item['list_text_icon'] ); ?>
 														</p>
 													</div>
@@ -2805,7 +2806,7 @@ class Premium_Icon_List extends Widget_Base {
 											</div>
 									<?php } ?>
 
-									<div <?php echo wp_kses_post( $this->get_render_attribute_string( 'title_wrapper' ) ); ?>>
+									<div <?php $this->print_render_attribute_string( 'title_wrapper' ); ?>>
 										<?php echo '<span class="premium-bullet-text" data-text="' . esc_attr( $item['list_title'] ) . '"> ' . wp_kses_post( $item['list_title'] ) . ' </span>'; ?>
 										<?php if ( ! empty( $item['list_desc'] ) ) : ?>
 										<span class="premium-bullet-list-desc" data-text="<?php echo esc_attr( $item['list_desc'] ); ?>"><?php echo wp_kses_post( $item['list_desc'] ); ?></span>
@@ -2815,14 +2816,14 @@ class Premium_Icon_List extends Widget_Base {
 
 								<?php if ( 'yes' === $item['show_badge'] ) { ?>
 									<div class="premium-bullet-list-badge">
-										<span <?php echo wp_kses_post( $this->get_render_attribute_string( $text_badge ) ); ?>>
+										<span <?php $this->print_render_attribute_string( $text_badge ); ?>>
 											<?php echo wp_kses_post( $item['badge_title'] ); ?>
 										</span>
 									</div>
 								<?php } ?>
 
 								<?php if ( 'yes' === $item['show_list_link'] ) { ?>
-									<a <?php echo wp_kses_post( $this->get_render_attribute_string( $item_link ) ); ?>>
+									<a <?php $this->print_render_attribute_string( $item_link ); ?>>
 										<span><?php echo wp_kses_post( $item['list_title'] ); ?></span>
 									</a>
 								<?php } ?>
@@ -2840,7 +2841,7 @@ class Premium_Icon_List extends Widget_Base {
 
 								$this->add_render_attribute( 'divider', 'class', $divider_class );
 								?>
-										<div <?php echo wp_kses_post( $this->get_render_attribute_string( 'divider' ) ); ?>></div>
+										<div <?php $this->print_render_attribute_string( 'divider' ); ?>></div>
 									<?php
 							}
 					}
