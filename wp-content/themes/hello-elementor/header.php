@@ -40,10 +40,37 @@ if ( hello_elementor_display_header_footer() ) {
 	    <ul class="nav-links" id="navLinks">
 	      <li><a href="<?php echo esc_url( home_url('/') ); ?>" class="<?php echo (is_front_page() || is_home()) ? 'active' : ''; ?>">Home</a></li>
 	      <li><a href="<?php echo esc_url( home_url('/tentang-kami/') ); ?>" class="<?php echo is_page('tentang-kami') ? 'active' : ''; ?>">Tentang Kami</a></li>
-	      <li><a href="<?php echo esc_url( home_url('/#layanan') ); ?>">Layanan</a></li>
-	      <li><a href="<?php echo esc_url( home_url('/list-personel/') ); ?>" class="<?php echo (is_page('list-personel') || is_page('personel') || is_page('detail-personel')) ? 'active' : ''; ?>">Personel</a></li>
+	      <li class="menu-item-has-children">
+	        <a href="<?php echo esc_url( home_url('/#layanan') ); ?>">Layanan <span class="dropdown-arrow">&#9662;</span></a>
+	        <ul class="sub-menu">
+	          <li><a href="<?php echo esc_url( home_url('/jasa-pembuatan-video-company-profile/') ); ?>">Company Profile</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/wedding-prawedding/') ); ?>">Wedding &amp; Pre-Wedding</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/event-production-event-organizer/') ); ?>">Event Production &amp; Event Organizer</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/video-produk-branding-iklan/') ); ?>">Video Produk &amp; Branding Iklan</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/dokumentasi-event/') ); ?>">Dokumentasi Event</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/video-klip/') ); ?>">Video Klip</a></li>
+	        </ul>
+	      </li>
+	      <li class="menu-item-has-children">
+	        <a href="<?php echo esc_url( home_url('/list-personel/') ); ?>" class="<?php echo (is_page('list-personel') || is_page('personel') || is_page('detail-personel')) ? 'active' : ''; ?>">Personel <span class="dropdown-arrow">&#9662;</span></a>
+	        <ul class="sub-menu">
+	          <li><a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=F') ); ?>">Fotografer</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=V') ); ?>">Videografer</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=D') ); ?>">Drone</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=E') ); ?>">Editor</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=X') ); ?>">VFX</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=A') ); ?>">Animator</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=P') ); ?>">AI Artist</a></li>
+	        </ul>
+	      </li>
 	      <li><a href="<?php echo esc_url( home_url('/#event') ); ?>">Event</a></li>
-	      <li><a href="<?php echo esc_url( home_url('/portofolio-foto/') ); ?>" class="<?php echo (is_page('portofolio') || is_page('portofolio-foto') || is_page('portofolio-video')) ? 'active' : ''; ?>">Portofolio</a></li>
+	      <li class="menu-item-has-children">
+	        <a href="<?php echo esc_url( home_url('/portofolio-foto/') ); ?>" class="<?php echo (is_page('portofolio') || is_page('portofolio-foto') || is_page('portofolio-video')) ? 'active' : ''; ?>">Portofolio <span class="dropdown-arrow">&#9662;</span></a>
+	        <ul class="sub-menu">
+	          <li><a href="<?php echo esc_url( home_url('/portofolio-foto/') ); ?>">Foto</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/portofolio-video/') ); ?>">Video</a></li>
+	        </ul>
+	      </li>
 	      <li><a href="<?php echo esc_url( home_url('/artikel/') ); ?>" class="<?php echo (is_page('artikel') || is_singular('post')) ? 'active' : ''; ?>">Artikel</a></li>
 	      <?php 
 	      if (!session_id()) { @session_start(); }
@@ -90,6 +117,25 @@ if ( hello_elementor_display_header_footer() ) {
 	      });
 	    });
 	  }
+
+	  // Dropdown toggle on mobile (click instead of hover)
+	  document.querySelectorAll('.menu-item-has-children > a').forEach(function(parentLink) {
+	    parentLink.addEventListener('click', function(e) {
+	      if (window.innerWidth <= 900) {
+	        var parent = this.parentElement;
+	        if (parent.classList.contains('dropdown-open')) {
+	          parent.classList.remove('dropdown-open');
+	        } else {
+	          // Close other open dropdowns
+	          document.querySelectorAll('.menu-item-has-children.dropdown-open').forEach(function(el) {
+	            el.classList.remove('dropdown-open');
+	          });
+	          parent.classList.add('dropdown-open');
+	        }
+	        e.preventDefault();
+	      }
+	    });
+	  });
 	})();
 	</script>
 	<?php

@@ -35,6 +35,95 @@ body {
   color: var(--text-main) !important;
 }
 
+/* ===== DROPDOWN MENU ===== */
+.menu-item-has-children {
+  position: relative;
+}
+.sub-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(18, 16, 23, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 8px;
+  min-width: 220px;
+  list-style: none;
+  margin: 8px 0 0;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  z-index: 1001;
+}
+.sub-menu li {
+  margin: 0;
+  padding: 0;
+}
+.sub-menu a {
+  display: block;
+  padding: 10px 16px;
+  color: #9b98a6 !important;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.sub-menu a:hover {
+  background: rgba(212, 175, 55, 0.1);
+  color: #fff !important;
+}
+.menu-item-has-children:hover .sub-menu {
+  display: block;
+}
+.dropdown-arrow {
+  font-size: 10px;
+  margin-left: 4px;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+.menu-item-has-children:hover .dropdown-arrow {
+  transform: rotate(180deg);
+}
+/* Active state for current page in dropdown */
+.sub-menu a.active {
+  color: var(--gold) !important;
+}
+
+/* Mobile dropdown overrides */
+@media (max-width: 900px) {
+  .menu-item-has-children {
+    width: 100%;
+  }
+  .sub-menu {
+    display: none;
+    position: static;
+    transform: none;
+    background: transparent;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+    padding: 0 0 0 16px;
+    margin: 8px 0 0;
+    min-width: auto;
+  }
+  .menu-item-has-children.dropdown-open .sub-menu {
+    display: block;
+  }
+  .menu-item-has-children:hover .sub-menu {
+    display: none;
+  }
+  .menu-item-has-children.dropdown-open:hover .sub-menu {
+    display: block;
+  }
+  .sub-menu a {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
 /* ===== FLOATING NAVBAR PILL ===== */
 .navbar-container {
   position: fixed; top: 30px; left: 0; right: 0;
