@@ -10200,3 +10200,507 @@ function render_portfolio_content_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('portfolio_content', 'render_portfolio_content_shortcode');
+
+// ============================================================
+// HALAMAN TENTANG KAMI
+// ============================================================
+
+function enqueue_tentang_kami_assets() {
+    $css_version = file_exists(get_stylesheet_directory() . '/assets/css/tentang-kami.css') ? filemtime(get_stylesheet_directory() . '/assets/css/tentang-kami.css') : '1.0.0';
+    wp_register_style('tentang-kami-css', get_stylesheet_directory_uri() . '/assets/css/tentang-kami.css', [], $css_version);
+}
+add_action('wp_enqueue_scripts', 'enqueue_tentang_kami_assets');
+
+function render_tentang_kami_shortcode() {
+    wp_enqueue_style('tentang-kami-css');
+
+    ob_start();
+    ?>
+    <div class="glow-blob glow-blob--left" aria-hidden="true"></div>
+    <div class="glow-blob glow-blob--right" aria-hidden="true"></div>
+
+    <!-- HERO -->
+    <section class="tk-section tk-hero">
+      <div class="tk-hero__grid">
+        <div class="tk-hero__content">
+          <span class="tk-hero__tag">Tentang Kami</span>
+          <h1 class="tk-hero__title">Setiap Brand Punya <span>Cerita</span></h1>
+          <p class="tk-hero__desc">
+            Setiap brand punya cerita. Setiap momen punya arti.
+            <strong>Profesional-Indonesia.com</strong> hadir untuk membantu Anda menyampaikan keduanya — melalui
+            <strong>visual yang kuat</strong> dan <strong>event yang berkelas.</strong><br>
+            Kami percaya, kualitas bukan hanya terlihat… tapi juga terasa.
+          </p>
+          <div class="tk-hero__actions">
+            <a href="https://wa.me/6285771002233" class="tk-btn tk-btn--primary" target="_blank">
+              Diskusikan Kebutuhan Anda
+            </a>
+          </div>
+        </div>
+        <div class="tk-hero__image">
+          <img src="<?php echo esc_url(home_url('/wp-content/uploads/2026/04/Collabs-Photoshot-Lets-Capture-your-moment-with-MeMuse-@nbilasky_11Capture-with-sony-A7rii--819x1024.webp')); ?>" alt="Photoshoot professional" loading="lazy">
+        </div>
+      </div>
+    </section>
+
+    <div class="tk-divider"></div>
+
+    <!-- LAYANAN -->
+    <section class="tk-section">
+      <div class="tk-sec-header">
+        <span class="tk-sec-tag">Layanan Kami</span>
+        <h2>Visual yang Mewakili <span>Anda</span></h2>
+        <p class="tk-sec-desc">Baik untuk perusahaan maupun momen pribadi, kami tidak hanya membuat video — kami membangun citra, emosi, dan pengalaman.</p>
+      </div>
+      <div class="tk-services-grid">
+        <ul class="tk-service-list">
+          <li><span class="tk-icon">★</span> Company Profile</li>
+          <li><span class="tk-icon">★</span> Wedding &amp; Prawedding</li>
+          <li><span class="tk-icon">★</span> Event Production &amp; Event Organizer</li>
+          <li><span class="tk-icon">★</span> Video Produk — Branding Iklan</li>
+          <li><span class="tk-icon">★</span> Dokumentasi Event</li>
+          <li><span class="tk-icon">★</span> Video Klip</li>
+        </ul>
+        <div class="tk-services-image">
+          <img src="<?php echo esc_url(home_url('/wp-content/uploads/2026/04/multicam.jpg')); ?>" alt="Multicam production" loading="lazy">
+        </div>
+      </div>
+      <div class="tk-service-link">
+        <a href="<?php echo esc_url(home_url('/#layanan')); ?>" class="tk-btn tk-btn--ghost">Lihat Semua Layanan</a>
+      </div>
+    </section>
+
+    <div class="tk-divider"></div>
+
+    <!-- TIM -->
+    <section class="tk-section">
+      <div class="tk-sec-header">
+        <span class="tk-sec-tag">Tim Kami</span>
+        <h2>Tim Profesional, <span>Hasil Maksimal</span></h2>
+        <p class="tk-sec-desc">Di balik setiap hasil yang berkualitas, ada tim yang solid.</p>
+      </div>
+      <div class="tk-team-grid">
+        <div class="tk-team-image">
+          <img src="<?php echo esc_url(home_url('/wp-content/uploads/2026/04/WhatsApp-Image-2026-04-25-at-08.59.52-1024x768.jpeg')); ?>" alt="Tim Profesional Indonesia" loading="lazy">
+        </div>
+        <div>
+          <p class="tk-team-text">Berpengalaman sejak 2016, terbiasa menangani berbagai kebutuhan dari personal hingga corporate.</p>
+          <ul class="tk-check-list">
+            <li><span class="tk-check">✓</span> Fotografer &amp; Videografer</li>
+            <li><span class="tk-check">✓</span> Pilot Drone</li>
+            <li><span class="tk-check">✓</span> VFX</li>
+            <li><span class="tk-check">✓</span> Editor &amp; Animator</li>
+          </ul>
+          <a href="https://wa.me/6285771002233" class="tk-btn tk-btn--primary" target="_blank">Hubungi Kami Sekarang</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="tk-divider"></div>
+
+    <!-- WHY US -->
+    <section class="tk-section tk-section--sm">
+      <div class="tk-sec-header">
+        <span class="tk-sec-tag">Mengapa Kami</span>
+        <h2>Kenapa Banyak Klien Pilih <span>Kami?</span></h2>
+      </div>
+      <p class="tk-why-text">
+        Baik untuk memperkuat brand perusahaan, maupun mengabadikan momen berharga —
+        <strong>Anda membutuhkan tim yang mengerti kualitas.</strong>
+      </p>
+      <div class="tk-why-cta">
+        <a href="https://wa.me/6285771002233" class="tk-btn tk-btn--primary" target="_blank">Diskusikan Kebutuhan Anda</a>
+      </div>
+    </section>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('tentang_kami', 'render_tentang_kami_shortcode');
+
+// ============================================================
+// HALAMAN COMPANY PROFILE
+// ============================================================
+
+function enqueue_company_profile_assets() {
+    $css_version = file_exists(get_stylesheet_directory() . '/assets/css/company-profile.css') ? filemtime(get_stylesheet_directory() . '/assets/css/company-profile.css') : '1.0.0';
+    wp_register_style('company-profile-css', get_stylesheet_directory_uri() . '/assets/css/company-profile.css', [], $css_version);
+}
+add_action('wp_enqueue_scripts', 'enqueue_company_profile_assets');
+
+function render_company_profile_shortcode() {
+    global $wpdb;
+    wp_enqueue_style('company-profile-css');
+
+    // Ambil video portofolio dengan kategori corporate-company
+    $videos = $wpdb->get_results(
+        "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
+         FROM wp9y_portofolio_video v
+         JOIN wp9y_personel p ON v.personel_id = p.id
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug = 'corporate-company'
+         ORDER BY v.id DESC
+         LIMIT 9"
+    );
+
+    // Fallback: ambil video terbaru jika tidak ada yang berkategori
+    if (!$videos || count($videos) < 3) {
+        $videos = $wpdb->get_results(
+            "SELECT v.*, p.nama_panggilan, p.kode_nama
+             FROM wp9y_portofolio_video v
+             JOIN wp9y_personel p ON v.personel_id = p.id
+             WHERE v.status = 'approved' AND p.status = 'approved'
+             ORDER BY v.id DESC
+             LIMIT 9"
+        );
+    }
+
+    ob_start();
+    ?>
+    <div class="cp-blob cp-blob--l" aria-hidden="true"></div>
+    <div class="cp-blob cp-blob--r" aria-hidden="true"></div>
+
+    <!-- HERO -->
+    <section class="cp-section cp-hero">
+      <div class="cp-hero__inner cp-reveal">
+        <span class="cp-hero__tag">Layanan — Company Profile</span>
+        <h1 class="cp-hero__title">Company Profile <span>&amp; Corporate Needs</span></h1>
+        <p class="cp-hero__desc">
+          Kami menyediakan jasa pembuatan Video Company Profile profesional, juga kebutuhan Foto &amp; Video kebutuhan Korporasi. Mulai dari konsep, syuting hingga editing — membantu menampilkan keunggulan perusahaan Anda agar menarik, informatif dan terpercaya.
+        </p>
+      </div>
+    </section>
+
+    <div class="cp-divider"></div>
+
+    <!-- VIDEO SHOWCASE -->
+    <section class="cp-section">
+      <div class="cp-reveal-zoom">
+        <?php if ($videos && count($videos) > 0): ?>
+        <div class="cp-video-grid">
+          <?php foreach ($videos as $v):
+            $embed_url = get_video_embed_url($v->video_url);
+            $thumb_url = 'https://img.youtube.com/vi/' . (preg_match('/embed\/([a-zA-Z0-9_-]+)/', $embed_url, $m) ? $m[1] : '') . '/mqdefault.jpg';
+            $detail_link = home_url('/detail-personel/?kode=' . urlencode($v->kode_nama));
+          ?>
+          <div class="cp-video-card" onclick="cp_openVideo('<?php echo esc_js($embed_url); ?>?autoplay=1')">
+            <div class="cp-video-card__thumb">
+              <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($v->judul); ?>" loading="lazy">
+              <div class="cp-video-card__play"><div class="cp-video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+            </div>
+            <div class="cp-video-card__body">
+              <div class="cp-video-card__title"><?php echo esc_html($v->judul); ?></div>
+              <div class="cp-video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($v->nama_panggilan . '-' . $v->kode_nama); ?></a></div>
+            </div>
+          </div>
+          <?php endforeach; ?>
+        </div>
+        <?php else: ?>
+          <p style="text-align:center;color:var(--text-dim);padding:60px 0;">Belum ada portofolio video Company Profile. Segera hadir.</p>
+        <?php endif; ?>
+      </div>
+    </section>
+
+    <!-- MODAL VIDEO -->
+    <div class="cp-modal" id="cpVideoModal">
+      <div class="cp-modal__backdrop" onclick="cp_closeVideo()"></div>
+      <div class="cp-modal__content">
+        <button class="cp-modal__close" onclick="cp_closeVideo()">&times;</button>
+        <div class="cp-modal__wrap">
+          <iframe id="cpVideoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <section class="cp-section">
+      <div class="cp-content cp-reveal">
+        <h2>Jasa Pembuatan Video <span class="hl">Company Profile</span></h2>
+
+        <h3>Jasa Pembuatan Video Company Profile Profesional untuk Korporasi &amp; Perusahaan Besar</h3>
+        <p>Bangun citra perusahaan yang kredibel dan profesional lewat video company profile berkualitas broadcast. Dipercaya oleh perusahaan korporat di seluruh Indonesia untuk kebutuhan presentasi, tender, investor relations, hingga company branding.</p>
+
+        <hr>
+
+        <h3>Kenapa Perusahaan Anda Butuh Video Company Profile</h3>
+        <p>Di era digital, calon klien, mitra bisnis, dan investor sering menilai kredibilitas sebuah perusahaan dari bagaimana perusahaan tersebut mempresentasikan dirinya. Sebuah <strong>video company profile</strong> yang dibuat secara profesional mampu menyampaikan visi, kapabilitas, dan keunggulan kompetitif perusahaan Anda jauh lebih efektif dibanding dokumen presentasi biasa.</p>
+
+        <ul>
+          <li><strong>Meningkatkan kepercayaan klien dan mitra bisnis</strong> sejak kontak pertama</li>
+          <li><strong>Memenangkan tender dan presentasi korporat</strong> dengan materi visual yang kuat</li>
+          <li><strong>Memperkuat company branding</strong> di mata publik, media, dan pemegang saham</li>
+          <li><strong>Mendukung investor relations</strong> dengan menyampaikan kinerja dan visi perusahaan secara meyakinkan</li>
+          <li><strong>Menjadi aset digital jangka panjang</strong> untuk website, media sosial, hingga acara korporat</li>
+        </ul>
+
+        <hr>
+
+        <h3>Layanan Video Company Profile Kami</h3>
+        <p>Kami menyediakan layanan produksi video company profile end-to-end, mulai dari konsep, produksi, hingga pasca-produksi, yang disesuaikan dengan kebutuhan dan skala perusahaan Anda.</p>
+
+        <div class="cp-service-list">
+          <div class="cp-service-item"><strong>Corporate Company Profile Video</strong><span>Video profil perusahaan komprehensif yang menampilkan sejarah, visi-misi, fasilitas, dan keunggulan bisnis Anda.</span></div>
+          <div class="cp-service-item"><strong>Video Profile untuk Tender &amp; Presentasi Bisnis</strong><span>Materi visual pendukung proposal dan presentasi tender yang dirancang untuk meyakinkan klien dan stakeholder.</span></div>
+          <div class="cp-service-item"><strong>Investor Relations Video</strong><span>Video company profile yang dirancang khusus untuk kebutuhan RUPS, laporan tahunan, dan komunikasi kepada investor.</span></div>
+          <div class="cp-service-item"><strong>Video Profile Multi-Industri</strong><span>Berpengalaman menangani company profile untuk berbagai sektor: manufaktur, perbankan &amp; keuangan, energi, konstruksi, BUMN, logistik, hingga teknologi.</span></div>
+          <div class="cp-service-item"><strong>Video Profile Multi-Bahasa</strong><span>Tersedia versi Bahasa Indonesia dan Inggris untuk mendukung ekspansi dan komunikasi perusahaan ke pasar internasional.</span></div>
+        </div>
+
+        <hr>
+
+        <h3>Proses Produksi Video Company Profile yang Terstruktur</h3>
+        <p>Kami memahami bahwa perusahaan besar membutuhkan proses kerja yang jelas, terukur, dan minim risiko. Berikut tahapan kerja kami:</p>
+
+        <div class="cp-steps">
+          <div class="cp-step cp-reveal"><div class="cp-step__num">1</div><h4>Konsultasi &amp; Briefing</h4><p>Memahami visi, target audiens, dan tujuan komunikasi video company profile Anda.</p></div>
+          <div class="cp-step cp-reveal" style="transition-delay:.06s"><div class="cp-step__num">2</div><h4>Riset &amp; Scripting</h4><p>Menyusun konsep cerita dan naskah yang merepresentasikan keunggulan perusahaan.</p></div>
+          <div class="cp-step cp-reveal" style="transition-delay:.12s"><div class="cp-step__num">3</div><h4>Produksi (Shooting)</h4><p>Pengambilan gambar dengan tim dan peralatan broadcast quality, siap shooting di seluruh Indonesia.</p></div>
+          <div class="cp-step cp-reveal" style="transition-delay:.06s"><div class="cp-step__num">4</div><h4>Editing &amp; Motion Graphic</h4><p>Proses pasca-produksi profesional termasuk color grading, sound design, dan grafis pendukung data perusahaan.</p></div>
+          <div class="cp-step cp-reveal" style="transition-delay:.12s"><div class="cp-step__num">5</div><h4>Revisi &amp; Delivery</h4><p>Proses revisi terarah hingga video company profile siap digunakan sesuai kebutuhan Anda.</p></div>
+        </div>
+
+        <hr>
+
+        <h3>Keunggulan Jasa Video Company Profile Kami</h3>
+        <ul>
+          <li><strong>Berpengalaman menangani perusahaan korporat &amp; BUMN</strong> dari berbagai sektor industri di Indonesia</li>
+          <li><strong>Hasil produksi berkualitas broadcast</strong>, didukung peralatan dan kru profesional</li>
+          <li><strong>Pendekatan storytelling strategis</strong>, bukan sekadar dokumentasi visual</li>
+          <li><strong>Jangkauan layanan nasional</strong>, siap produksi di seluruh wilayah Indonesia</li>
+          <li><strong>Proses kerja terstruktur dan tepat waktu</strong>, sesuai standar kebutuhan korporat</li>
+          <li><strong>Kerahasiaan data perusahaan terjamin</strong>, termasuk opsi NDA sebelum project dimulai</li>
+        </ul>
+
+        <hr>
+
+        <h3>Pertanyaan Seputar Jasa Pembuatan Video Company Profile</h3>
+
+        <div class="cp-faq-item"><div class="cp-faq-item__q" onclick="cp_toggleFaq(this)">Berapa lama proses pembuatan video company profile?<span class="arrow">▾</span></div><div class="cp-faq-item__a">Durasi produksi video company profile umumnya berkisar antara 2-4 minggu, tergantung kompleksitas konsep, jumlah lokasi shooting, dan jumlah revisi.</div></div>
+        <div class="cp-faq-item"><div class="cp-faq-item__q" onclick="cp_toggleFaq(this)">Berapa biaya jasa pembuatan video company profile?<span class="arrow">▾</span></div><div class="cp-faq-item__a">Biaya disesuaikan dengan kebutuhan, durasi video, jumlah lokasi, serta kompleksitas produksi. Silakan hubungi tim kami untuk mendapatkan penawaran sesuai kebutuhan perusahaan Anda.</div></div>
+        <div class="cp-faq-item"><div class="cp-faq-item__q" onclick="cp_toggleFaq(this)">Apakah bisa shooting video company profile di luar kota?<span class="arrow">▾</span></div><div class="cp-faq-item__a">Bisa. Kami melayani produksi video company profile di seluruh wilayah Indonesia, termasuk untuk perusahaan dengan multi-cabang atau multi-lokasi pabrik/kantor.</div></div>
+        <div class="cp-faq-item"><div class="cp-faq-item__q" onclick="cp_toggleFaq(this)">Apa bedanya video company profile dengan video corporate lainnya?<span class="arrow">▾</span></div><div class="cp-faq-item__a">Video company profile berfokus pada penyampaian identitas, kapabilitas, dan kredibilitas perusahaan secara menyeluruh, berbeda dengan video produk, video event, atau video iklan yang memiliki tujuan komunikasi lebih spesifik.</div></div>
+        <div class="cp-faq-item"><div class="cp-faq-item__q" onclick="cp_toggleFaq(this)">Apakah perusahaan kami bisa request revisi?<span class="arrow">▾</span></div><div class="cp-faq-item__a">Ya, kami menyediakan sesi revisi terarah pada tahap akhir produksi untuk memastikan video company profile sesuai dengan visi dan kebutuhan perusahaan Anda.</div></div>
+
+        <hr>
+
+        <div class="cp-cta cp-reveal">
+          <h2>Siap Membangun Citra Profesional Perusahaan Anda?</h2>
+          <p>Percayakan kebutuhan video company profile perusahaan Anda kepada tim yang berpengalaman menangani klien korporat di seluruh Indonesia.</p>
+          <a href="https://wa.me/6285771002233" class="cp-wa-btn" target="_blank">Konsultasi via WhatsApp</a>
+        </div>
+      </div>
+    </section>
+
+    <script>
+    // Modal video
+    function cp_openVideo(url) {
+      document.getElementById('cpVideoIframe').src = url;
+      document.getElementById('cpVideoModal').style.display = 'block';
+    }
+    function cp_closeVideo() {
+      document.getElementById('cpVideoIframe').src = '';
+      document.getElementById('cpVideoModal').style.display = 'none';
+    }
+    document.getElementById('cpVideoModal').addEventListener('click', function(e) {
+      if (e.target === this) cp_closeVideo();
+    });
+
+    // FAQ accordion
+    function cp_toggleFaq(el) {
+      el.classList.toggle('open');
+      el.nextElementSibling.classList.toggle('open');
+    }
+
+    // Scroll reveal
+    const cp_observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) entry.target.classList.add('show');
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.cp-reveal, .cp-reveal-zoom').forEach(function(el) {
+      cp_observer.observe(el);
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('company_profile', 'render_company_profile_shortcode');
+
+// ============================================================
+// HALAMAN WEDDING & PRAWEDDING
+// ============================================================
+
+function enqueue_wedding_assets() {
+    $css_version = file_exists(get_stylesheet_directory() . '/assets/css/wedding.css') ? filemtime(get_stylesheet_directory() . '/assets/css/wedding.css') : '1.0.0';
+    wp_register_style('wedding-css', get_stylesheet_directory_uri() . '/assets/css/wedding.css', [], $css_version);
+}
+add_action('wp_enqueue_scripts', 'enqueue_wedding_assets');
+
+function render_wedding_shortcode() {
+    global $wpdb;
+    wp_enqueue_style('wedding-css');
+
+    // Ambil 1 video wedding terbaru untuk shorts highlight
+    $shorts_video = $wpdb->get_row(
+        "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
+         FROM wp9y_portofolio_video v
+         JOIN wp9y_personel p ON v.personel_id = p.id
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug = 'wedding-personal'
+         ORDER BY v.id DESC
+         LIMIT 1"
+    );
+
+    if (!$shorts_video) {
+        $shorts_video = $wpdb->get_row(
+            "SELECT v.*, p.nama_panggilan, p.kode_nama
+             FROM wp9y_portofolio_video v
+             JOIN wp9y_personel p ON v.personel_id = p.id
+             WHERE v.status = 'approved' AND p.status = 'approved'
+             ORDER BY v.id DESC
+             LIMIT 1"
+        );
+    }
+
+    ob_start();
+    ?>
+    <div class="wd-blob wd-blob--l" aria-hidden="true"></div>
+    <div class="wd-blob wd-blob--r" aria-hidden="true"></div>
+
+    <!-- HERO -->
+    <section class="wd-section wd-hero">
+      <div class="wd-hero__inner wd-reveal">
+        <span class="wd-hero__tag">Layanan — Wedding &amp; Prawedding</span>
+        <h1 class="wd-hero__title">Wedding &amp; <span>Pra Wedding</span></h1>
+        <p class="wd-hero__desc">
+          Hari pernikahan hanya terjadi sekali seumur hidup, biarkan kami mengabadikannya untuk Anda. Kami tidak hanya merekam momen, tapi merangkai cerita cinta Anda menjadi kenangan visual yang bisa dikenang selamanya.
+        </p>
+      </div>
+    </section>
+
+    <div class="wd-divider"></div>
+
+    <!-- PHOTO SHOWCASE -->
+    <section class="wd-section">
+      <div class="wd-photo-duo wd-reveal-zoom">
+        <div class="wd-photo-card wd-photo-card--tall">
+          <img src="<?php echo esc_url(home_url('/wp-content/uploads/2026/04/PreweddingLigthing-1-light-Godox-TT685-Capture-with-sony-A7rii-sony-28mm-f2________Book-or--1024x683.webp')); ?>" alt="Prewedding Photography" loading="lazy">
+          <div class="wd-photo-card__cap">Fotografer = Prisai</div>
+        </div>
+        <div class="wd-photo-card wd-photo-card--slim">
+          <img src="<?php echo esc_url(home_url('/wp-content/uploads/2026/04/Collaborasi-PhotoshotLigthing-1-light-Godox-TT685-@godoxindonesia.idMuse-@kko.si_Mua-war-819x1024.webp')); ?>" alt="Collaboration Photoshoot" loading="lazy">
+          <div class="wd-photo-card__cap">Fotografer = Prisai</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SHORTS VIDEO HIGHLIGHT -->
+    <?php if ($shorts_video):
+        $embed_url = get_video_embed_url($shorts_video->video_url);
+        $thumb_url = 'https://img.youtube.com/vi/' . (preg_match('/embed\/([a-zA-Z0-9_-]+)/', $embed_url, $m) ? $m[1] : '') . '/mqdefault.jpg';
+        $detail_link = home_url('/detail-personel/?kode=' . urlencode($shorts_video->kode_nama));
+    ?>
+    <section class="wd-section">
+      <div class="wd-shorts wd-reveal">
+        <h3>Video Highlight</h3>
+        <div class="wd-shorts-card" onclick="wd_openVideo('<?php echo esc_js($embed_url); ?>?autoplay=1')">
+          <div class="wd-shorts-card__thumb">
+            <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($shorts_video->judul); ?>" loading="lazy">
+            <div class="wd-shorts-card__play"><div class="wd-shorts-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          </div>
+          <div class="wd-shorts-card__body">
+            <strong><?php echo esc_html($shorts_video->judul); ?></strong>
+            <small>by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($shorts_video->nama_panggilan . '-' . $shorts_video->kode_nama); ?></a></small>
+          </div>
+        </div>
+      </div>
+    </section>
+    <?php endif; ?>
+
+    <!-- MODAL VIDEO -->
+    <div class="wd-modal" id="wdVideoModal">
+      <div class="wd-modal__backdrop" onclick="wd_closeVideo()"></div>
+      <div class="wd-modal__content">
+        <button class="wd-modal__close" onclick="wd_closeVideo()">&times;</button>
+        <div class="wd-modal__wrap">
+          <iframe id="wdVideoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <section class="wd-section">
+      <div class="wd-content wd-reveal">
+        <h2>Layanan <span class="hl">Wedding &amp; Prawedding</span></h2>
+
+        <h3>Abadikan Cinta Anda dalam Bingkai yang Tak Terlupakan</h3>
+        <p>Momen pernikahan adalah salah satu hari terpenting dalam hidup. Setiap detail — dari tatapan pertama, haru di pelaminan, hingga tawa bersama keluarga — layak diabadikan dengan sempurna. Tim profesional kami siap merangkai setiap detik menjadi cerita visual yang akan Anda kenang selamanya.</p>
+
+        <hr>
+
+        <h3>Paket Layanan Kami</h3>
+        <div class="wd-packages">
+          <div class="wd-package wd-reveal"><div class="wd-package__icon">💍</div><h4>Wedding Photography</h4><p>Dokumentasi foto pernikahan dari persiapan hingga resepsi, dengan gaya reportase dan fine art.</p></div>
+          <div class="wd-package wd-reveal" style="transition-delay:.06s"><div class="wd-package__icon">🥂</div><h4>Wedding Videography</h4><p>Video sinematik yang merangkai cerita pernikahan Anda dengan editing artistik dan musik yang menyentuh.</p></div>
+          <div class="wd-package wd-reveal" style="transition-delay:.12s"><div class="wd-package__icon">🌅</div><h4>Prawedding &amp; Engagement</h4><p>Sesi foto dan video pra-nikah di lokasi pilihan, dengan konsep yang mencerminkan kepribadian Anda berdua.</p></div>
+        </div>
+
+        <h3>Mengapa Memilih Kami?</h3>
+        <ul>
+          <li><strong>Tim profesional dan berpengalaman</strong> dalam menangani berbagai konsep pernikahan</li>
+          <li><strong>Peralatan broadcast quality</strong> untuk hasil foto dan video terbaik</li>
+          <li><strong>Pendekatan storytelling</strong> yang personal — setiap pasangan memiliki cerita unik</li>
+          <li><strong>Hasil editing cepat dan rapi</strong> tanpa mengurangi kualitas artistik</li>
+          <li><strong>Fleksibel menyesuaikan budget dan kebutuhan</strong> Anda</li>
+        </ul>
+
+        <hr>
+
+        <h3>Layanan Lengkap Wedding &amp; Prawedding</h3>
+        <div class="wd-service-list">
+          <div class="wd-service-item"><strong>Wedding Day Documentation</strong><span>Dokumentasi lengkap hari pernikahan dari akad hingga resepsi, termasuk foto dan video.</span></div>
+          <div class="wd-service-item"><strong>Prewedding Photo &amp; Video</strong><span>Sesi foto dan video pra-nikah dengan konsep outdoor, studio, atau cinematic.</span></div>
+          <div class="wd-service-item"><strong>Engagement / Lamaran</strong><span>Dokumentasi momen pertunangan yang intim dan penuh makna.</span></div>
+          <div class="wd-service-item"><strong>Cinematic Wedding Video</strong><span>Film pendek sinematik yang merangkum hari istimewa Anda dengan gaya artistik.</span></div>
+          <div class="wd-service-item"><strong>Photo &amp; Video Booth</strong><span>Layanan booth interaktif untuk tamu undangan, lengkap dengan cetak foto instan.</span></div>
+        </div>
+
+        <hr>
+
+        <div class="wd-cta wd-reveal">
+          <h2>Wujudkan Dokumentasi Pernikahan Impian Anda</h2>
+          <p>Konsultasikan konsep wedding &amp; prawedding Anda dengan tim profesional kami. Dari konsep hingga hasil akhir, kami siap membantu.</p>
+          <a href="https://wa.me/6285771002233" class="wd-wa-btn" target="_blank">Konsultasi via WhatsApp</a>
+        </div>
+      </div>
+    </section>
+
+    <script>
+    // Modal video
+    function wd_openVideo(url) {
+      document.getElementById('wdVideoIframe').src = url;
+      document.getElementById('wdVideoModal').style.display = 'block';
+    }
+    function wd_closeVideo() {
+      document.getElementById('wdVideoIframe').src = '';
+      document.getElementById('wdVideoModal').style.display = 'none';
+    }
+    document.getElementById('wdVideoModal').addEventListener('click', function(e) {
+      if (e.target === this) wd_closeVideo();
+    });
+
+    // Scroll reveal
+    const wd_observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) entry.target.classList.add('show');
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.wd-reveal, .wd-reveal-zoom').forEach(function(el) {
+      wd_observer.observe(el);
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('wedding_prawedding', 'render_wedding_shortcode');

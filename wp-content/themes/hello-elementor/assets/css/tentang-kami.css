@@ -1,0 +1,382 @@
+/* ===== TENTANG KAMI PAGE ===== */
+
+/* Glow Blobs */
+.glow-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(130px);
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+  animation: morphBlob 12s ease-in-out infinite alternate;
+}
+.glow-blob--left {
+  width: 450px; height: 450px;
+  background: var(--accent);
+  top: 5%; left: -150px;
+}
+.glow-blob--right {
+  width: 500px; height: 500px;
+  background: var(--gold);
+  bottom: 10%; right: -180px;
+  animation-delay: 3s;
+}
+@keyframes morphBlob {
+  0%   { border-radius: 50% 50% 60% 40% / 50% 60% 40% 50%; transform: translate(0,0) scale(1); }
+  50%  { border-radius: 40% 60% 50% 50% / 60% 40% 60% 40%; transform: translate(30px,-30px) scale(1.05); }
+  100% { border-radius: 55% 45% 40% 60% / 45% 55% 45% 55%; transform: translate(-20px,20px) scale(0.95); }
+}
+
+/* Section common */
+.tk-section {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 100px 40px;
+}
+.tk-section--sm {
+  padding: 60px 40px;
+}
+.tk-sec-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.tk-sec-tag {
+  display: inline-block;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.tk-sec-header h2 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 40px;
+  color: #fff;
+  line-height: 1.2;
+}
+.tk-sec-header h2 span {
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.tk-sec-desc {
+  font-size: 15px;
+  color: var(--text-dim);
+  max-width: 600px;
+  margin: 16px auto 0;
+  line-height: 1.7;
+}
+
+/* Hero */
+.tk-hero {
+  padding-top: 140px;
+}
+.tk-hero__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+.tk-hero__tag {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: inline-block;
+  margin-bottom: 16px;
+}
+.tk-hero__title {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 58px;
+  color: #fff;
+  line-height: 1.08;
+  margin-bottom: 20px;
+}
+.tk-hero__title span {
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.tk-hero__desc {
+  font-size: 16px;
+  color: var(--text-dim);
+  line-height: 1.8;
+  margin-bottom: 32px;
+  max-width: 520px;
+}
+.tk-hero__desc strong {
+  color: var(--text-main);
+  font-weight: 600;
+}
+.tk-hero__actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.tk-hero__image {
+  position: relative;
+  border-radius: 30px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.tk-hero__image img {
+  width: 100%;
+  height: 450px;
+  object-fit: cover;
+  transition: transform .6s ease;
+}
+.tk-hero__image:hover img {
+  transform: scale(1.04);
+}
+.tk-hero__image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(9,8,12,0.6));
+  pointer-events: none;
+}
+
+/* Buttons */
+.tk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 14.5px;
+  padding: 16px 32px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  transition: all .25s ease;
+  text-decoration: none;
+}
+.tk-btn--primary {
+  background: var(--grad-primary);
+  color: #000 !important;
+  box-shadow: 0 10px 25px rgba(212, 152, 42, 0.3);
+}
+.tk-btn--primary:hover {
+  color: #000 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 35px rgba(212, 152, 42, 0.4);
+}
+.tk-btn--ghost {
+  background: rgba(255,255,255,0.02);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+}
+.tk-btn--ghost:hover {
+  border-color: var(--gold);
+  background: rgba(255, 179, 71, 0.04);
+  transform: translateY(-2px);
+}
+
+/* Divider */
+.tk-divider {
+  max-width: 120px;
+  margin: 0 auto;
+  height: 2px;
+  background: var(--grad-primary);
+  border-radius: 4px;
+  opacity: .5;
+}
+
+/* Services */
+.tk-services-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+.tk-service-list {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+.tk-service-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  color: var(--text-main);
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: all .3s ease;
+  font-weight: 500;
+}
+.tk-service-list li:hover {
+  border-color: rgba(255, 179, 71, 0.2);
+  transform: translateX(6px);
+}
+.tk-service-list .tk-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--grad-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #000;
+  flex-shrink: 0;
+}
+.tk-services-image {
+  border-radius: 30px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.tk-services-image img {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  transition: transform .6s ease;
+}
+.tk-services-image:hover img {
+  transform: scale(1.04);
+}
+.tk-service-link {
+  display: block;
+  margin-top: 28px;
+  text-align: center;
+}
+
+/* Team */
+.tk-team-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+.tk-team-image {
+  border-radius: 30px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.tk-team-image img {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  transition: transform .6s ease;
+}
+.tk-team-image:hover img {
+  transform: scale(1.04);
+}
+.tk-team-text {
+  font-size: 15px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+.tk-check-list {
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  margin: 20px 0 28px;
+}
+.tk-check-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  color: var(--text-main);
+  padding: 10px 16px;
+  background: rgba(18,16,23,0.5);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  font-weight: 500;
+  transition: all .3s ease;
+}
+.tk-check-list li:hover {
+  border-color: rgba(255, 179, 71, 0.2);
+  background: var(--card-bg);
+  transform: translateX(6px);
+}
+.tk-check-list .tk-check {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--grad-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #000;
+  flex-shrink: 0;
+}
+
+/* Why Us */
+.tk-why-text {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+  font-size: 18px;
+  color: var(--text-dim);
+  line-height: 1.8;
+}
+.tk-why-text strong {
+  color: var(--text-main);
+}
+.tk-why-cta {
+  text-align: center;
+  margin-top: 36px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .tk-hero__title { font-size: 44px; }
+  .tk-hero__grid,
+  .tk-services-grid,
+  .tk-team-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .tk-hero__image img,
+  .tk-services-image img,
+  .tk-team-image img {
+    height: 320px;
+  }
+  .tk-section { padding: 80px 30px; }
+  .tk-hero { padding-top: 130px; }
+}
+
+@media (max-width: 768px) {
+  .tk-section { padding: 60px 24px; }
+  .tk-hero { padding-top: 120px; }
+  .tk-hero__title { font-size: 36px; }
+  .tk-sec-header h2 { font-size: 32px; }
+  .tk-hero__image img,
+  .tk-services-image img,
+  .tk-team-image img {
+    height: 260px;
+  }
+  .tk-service-link { text-align: left; }
+}
+
+@media (max-width: 600px) {
+  .tk-hero__title { font-size: 32px; }
+  .tk-sec-header h2 { font-size: 28px; }
+  .tk-hero__actions { flex-direction: column; }
+  .tk-btn { width: 100%; justify-content: center; }
+  .tk-section { padding: 50px 18px; }
+  .tk-service-list li,
+  .tk-check-list li {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+}
