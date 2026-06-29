@@ -44,6 +44,7 @@ if ( hello_elementor_display_header_footer() ) {
 	      <li><a href="<?php echo esc_url( home_url('/list-personel/') ); ?>" class="<?php echo (is_page('list-personel') || is_page('personel') || is_page('detail-personel')) ? 'active' : ''; ?>">Personel</a></li>
 	      <li><a href="<?php echo esc_url( home_url('/#event') ); ?>">Event</a></li>
 	      <li><a href="<?php echo esc_url( home_url('/portofolio-foto/') ); ?>" class="<?php echo (is_page('portofolio') || is_page('portofolio-foto') || is_page('portofolio-video')) ? 'active' : ''; ?>">Portofolio</a></li>
+	      <li><a href="<?php echo esc_url( home_url('/artikel/') ); ?>" class="<?php echo (is_page('artikel') || is_singular('post')) ? 'active' : ''; ?>">Artikel</a></li>
 	      <?php 
 	      if (!session_id()) { @session_start(); }
 	      if (isset($_SESSION['personel_id'])) : ?>
