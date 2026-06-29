@@ -63,7 +63,7 @@ if ( hello_elementor_display_header_footer() ) {
 	          <li><a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=P') ); ?>">AI Artist</a></li>
 	        </ul>
 	      </li>
-	      <li><a href="<?php echo esc_url( home_url('/#event') ); ?>">Event</a></li>
+	      <li><a href="<?php echo esc_url( home_url('/kebutuhan-event/') ); ?>" class="<?php echo is_page('kebutuhan-event') ? 'active' : ''; ?>">Kebutuhan Event</a></li>
 	      <li class="menu-item-has-children">
 	        <a href="<?php echo esc_url( home_url('/portofolio-foto/') ); ?>" class="<?php echo (is_page('portofolio') || is_page('portofolio-foto') || is_page('portofolio-video')) ? 'active' : ''; ?>">Portofolio <span class="dropdown-arrow">&#9662;</span></a>
 	        <ul class="sub-menu">

@@ -280,586 +280,850 @@ require HELLO_THEME_PATH . '/theme.php';
 HelloTheme\Theme::instance();
 
 function personel_register_form() {
-    if (is_user_logged_in()) {
-        return '<div class="personel-info">Sudah login. <a href="' . wp_logout_url() . '">Logout</a></div>';
+    if (is_personel_logged_in()) {
+        return '<div style="max-width: 500px; margin: 50px auto; background: #13111a; border: 1px solid rgba(255,255,255,0.07); border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); font-family: \'Inter\', sans-serif;">
+                    <p style="color:white; margin-bottom: 20px;">Anda sudah login sebagai <strong>'.$_SESSION['personel_nama'].'</strong></p>
+                    <a href="' . home_url('/dashboard-personel') . '" style="display:inline-block; padding: 12px 24px; background: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%); color:#000; font-family:\'Outfit\',sans-serif; font-weight:700; border-radius:12px; text-decoration:none;">Dashboard</a>
+                </div>';
     }
 
     ob_start();
     ?>
-    <div class="personel-register-container">
-        <div class="personel-register-form">
-            <h2>Registrasi Personel</h2>
-            <p class="form-subtitle">Isi data dengan lengkap!</p>
-            
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
+    <style>
+    /* ===== PREMIUM REGISTRATION SHORTCODE CSS ===== */
+    .lx-reg-container {
+        --lx-bg: #0b0a0f;
+        --lx-surface: #13111a;
+        --lx-surface2: #1a1825;
+        --lx-gold: #d4af37;
+        --lx-gold-light: #ffd275;
+        --lx-gold-dim: rgba(212,175,55,0.10);
+        --lx-border: rgba(255,255,255,0.07);
+        --lx-border-gold: rgba(212,175,55,0.22);
+        --lx-text: #f0eef6;
+        --lx-text-dim: #9b98a6;
+        --lx-grad: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%);
+        --lx-grad-subtle: linear-gradient(180deg,rgba(212,175,55,0.06) 0%,transparent 100%);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        color: var(--lx-text);
+        max-width: 880px;
+        margin: 140px auto 40px;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+        border: 1px solid var(--lx-border);
+    }
+    
+    .lx-reg-header {
+        background: var(--lx-surface);
+        padding: 44px 48px 36px;
+        text-align: center;
+        background-image: var(--lx-grad-subtle);
+        border-bottom: 1px solid var(--lx-border);
+        position: relative;
+    }
+    .lx-reg-header::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        background: var(--lx-grad);
+    }
+    .lx-reg-header .lx-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--lx-gold-dim);
+        border: 1px solid var(--lx-border-gold);
+        color: var(--lx-gold);
+        font-size: 11.5px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        padding: 5px 14px;
+        border-radius: 50px;
+        margin-bottom: 18px;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    }
+    .lx-reg-header h1 {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-size: clamp(22px, 3vw, 30px);
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -0.5px;
+        margin: 0 0 8px 0;
+    }
+    .lx-reg-header h1 span {
+        background: var(--lx-grad);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .lx-reg-header p {
+        font-size: 14px;
+        color: var(--lx-text-dim);
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .lx-reg-body {
+        background: var(--lx-surface);
+        padding: 40px 48px 48px;
+    }
+    
+    .lx-form-section { margin-bottom: 36px; }
+    .lx-form-section:last-of-type { margin-bottom: 0; }
+    .lx-section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--lx-gold-light);
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--lx-border);
+    }
+    .lx-section-title .lx-icon { font-size: 16px; }
+    
+    .lx-form-row { display: flex; gap: 16px; margin-bottom: 0; }
+    .lx-form-group { flex: 1; display: flex; flex-direction: column; margin-bottom: 16px; }
+    .lx-form-group.full { width: 100%; flex: none; }
+    
+    .lx-form-group label {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-weight: 600;
+        font-size: 11.5px;
+        color: var(--lx-text-dim);
+        margin-bottom: 7px;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+    }
+    .lx-form-group label .lx-req { color: #ef4444; margin-left: 2px; }
+    .lx-form-group small { font-size: 11px; color: var(--lx-text-dim); margin-top: 5px; opacity: 0.7; }
+    
+    .lx-form-group input, 
+    .lx-form-group textarea, 
+    .lx-form-group select {
+        background: var(--lx-surface2);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 12px;
+        padding: 12px 16px;
+        color: var(--lx-text);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-size: 13.5px;
+        outline: none;
+        transition: all .25s;
+        width: 100%;
+    }
+    .lx-form-group input:focus, 
+    .lx-form-group textarea:focus, 
+    .lx-form-group select:focus {
+        border-color: var(--lx-gold);
+        box-shadow: 0 0 0 3px var(--lx-gold-dim);
+    }
+    .lx-form-group textarea { resize: vertical; min-height: 90px; }
+    .lx-form-group select { cursor: pointer; }
+    
+    .lx-form-group input[type=file] { padding: 10px; cursor: pointer; }
+    .lx-form-group input[type=file]::file-selector-button {
+        background: var(--lx-gold);
+        color: #000;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 11px;
+        cursor: pointer;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        margin-right: 10px;
+        transition: all .2s;
+    }
+    
+    /* Password strength */
+    .lx-pwd-strength { display: flex; gap: 4px; margin-top: 8px; }
+    .lx-pwd-bar { flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.08); transition: background .3s; }
+    .lx-pwd-label { font-size: 11px; color: var(--lx-text-dim); margin-top: 5px; }
+    
+    /* Checkboxes */
+    .lx-checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+    .lx-checkbox-group label {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 10px 14px;
+        background: var(--lx-surface2);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--lx-text);
+        transition: all .2s;
+    }
+    .lx-checkbox-group label:hover {
+        border-color: var(--lx-border-gold);
+        background: rgba(212,175,55,0.04);
+    }
+    .lx-checkbox-group label:has(input:checked) {
+        border-color: var(--lx-gold);
+        background: var(--lx-gold-dim);
+        color: var(--lx-gold-light);
+    }
+    .lx-checkbox-group input[type=checkbox] {
+        accent-color: var(--lx-gold); width: 15px; height: 15px; margin: 0; flex-shrink: 0;
+    }
+    
+    /* Link lists */
+    .lx-porto-link-item { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+    .lx-porto-link-item input { flex: 1; }
+    .lx-btn-remove-link {
+        background: rgba(239,68,68,0.12);
+        border: 1px solid rgba(239,68,68,0.2);
+        color: #ef4444;
+        width: 36px; height: 36px; border-radius: 10px;
+        cursor: pointer; font-size: 18px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; transition: all .2s;
+    }
+    .lx-btn-remove-link:hover { background: rgba(239,68,68,0.2); }
+    
+    .lx-btn-add {
+        background: transparent;
+        border: 1px dashed var(--lx-border-gold);
+        color: var(--lx-gold);
+        padding: 9px 18px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-weight: 600;
+        font-size: 12.5px;
+        transition: all .2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .lx-btn-add:hover { background: var(--lx-gold-dim); border-style: solid; }
+    
+    /* Select2 integration styling */
+    .select2-container--default .select2-selection--single,
+    .select2-container--default .select2-selection--multiple {
+        background-color: var(--lx-surface2) !important;
+        border: 1px solid rgba(255,255,255,0.07) !important;
+        border-radius: 12px !important;
+        padding: 8px 12px !important;
+        min-height: 46px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--lx-text) !important;
+        padding-left: 0 !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        top: 10px !important; right: 10px !important;
+    }
+    .select2-dropdown {
+        background-color: var(--lx-surface2) !important;
+        border: 1px solid rgba(255,255,255,0.12) !important;
+        border-radius: 12px !important;
+        color: var(--lx-text) !important;
+    }
+    .select2-container--default .select2-results__option {
+        background-color: var(--lx-surface2);
+        color: var(--lx-text);
+        padding: 8px 14px;
+    }
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: var(--lx-gold) !important;
+        color: #000 !important;
+    }
+    .select2-container--default .select2-results__option[aria-selected=true] {
+        background-color: var(--lx-gold-dim) !important;
+        color: var(--lx-gold-light) !important;
+    }
+    .select2-search__field {
+        background-color: var(--lx-surface) !important;
+        border: 1px solid var(--lx-border) !important;
+        color: #fff !important;
+        border-radius: 8px !important;
+    }
+
+    /* Tags container */
+    .lx-tag-container {
+        background: var(--lx-surface2);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 12px;
+        padding: 10px 12px;
+        min-height: 50px;
+        transition: border-color .3s;
+    }
+    .lx-tag-container:focus-within {
+        border-color: var(--lx-gold);
+        box-shadow: 0 0 0 3px var(--lx-gold-dim);
+    }
+    .lx-tag-wrapper { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 30px; }
+    .lx-tag-item {
+        background: var(--lx-gold-dim);
+        border: 1px solid var(--lx-border-gold);
+        color: var(--lx-gold);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11.5px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .lx-tag-item .lx-x { color: #ef4444; cursor: pointer; font-size: 14px; line-height: 1; opacity: 0.8; }
+    .lx-tag-item .lx-x:hover { opacity: 1; }
+    #tagInput { border: none !important; outline: none !important; background: transparent; padding: 4px 0 !important; font-size: 13px !important; flex-grow: 1; min-width: 100px; color: var(--lx-text); }
+    #tagInput::placeholder { color: var(--lx-text-dim); opacity: 0.4; }
+
+    .lx-kota-tag-container { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .lx-kota-tag {
+        display: inline-flex; align-items: center;
+        background: var(--lx-gold-dim); border: 1px solid var(--lx-border-gold);
+        border-radius: 8px; padding: 4px 12px; font-size: 12px; color: var(--lx-gold-light);
+    }
+    .lx-kota-tag-remove { margin-left: 6px; cursor: pointer; font-weight: bold; color: #ef4444; font-size: 14px; line-height: 1; }
+    .lx-kota-tag-remove:hover { color: #ff6b6b; }
+
+    .lx-btn-tambah-provinsi {
+        background: transparent; border: 1px dashed var(--lx-border-gold); color: var(--lx-gold);
+        padding: 8px 16px; border-radius: 8px; cursor: pointer; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-weight: 600; font-size: 12px; transition: all .2s; margin-top: 8px;
+    }
+    .lx-btn-tambah-provinsi:hover { background: var(--lx-gold-dim); border-style: solid; }
+
+    .lx-social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+
+    /* alerts */
+    .lx-alert {
+        padding: 14px 16px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    .lx-alert-success { background: rgba(34,197,94,0.1); border-left: 4px solid #22c55e; color: #4ade80; }
+    .lx-alert-error { background: rgba(239,68,68,0.1); border-left: 4px solid #ef4444; color: #f87171; }
+
+    /* submit button */
+    .lx-btn-submit-wrap { margin-top: 36px; border-top: 1px solid var(--lx-border); padding-top: 28px; }
+    .lx-btn-submit {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 14px;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-weight: 700;
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        background: var(--lx-grad);
+        color: #000;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(212,175,55,0.2);
+        transition: all .3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .lx-btn-submit:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(212,175,55,0.3); }
+    .lx-btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .lx-switch-link { text-align: center; margin-top: 24px; font-size: 13.5px; color: var(--lx-text-dim); }
+    .lx-switch-link a { color: var(--lx-gold); font-weight: 600; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; border-bottom: 1px solid transparent; transition: all .2s; text-decoration: none; }
+    .lx-switch-link a:hover { border-bottom-color: var(--lx-gold); }
+
+    @media(max-width: 768px) {
+        .lx-reg-header, .lx-reg-body { padding: 28px 22px; }
+        .lx-form-row, .lx-social-grid, .lx-checkbox-group { grid-template-columns: 1fr; display: block; }
+        .lx-form-row .lx-form-group { width: 100%; }
+    }
+    </style>
+
+    <div class="lx-reg-container">
+        <!-- Header -->
+        <div class="lx-reg-header">
+            <div class="lx-badge">✦ Bergabung Sekarang</div>
+            <h1>Registrasi <span>Personel Kreatif</span></h1>
+            <p>Isi data dengan lengkap untuk bergabung menjadi bagian dari jaringan Profesional Indonesia</p>
+        </div>
+
+        <!-- Body -->
+        <div class="lx-reg-body">
             <?php if (isset($_GET['message'])): ?>
-                <div class="alert alert-<?php echo $_GET['success'] == '1' ? 'success' : 'error'; ?>">
+                <div class="lx-alert lx-alert-<?php echo $_GET['success'] == '1' ? 'success' : 'error'; ?>">
                     <?php echo urldecode($_GET['message']); ?>
                 </div>
             <?php endif; ?>
-            
+
             <form method="post" enctype="multipart/form-data" id="personelRegister">
                 <input type="hidden" name="personel_register" value="1">
                 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Nama Lengkap <span class="required">*</span></label>
-                        <input type="text" name="nama_lengkap" required>
+                <!-- Section 1: Akun -->
+                <div class="lx-form-section">
+                    <div class="lx-section-title"><span class="lx-icon">🔐</span>Data Akun</div>
+                    <div class="lx-form-row">
+                        <div class="lx-form-group">
+                            <label>Nama Lengkap <span class="lx-req">*</span></label>
+                            <input type="text" name="nama_lengkap" placeholder="John Doe" required>
+                        </div>
+                        <div class="lx-form-group">
+                            <label>Nama Panggilan <span class="lx-req">*</span> <span id="username-status"></span></label>
+                            <input type="text" name="nama_panggilan" id="namaPanggilan" placeholder="john" required maxlength="30">
+                            <small>1 kata saja, digunakan sebagai kode nama. Max 30 karakter.</small>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Nama Panggilan (untuk kode nama, 1 kata saja) <span class="required">*</span> <span id="username-status"></span></label>
-                        <input type="text" name="nama_panggilan" id="namaPanggilan" required maxlength="30">
-                        
+                    <div class="lx-form-row">
+                        <div class="lx-form-group">
+                            <label>Email <span class="lx-req">*</span></label>
+                            <input type="email" name="email" placeholder="contoh@email.com" required>
+                        </div>
+                        <div class="lx-form-group">
+                            <label>Password <span class="lx-req">*</span></label>
+                            <input type="password" name="password" id="pwdInput" placeholder="Minimal 8 karakter" required minlength="8" oninput="lxCheckPwd(this.value)">
+                            <div class="lx-pwd-strength">
+                                <div class="lx-pwd-bar" id="pb1"></div>
+                                <div class="lx-pwd-bar" id="pb2"></div>
+                                <div class="lx-pwd-bar" id="pb3"></div>
+                                <div class="lx-pwd-bar" id="pb4"></div>
+                            </div>
+                            <div class="lx-pwd-label" id="pwdLabel">Masukkan password</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Email <span class="required">*</span></label>
-                        <input type="email" name="email" required>
+                <!-- Section 2: Profil & Biodata -->
+                <div class="lx-form-section">
+                    <div class="lx-section-title"><span class="lx-icon">📷</span>Foto Profil & Biodata</div>
+                    <div class="lx-form-group full">
+                        <label>Foto Profil</label>
+                        <input type="file" name="foto_profil" accept="image/jpeg,image/png,image/webp">
+                        <small>Format JPG/PNG/WEBP · Max 2MB</small>
                     </div>
-                    <div class="form-group">
-                        <label>Password <span class="required">*</span></label>
-                        <input type="password" name="password" required minlength="8">
-                        <small>Minimal 8 karakter</small>
+                    <div class="lx-form-row">
+                        <div class="lx-form-group">
+                            <label>No. HP</label>
+                            <input type="tel" name="no_hp" placeholder="08xxxxxxxxxx">
+                        </div>
+                        <div class="lx-form-group">
+                            <label>Tanggal Lahir <span class="lx-req">*</span></label>
+                            <input type="date" name="tanggal_lahir" required>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-group full">
-                    <label>Foto Profil</label>
-                    <input type="file" name="foto_profil" accept="image/jpeg,image/png,image/webp">
-                    <small>Max 2MB, JPG/PNG/WEBP</small>
-                </div>
-				<h2>
-					Biodata
-				</h2>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>No. HP</label>
-                        <input type="tel" name="no_hp">
-                    </div>
-                    <div class="form-group">
-						<label>Tanggal Lahir <span class="required">*</span></label>
-						<input type="date" name="tanggal_lahir" required>
-					</div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group full" style="margin-bottom: 20px;">
-                        <label>Domisili Provinsi 1 <span class="required">*</span></label>
-                        <select name="provinsi_1" id="domisili_provinsi_1" class="lx-select2" required style="width:100%;">
+                <!-- Section 3: Domisili -->
+                <div class="lx-form-section">
+                    <div class="lx-section-title"><span class="lx-icon">📍</span>Domisili wilayah</div>
+                    <div class="lx-form-group full" style="margin-bottom: 20px;">
+                        <label>Provinsi 1 <span class="lx-req">*</span></label>
+                        <select name="provinsi_1" id="domisili_provinsi_1" required style="width:100%;">
                             <option value="">Memuat data provinsi...</option>
                         </select>
                         <input type="hidden" name="nama_provinsi_1" id="nama_provinsi_1">
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group full">
-						<label>Kota/Kabupaten 1 <span class="required">*</span> (Maksimal 10)</label>
-						<select name="kota_dropdown_1" id="domisili_kota_1" class="lx-select2" style="width:100%;">
-							<option value="">Pilih provinsi terlebih dahulu</option>
-						</select>
-						<div id="domisili_kota_tags_1" class="kota-tag-container"></div>
-						<div id="domisili_kota_hidden_1" data-inputname="kota_kabupaten_1[]"></div>
+                    <div class="lx-form-group full">
+                        <label>Kota/Kabupaten 1 <span class="lx-req">*</span> (Maksimal 10)</label>
+                        <select name="kota_dropdown_1" id="domisili_kota_1" style="width:100%;">
+                            <option value="">Pilih provinsi terlebih dahulu</option>
+                        </select>
+                        <div id="domisili_kota_tags_1" class="lx-kota-tag-container"></div>
+                        <div id="domisili_kota_hidden_1" data-inputname="kota_kabupaten_1[]"></div>
                     </div>
-                </div>
 
-                <div id="domisili_provinsi_2_wrap" style="display:none;">
-                    <div class="form-row">
-                        <div class="form-group full" style="margin-bottom: 20px;">
-                            <label>Domisili Provinsi 2 (Opsional)</label>
-                            <select name="provinsi_2" id="domisili_provinsi_2" class="lx-select2" style="width:100%;">
+                    <div id="domisili_provinsi_2_wrap" style="display:none; margin-top:20px;">
+                        <div class="lx-form-group full" style="margin-bottom: 20px;">
+                            <label>Provinsi 2 (Opsional)</label>
+                            <select name="provinsi_2" id="domisili_provinsi_2" style="width:100%;">
                                 <option value="">Pilih Provinsi</option>
                             </select>
                             <input type="hidden" name="nama_provinsi_2" id="nama_provinsi_2">
                         </div>
+                        <div class="lx-form-group full">
+                            <label>Kota/Kabupaten 2 (Maksimal 10)</label>
+                            <select name="kota_dropdown_2" id="domisili_kota_2" style="width:100%;">
+                                <option value="">Pilih provinsi terlebih dahulu</option>
+                            </select>
+                            <div id="domisili_kota_tags_2" class="lx-kota-tag-container"></div>
+                            <div id="domisili_kota_hidden_2" data-inputname="kota_kabupaten_2[]"></div>
+                        </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group full">
-						<label>Kota/Kabupaten 2 (Maksimal 10)</label>
-						<select name="kota_dropdown_2" id="domisili_kota_2" class="lx-select2" style="width:100%;">
-							<option value="">Pilih provinsi terlebih dahulu</option>
-						</select>
-						<div id="domisili_kota_tags_2" class="kota-tag-container"></div>
-						<div id="domisili_kota_hidden_2" data-inputname="kota_kabupaten_2[]"></div>
+                    <button type="button" id="btn-tambah-provinsi" class="lx-btn-tambah-provinsi">+ Tambah Provinsi Lain</button>
+                </div>
+
+                <!-- Section 4: Data Pekerjaan -->
+                <div class="lx-form-section">
+                    <div class="lx-section-title"><span class="lx-icon">💼</span>Data Pekerjaan</div>
+                    <div class="lx-form-group full">
+                        <label>Posisi <span class="lx-req">*</span> (Pilih satu atau lebih)</label>
+                        <div class="lx-checkbox-group">
+                            <label><input type="checkbox" name="posisi[]" value="F"> 📸 Fotografer</label>
+                            <label><input type="checkbox" name="posisi[]" value="V"> 🎥 Videografer</label>
+                            <label><input type="checkbox" name="posisi[]" value="D"> 🚁 Drone</label>
+                            <label><input type="checkbox" name="posisi[]" value="E"> ✂️ Editor</label>
+                            <label><input type="checkbox" name="posisi[]" value="X"> 🔮 VFX</label>
+                            <label><input type="checkbox" name="posisi[]" value="A"> 🎭 Animator</label>
+                            <label><input type="checkbox" name="posisi[]" value="P"> 🤖 AI Artist - Prompt Engineer</label>
+                        </div>
+                        <small id="selected-posisi">Belum ada posisi dipilih</small>
+                    </div>
+                    <div class="lx-form-group full">
+                        <label>Deskripsi Diri</label>
+                        <textarea name="deskripsi" rows="4" placeholder="Pengalaman 5 tahun di bidangnya..."></textarea>
+                    </div>
+                    <div class="lx-form-row">
+                        <div class="lx-form-group">
+                            <label>Pricelist/hari <span class="lx-req">*</span></label>
+                            <select name="pricelist_perhari" required>
+                                <option value="">Pilih Range</option>
+                                <option value="dibawah_1jt">💰 Dibawah 1 jt</option>
+                                <option value="1jt_3jt">💎 1 jt - 3 jt</option>
+                                <option value="diatas_3jt">⭐ Diatas 3 jt</option>
+                            </select>
+                        </div>
+                        <div class="lx-form-group">
+                            <label>Peralatan</label>
+                            <input type="text" name="peralatan" placeholder="Canon R5, DJI Mavic 3, dll">
+                        </div>
+                    </div>
+                    <div class="lx-form-group full">
+                        <label>Pricelist Detail</label>
+                        <?php wp_editor('', 'pricelist', [
+                            'textarea_name' => 'pricelist',
+                            'textarea_rows' => 6,
+                            'media_buttons' => false,
+                            'teeny' => true
+                        ]); ?>
+                    </div>
+                </div>
+
+                <!-- Section 5: Portofolio & Dokumen -->
+                <div class="lx-form-section">
+                    <div class="lx-section-title"><span class="lx-icon">🔗</span>Portofolio & Dokumen Pendukung</div>
+                    <div class="lx-form-group full">
+                        <label>Link Portofolio Eksternal (Maks. 5)</label>
+                        <div id="porto-link-container">
+                            <div class="lx-porto-link-item">
+                                <input type="url" name="porto_links[]" placeholder="https://linkweb.com/">
+                                <button type="button" class="lx-btn-remove-link" style="display:none;">&times;</button>
+                            </div>
+                        </div>
+                        <button type="button" id="btn-add-link" class="lx-btn-add">+ Tambah Link</button>
+                        <small>Contoh: GDrive, Behance, Adobe Portfolio, dsb.</small>
+                    </div>
+                    <div class="lx-form-row">
+                        <div class="lx-form-group">
+                            <label>CV (PDF) <span class="lx-req">*</span></label>
+                            <input type="file" name="cv_file" accept="application/pdf">
+                            <small>Format PDF · Max 2MB</small>
+                        </div>
+                        <div class="lx-form-group">
+                            <label>Sertifikat</label>
+                            <input type="file" name="sertifikat_files[]" accept="image/jpeg,image/png,image/webp" multiple>
+                            <small>JPG/PNG/WEBP · Bisa pilih banyak sekaligus</small>
+                            <div id="file-list-preview" style="margin-top: 5px; font-size: 11px; color: var(--lx-gold);"></div>
                         </div>
                     </div>
                 </div>
-                <button type="button" id="btn-tambah-provinsi" class="btn-tambah-provinsi" style="margin-bottom:15px;">+ Tambah Provinsi Lain</button>
-				<h2>
-					Data Pekerjaan
-				</h2>
-                    <div class="form-group full">
-						<label>Posisi <span class="required">*</span> (Pilih satu atau lebih)</label>
-						<div class="checkbox-group">
-							<label><input type="checkbox" name="posisi[]" value="F"> 📸 Fotografer</label>
-							<label><input type="checkbox" name="posisi[]" value="V"> 🎥 Videografer</label>
-							<label><input type="checkbox" name="posisi[]" value="D"> 🚁 Drone</label>
-							<label><input type="checkbox" name="posisi[]" value="E"> ✂️ Editor</label>
-							<label><input type="checkbox" name="posisi[]" value="X"> 🔮 VFX</label>
-							<label><input type="checkbox" name="posisi[]" value="A"> 🎭 Animator</label>
-							<label><input type="checkbox" name="posisi[]" value="P"> 🤖 AI Artist - Prompt Engineer</label>
-						</div>
-						<small id="selected-posisi">Belum ada posisi dipilih</small>
-					</div>
-                <div class="form-row">
-                   
-                    <div class="form-group">
-                        <label>Deskripsi Diri</label>
-                        <textarea name="deskripsi" rows="4" placeholder="Pengalaman 5 tahun..."></textarea>
-                    </div>
-                </div>
-				<div class="form-group full">
-					<label>Link Portofolio Eksternal (Max 5)</label>
-					<div id="porto-link-container">
-						<div class="porto-link-item" style="display: flex; gap: 10px; margin-bottom: 10px;">
-							<input type="url" name="porto_links[]" placeholder="https://linkweb.com/" style="flex: 1;">
-							<button type="button" class="btn-remove-link" style="display:none; background:#d63638; color:#fff; border:none; padding:0 10px; border-radius:4px; cursor:pointer;">&times;</button>
-						</div>
-					</div>
-					<button type="button" id="btn-add-link" class="button button-small" style="margin-top: 5px;">+ Tambah Link</button>
-					<small style="display:block; margin-top:5px;">Contoh: GDrive, Behance, Adobe Portfolio, dsb.</small>
-				</div>
-				<div class="form-row">
-					<div class="form-group">
-						<label>Upload CV (PDF) <span class="required">*</span></label>
-						<input type="file" name="cv_file" accept="application/pdf">
-						<small>Format: PDF. Max 2MB.</small>
-					</div>
 
-					<div class="form-group">
-						<label>Upload Sertifikat (Bisa pilih banyak sekaligus)</label>
-						<input type="file" name="sertifikat_files[]" accept="image/jpeg,image/png,image/webp" multiple>
-						<small>Pilih satu atau lebih gambar. JPG/PNG/WEBP.</small>
-						<div id="file-list-preview" style="margin-top: 5px; font-size: 11px; color: #d4af37;"></div>
-					</div>
-				</div>
-
-				<script>
-				// Opsional: Script untuk memberi tahu user berapa file yang dipilih
-				document.querySelector('input[name="sertifikat_files[]"]').addEventListener('change', function(e) {
-					let list = document.getElementById('file-list-preview');
-					list.innerHTML = e.target.files.length + " file sertifikat terpilih.";
-				});
-				</script>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Peralatan</label>
-                        <textarea name="peralatan" rows="4" placeholder="Canon R5, DJI Mavic 3, dll"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Pricelist/hari <span class="required">*</span></label>
-                        <select name="pricelist_perhari" required>
-                            <option value="">Pilih Range</option>
-                            <option value="dibawah_1jt">💰 Dibawah 1 jt</option>
-                            <option value="1jt_3jt">💎 1 jt - 3 jt</option>
-                            <option value="diatas_3jt">⭐ Diatas 3 jt</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group full">
-                    <label>Pricelist Detail</label>
-                    <?php wp_editor('', 'pricelist', [
-                        'textarea_name' => 'pricelist',
-                        'textarea_rows' => 6,
-                        'media_buttons' => false,
-                        'teeny' => true
-                    ]); ?>
-                </div>
-
-                <div class="form-group full">
-                    <label>Social Media</label>
-                    <div class="social-row">
+                <!-- Section 6: Social Media & Tags -->
+                <div class="lx-form-section">
+                    <div class="lx-section-title"><span class="lx-icon">🌐</span>Social Media & Tags</div>
+                    <div class="lx-social-grid">
                         <input type="url" name="facebook" placeholder="facebook.com/username">
                         <input type="url" name="instagram" placeholder="instagram.com/username">
-                    </div>
-                    <div class="social-row">
                         <input type="url" name="tiktok" placeholder="tiktok.com/@username">
+                        <input type="url" name="youtube" placeholder="youtube.com/@username">
+                    </div>
+                    <div class="lx-form-group full">
                         <input type="url" name="thread" placeholder="threads.net/@username">
                     </div>
-                    <input type="url" name="youtube" placeholder="youtube.com/@username">
+                    <div class="lx-form-group full">
+                        <label>Tag Keahlian</label>
+                        <div class="lx-tag-container">
+                            <div class="lx-tag-wrapper" id="tagInputWrapper">
+                                <input type="text" id="tagInput" placeholder="Ketik tag lalu tekan spasi/koma/enter...">
+                            </div>
+                            <input type="hidden" name="tag" id="tagHiddenInput" value="">
+                        </div>
+                        <small>Maks. 10 tag. Pisahkan dengan enter, koma, atau spasi.</small>
+                    </div>
                 </div>
 
-                <!-- GANTI field tag di form -->
-<div class="form-group full">
-    <label>Tag</label>
-    <div class="tag-input-container">
-        <div class="tag-input-wrapper" id="tagInputWrapper">
-            <input type="text" id="tagInput" placeholder="Ketik tag, tekan spasi/koma/enter...">
-        </div>
-        <input type="hidden" name="tag" id="tagHiddenInput" value="">
-    </div>
-    <small>Pisahkan dengan Enter. Max 10 tags.</small>
-</div>
-<input type="hidden" name="personel_nonce" value="<?php echo wp_create_nonce('personel_register'); ?>">
-                <button type="submit" class="btn-submit-gold">
-                    📤 Kirim Pendaftaran
-                </button>
+                <!-- Submit Button -->
+                <div class="lx-btn-submit-wrap">
+                    <input type="hidden" name="personel_nonce" value="<?php echo wp_create_nonce('personel_register'); ?>">
+                    <button type="submit" class="lx-btn-submit" id="lxRegisterSubmit">📤 Kirim Pendaftaran</button>
+                    <div class="lx-switch-link">
+                        Sudah punya akun? <a href="<?php echo esc_url(home_url('/login-personel/')); ?>">← Masuk di sini</a>
+                    </div>
+                </div>
+
             </form>
         </div>
     </div>
 
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-  document.getElementById('namaPanggilan').addEventListener('blur', function() {
-    const rawValue = this.value.trim(); // Ambil nilai asli untuk cek spasi
-    const username = rawValue.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const statusEl = document.getElementById('username-status');
-    const submitBtn = document.querySelector('button[type="submit"]');
-    
-    // 1. Validasi: Tidak boleh kosong
-    if (rawValue === "") {
-        statusEl.innerHTML = "";
-        return;
-    }
-
-    // 2. Validasi: Harus 1 kata (tidak boleh ada spasi di tengah)
-    if (rawValue.includes(' ')) {
-        statusEl.innerHTML = '<span style="color:#e74c3c;">❌ Hanya boleh 1 kata (tanpa spasi)</span>';
-        submitBtn.disabled = true;
-        return;
-    }
-
-    // 3. Validasi: Minimal 3 karakter
-    if (username.length < 3) {
-        statusEl.innerHTML = '<span style="color:orange;">Min 3 karakter</span>';
-        submitBtn.disabled = true;
-        return;
-    }
-    
-    // Jika lolos validasi lokal, baru jalankan Fetch AJAX
-    statusEl.innerHTML = '<span>Mengecek...</span>';
-    
-    fetch('', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'nama_panggilan_ajax=' + encodeURIComponent(username)
-    }).then(r=>r.json()).then(data => {
-        statusEl.innerHTML = data.available ? 
-            '<span style="color:#27ae60;">✅ Username tersedia</span>' : 
-            '<span style="color:#e74c3c;">❌ Username sudah dipakai</span>';
-        submitBtn.disabled = !data.available;
-    }).catch(() => {
-        statusEl.innerHTML = '<span style="color:orange;">Cek koneksi</span>';
-    });
-});
-		
-		// Tambah di akhir script form
-document.querySelectorAll('input[name="posisi[]"]').forEach(cb => {
-    cb.addEventListener('change', function() {
-        const checked = document.querySelectorAll('input[name="posisi[]"]:checked');
-        const count = checked.length;
-        const labels = Array.from(checked).map(cb => cb.nextElementSibling.textContent.trim());
+    // Password Strength Check
+    function lxCheckPwd(val) {
+        const bars = [
+            document.getElementById('pb1'),
+            document.getElementById('pb2'),
+            document.getElementById('pb3'),
+            document.getElementById('pb4')
+        ];
+        const label = document.getElementById('pwdLabel');
+        const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e'];
+        const labels = ['Lemah', 'Cukup', 'Kuat', 'Sangat Kuat'];
+        let score = 0;
+        if(val.length >= 8) score++;
+        if(/[A-Z]/.test(val)) score++;
+        if(/[0-9]/.test(val)) score++;
+        if(/[^A-Za-z0-9]/.test(val)) score++;
         
-        document.getElementById('selected-posisi').textContent = 
-            count ? `✅ Dipilih: ${labels.join(', ')} (${count} posisi)` : 'Belum ada posisi dipilih';
-        
-        // Minimal 1 posisi
-        document.querySelector('button[type="submit"]').disabled = count === 0;
-    });
-});
-		
-		// TAG SYSTEM - WordPress Style
-(function() {
-    const tagInput = document.getElementById('tagInput');
-    const wrapper = document.getElementById('tagInputWrapper');
-    const hiddenInput = document.getElementById('tagHiddenInput');
-    const maxTags = 10;
-    let tags = [];
-
-    function addTag(text) {
-        if (tags.length >= maxTags || text.trim().length < 2) return;
-        
-        const tag = text.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
-        if (tags.includes(tag) || tag.length < 2) return;
-        
-        tags.push(tag);
-        renderTags();
-        tagInput.value = '';
-        updateHiddenInput();
-    }
-
-    function removeTag(index) {
-        tags.splice(index, 1);
-        renderTags();
-        updateHiddenInput();
-    }
-
-    function renderTags() {
-        wrapper.innerHTML = '';
-        tags.forEach((tag, index) => {
-            const tagEl = document.createElement('div');
-            tagEl.className = 'tag-item';
-            tagEl.innerHTML = `
-                #${tag}
-                <button type="button" class="tag-remove" onclick="removeTag(${index})">&times;</button>
-            `;
-            wrapper.appendChild(tagEl);
+        bars.forEach((b, i) => {
+            b.style.background = i < score ? colors[score-1] : 'rgba(255,255,255,0.08)';
         });
-        wrapper.appendChild(tagInput);
+        label.textContent = val.length ? labels[score-1] || '' : 'Masukkan password';
+        label.style.color = val.length ? colors[score-1] : '';
     }
 
-    function updateHiddenInput() {
-        hiddenInput.value = tags.join(',');
-    }
-
-    // Events
-    tagInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
-            e.preventDefault();
-            addTag(this.value);
-        }
-    });
-
-    tagInput.addEventListener('blur', function() {
-        if (this.value.trim()) {
-            addTag(this.value);
-        }
-    });
-
-    // Global removeTag function
-    window.removeTag = function(index) {
-        removeTag(index);
-    };
-})();
-    </script>
-<script>
-jQuery(document).ready(function($) {
-    var maxLinks = 5;
-    var container = $('#porto-link-container');
-    var addButton = $('#btn-add-link');
-
-    // Tambah Link
-    addButton.on('click', function() {
-        var linkCount = container.find('.porto-link-item').length;
+    // Nama Panggilan check
+    document.getElementById('namaPanggilan').addEventListener('blur', function() {
+        const rawValue = this.value.trim();
+        const username = rawValue.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const statusEl = document.getElementById('username-status');
+        const submitBtn = document.getElementById('lxRegisterSubmit');
         
-        if (linkCount < maxLinks) {
-            var newField = container.find('.porto-link-item').first().clone();
-            newField.find('input').val(''); // Kosongkan value
-            newField.find('.btn-remove-link').show(); // Munculkan tombol hapus
-            container.append(newField);
+        if (rawValue === "") {
+            statusEl.innerHTML = "";
+            return;
         }
-
-        if (container.find('.porto-link-item').length === maxLinks) {
-            addButton.hide(); // Sembunyikan tombol tambah jika sudah 5
+        if (rawValue.includes(' ')) {
+            statusEl.innerHTML = '<span style="color:#ef4444;">❌ Hanya 1 kata</span>';
+            submitBtn.disabled = true;
+            return;
         }
+        if (username.length < 3) {
+            statusEl.innerHTML = '<span style="color:orange;">Min 3 karakter</span>';
+            submitBtn.disabled = true;
+            return;
+        }
+        
+        statusEl.innerHTML = '<span style="color:var(--lx-text-dim)">Mengecek...</span>';
+        
+        fetch('', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'nama_panggilan_ajax=' + encodeURIComponent(username)
+        }).then(r=>r.json()).then(data => {
+            statusEl.innerHTML = data.available ? 
+                '<span style="color:#22c55e;">✅ Tersedia</span>' : 
+                '<span style="color:#ef4444;">❌ Sudah dipakai</span>';
+            submitBtn.disabled = !data.available;
+        }).catch(() => {
+            statusEl.innerHTML = '<span style="color:orange;">Cek koneksi</span>';
+        });
     });
 
-    // Hapus Link
-    container.on('click', '.btn-remove-link', function() {
-        $(this).parent('.porto-link-item').remove();
-        addButton.show(); // Munculkan kembali tombol tambah
+    // Position selects minimum 1
+    document.querySelectorAll('.lx-checkbox-group input[type=checkbox]').forEach(cb => {
+        cb.addEventListener('change', function() {
+            const checked = document.querySelectorAll('.lx-checkbox-group input[type=checkbox]:checked');
+            const count = checked.length;
+            const labels = Array.from(checked).map(c => c.parentElement.textContent.trim());
+            document.getElementById('selected-posisi').textContent = 
+                count ? `✅ Dipilih: ${labels.join(', ')} (${count} posisi)` : 'Belum ada posisi dipilih';
+            
+            document.getElementById('lxRegisterSubmit').disabled = count === 0;
+        });
     });
-});
-</script>
-<style>
-[type="button"], [type="submit"], button {
-  background-color: #c97925;
-  border: 1px solid #cd6407;
-  border-radius: 3px;
-  color: #fff;
-  display: inline-block;
-  font-size: 1rem;
-  font-weight: 400;
-  padding: .5rem 1rem;
-  text-align: center;
-  transition: all .3s;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-  white-space: nowrap;
-}</style>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<style>
-.select2-container--default .select2-selection--single,
-.select2-container--default .select2-selection--multiple {
-    background-color: #1a1a1a !important;
-    border: 1px solid #333 !important;
-    border-radius: 4px;
-    padding: 5px;
-    min-height: 42px;
-}
-.select2-container--default .select2-selection--single .select2-selection__rendered,
-.select2-container--default .select2-selection--multiple .select2-selection__choice {
-    color: #fff !important;
-}
-.select2-container--default .select2-results__option {
-    background-color: #1a1a1a;
-    color: #fff;
-}
-.select2-container--default .select2-results__option--highlighted[aria-selected] {
-    background-color: #d4af37 !important;
-    color: #000 !important;
-}
-.select2-container--default .select2-selection--multiple .select2-selection__choice {
-    background-color: #d4af37 !important;
-    border: none;
-    color: #000 !important;
-    font-weight: bold;
-}
-.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-    color: #000 !important;
-    margin-right: 5px;
-}
-.select2-container--default .select2-selection--multiple .select2-selection__placeholder {
-    margin-top: 0;
-    line-height: 32px;
-}
-.select2-container--default .select2-selection--multiple .select2-search--inline {
-    width: 0;
-    opacity: 0;
-    overflow: hidden;
-}
-.select2-container--default.select2-container--open .select2-selection--multiple .select2-search--inline,
-.select2-container--default .select2-selection--multiple:has(.select2-selection__choice) .select2-search--inline {
-    width: auto;
-    opacity: 1;
-}
-.form-row {
-    overflow: visible !important;
-}
-.form-group.full {
-    overflow: visible !important;
-}
-.btn-tambah-provinsi {
-    background: transparent;
-    color: #d4af37;
-    border: 1px dashed #d4af37;
-    cursor: pointer;
-    padding: 6px 14px;
-    border-radius: 4px;
-    font-size: 0.9rem;
-}
-.btn-tambah-provinsi:hover {
-    background: rgba(212, 175, 55, 0.1);
-}
-.kota-tag-container {
-    margin-top: 8px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-.kota-tag {
-    display: inline-flex;
-    align-items: center;
-    background: #2a2a2a;
-    border: 1px solid #d4af37;
-    border-radius: 4px;
-    padding: 4px 10px;
-    font-size: 0.85rem;
-    color: #d4af37;
-}
-.kota-tag-remove {
-    margin-left: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    color: #ff6b6b;
-    font-size: 1rem;
-    line-height: 1;
-}
-.kota-tag-remove:hover {
-    color: #ff0000;
-}
-</style>
+    // Dynamic links
+    jQuery(document).ready(function($) {
+        var maxLinks = 5;
+        var container = $('#porto-link-container');
+        var addButton = $('#btn-add-link');
 
-<script>
-jQuery(document).ready(function($) {
-    function initProvKota(provSelector, kotaSelector, tagContainer, hiddenContainer, hiddenSelector, ajaxUrl, isRequired) {
-        var $prov = $(provSelector);
-        var $kota = $(kotaSelector);
-        var $tags = $(tagContainer);
-        var $hdn = $(hiddenContainer);
-        var $hidden = $(hiddenSelector);
-        var inputName = $hdn.data('inputname');
-        var maxCities = 10;
-
-        var opts = { placeholder: "Pilih Provinsi", width: '100%' };
-        if (!isRequired) opts.allowClear = true;
-        $prov.select2(opts);
-
-        $kota.select2({ placeholder: "Pilih Kota/Kabupaten", width: '100%' });
-
-        function addKotaTag(cityName) {
-            if ($tags.find('.kota-tag').length >= maxCities) {
-                alert('Maksimal ' + maxCities + ' kota/kabupaten');
-                return;
+        addButton.on('click', function() {
+            var linkCount = container.find('.lx-porto-link-item').length;
+            if (linkCount < maxLinks) {
+                var newField = container.find('.lx-porto-link-item').first().clone();
+                newField.find('input').val('');
+                newField.find('.lx-btn-remove-link').show();
+                container.append(newField);
             }
-            var exists = false;
-            $tags.find('.kota-tag').each(function() {
-                if ($(this).data('city') === cityName) exists = true;
-            });
-            if (exists) return;
+            if (container.find('.lx-porto-link-item').length === maxLinks) {
+                addButton.hide();
+            }
+        });
 
-            $tags.append('<span class="kota-tag" data-city="' + cityName + '">' + cityName + ' <span class="kota-tag-remove" data-city="' + cityName + '">&times;</span></span>');
-            $hdn.append('<input type="hidden" name="' + inputName + '" value="' + cityName + '">');
+        container.on('click', '.lx-btn-remove-link', function() {
+            $(this).parent('.lx-porto-link-item').remove();
+            addButton.show();
+        });
+    });
+
+    // Sertifikat files count
+    document.querySelector('input[name="sertifikat_files[]"]').addEventListener('change', function(e) {
+        document.getElementById('file-list-preview').textContent = e.target.files.length + " file sertifikat terpilih.";
+    });
+
+    // Tag System
+    (function() {
+        const tagInput = document.getElementById('tagInput');
+        const wrapper = document.getElementById('tagInputWrapper');
+        const hiddenInput = document.getElementById('tagHiddenInput');
+        const maxTags = 10;
+        let tags = [];
+
+        function addTag(text) {
+            if (tags.length >= maxTags || text.trim().length < 2) return;
+            const tag = text.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
+            if (tags.includes(tag) || tag.length < 2) return;
+            tags.push(tag);
+            renderTags();
+            tagInput.value = '';
+            updateHiddenInput();
         }
 
-        $tags.on('click', '.kota-tag-remove', function() {
-            var city = $(this).data('city');
-            $(this).closest('.kota-tag').remove();
-            $hdn.find('input').filter(function() { return $(this).val() === city; }).remove();
+        function removeTag(index) {
+            tags.splice(index, 1);
+            renderTags();
+            updateHiddenInput();
+        }
+
+        function renderTags() {
+            wrapper.querySelectorAll('.lx-tag-item').forEach(el => el.remove());
+            tags.forEach((tag, index) => {
+                const tagEl = document.createElement('div');
+                tagEl.className = 'lx-tag-item';
+                tagEl.innerHTML = `
+                    #${tag}
+                    <span class="lx-x" onclick="lxRemoveTag(${index})">&times;</span>
+                `;
+                wrapper.insertBefore(tagEl, tagInput);
+            });
+        }
+
+        function updateHiddenInput() {
+            hiddenInput.value = tags.join(',');
+        }
+
+        tagInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
+                e.preventDefault();
+                addTag(this.value);
+            }
         });
 
-        $kota.on('change', function() {
-            var cityName = $(this).val();
-            if (!cityName) return;
-            addKotaTag(cityName);
-            $kota.val(null).trigger('change');
+        tagInput.addEventListener('blur', function() {
+            if (this.value.trim()) addTag(this.value);
         });
 
-        $prov.on('change', function() {
-            var provId = $(this).val();
-            var provName = $(this).find(':selected').data('name');
-            $hidden.val(provName || '');
-            $tags.empty();
-            $hdn.empty();
+        window.lxRemoveTag = function(index) {
+            removeTag(index);
+        };
+    })();
 
-            $kota.html('<option value="">Memuat data kota...</option>').prop('disabled', true);
+    // Region Select2
+    jQuery(document).ready(function($) {
+        function initProvKota(provSelector, kotaSelector, tagContainer, hiddenContainer, hiddenSelector, ajaxUrl, isRequired) {
+            var $prov = $(provSelector);
+            var $kota = $(kotaSelector);
+            var $tags = $(tagContainer);
+            var $hdn = $(hiddenContainer);
+            var $hidden = $(hiddenSelector);
+            var inputName = $hdn.data('inputname');
+            var maxCities = 10;
 
-            if (provId) {
-                $.getJSON(ajaxUrl, { action: 'fetch_wilayah', type: 'regencies', prov_id: provId })
-                    .done(function(regencies) {
-                        var options = '<option value="">Pilih Kota/Kabupaten</option>';
-                        regencies.forEach(function(reg) {
-                            options += '<option value="' + reg.name + '">' + reg.name + '</option>';
+            $prov.select2({ placeholder: "Pilih Provinsi", width: '100%' });
+            $kota.select2({ placeholder: "Pilih Kota/Kabupaten", width: '100%' });
+
+            function addKotaTag(cityName) {
+                if ($tags.find('.lx-kota-tag').length >= maxCities) {
+                    alert('Maksimal ' + maxCities + ' kota/kabupaten');
+                    return;
+                }
+                var exists = false;
+                $tags.find('.lx-kota-tag').each(function() {
+                    if ($(this).data('city') === cityName) exists = true;
+                });
+                if (exists) return;
+
+                $tags.append('<span class="lx-kota-tag" data-city="' + cityName + '">' + cityName + ' <span class="lx-kota-tag-remove" data-city="' + cityName + '">&times;</span></span>');
+                $hdn.append('<input type="hidden" name="' + inputName + '" value="' + cityName + '">');
+            }
+
+            $tags.on('click', '.lx-kota-tag-remove', function() {
+                var city = $(this).data('city');
+                $(this).closest('.lx-kota-tag').remove();
+                $hdn.find('input').filter(function() { return $(this).val() === city; }).remove();
+            });
+
+            $kota.on('change', function() {
+                var cityName = $(this).val();
+                if (!cityName) return;
+                addKotaTag(cityName);
+                $kota.val(null).trigger('change');
+            });
+
+            $prov.on('change', function() {
+                var provId = $(this).val();
+                var provName = $(this).find(':selected').data('name');
+                $hidden.val(provName || '');
+                $tags.empty();
+                $hdn.empty();
+
+                $kota.html('<option value="">Memuat data kota...</option>').prop('disabled', true);
+
+                if (provId) {
+                    $.getJSON(ajaxUrl, { action: 'fetch_wilayah', type: 'regencies', prov_id: provId })
+                        .done(function(regencies) {
+                            var options = '<option value="">Pilih Kota/Kabupaten</option>';
+                            regencies.forEach(function(reg) {
+                                options += '<option value="' + reg.name + '">' + reg.name + '</option>';
+                            });
+                            $kota.html(options).prop('disabled', false).trigger('change');
+                        })
+                        .fail(function() {
+                            $kota.html('<option value="">Gagal memuat data</option>').prop('disabled', false);
                         });
-                        $kota.html(options).prop('disabled', false).trigger('change');
-                    })
-                    .fail(function() {
-                        $kota.html('<option value="">Gagal memuat data</option>').prop('disabled', false);
-                    });
-            } else {
-                $kota.html('<option value="">Pilih provinsi terlebih dahulu</option>').prop('disabled', true);
-            }
-        });
-    }
-
-    var ajaxUrl = '<?php echo admin_url('admin-ajax.php'); ?>';
-    var $prov1 = $('#domisili_provinsi_1');
-
-    initProvKota('#domisili_provinsi_1', '#domisili_kota_1', '#domisili_kota_tags_1', '#domisili_kota_hidden_1', '#nama_provinsi_1', ajaxUrl, true);
-    initProvKota('#domisili_provinsi_2', '#domisili_kota_2', '#domisili_kota_tags_2', '#domisili_kota_hidden_2', '#nama_provinsi_2', ajaxUrl, false);
-
-    $.getJSON(ajaxUrl, { action: 'fetch_wilayah', type: 'provinces' })
-        .done(function(provinces) {
-            var options = '<option value="">Pilih Provinsi</option>';
-            provinces.forEach(function(prov) {
-                options += '<option value="' + prov.id + '" data-name="' + prov.name + '">' + prov.name + '</option>';
+                } else {
+                    $kota.html('<option value="">Pilih provinsi terlebih dahulu</option>').prop('disabled', true);
+                }
             });
-            $('#domisili_provinsi_1, #domisili_provinsi_2').html(options).trigger('change');
-        })
-        .fail(function() {
-            $('#domisili_provinsi_1, #domisili_provinsi_2').html('<option value="">Gagal memuat data</option>');
-        });
+        }
 
-    $('#btn-tambah-provinsi').on('click', function() {
-        $('#domisili_provinsi_2_wrap').slideDown();
-        $(this).hide();
+        var ajaxUrl = '<?php echo admin_url('admin-ajax.php'); ?>';
+        initProvKota('#domisili_provinsi_1', '#domisili_kota_1', '#domisili_kota_tags_1', '#domisili_kota_hidden_1', '#nama_provinsi_1', ajaxUrl, true);
+        initProvKota('#domisili_provinsi_2', '#domisili_kota_2', '#domisili_kota_tags_2', '#domisili_kota_hidden_2', '#nama_provinsi_2', ajaxUrl, false);
+
+        $.getJSON(ajaxUrl, { action: 'fetch_wilayah', type: 'provinces' })
+            .done(function(provinces) {
+                var options = '<option value="">Pilih Provinsi</option>';
+                provinces.forEach(function(prov) {
+                    options += '<option value="' + prov.id + '" data-name="' + prov.name + '">' + prov.name + '</option>';
+                });
+                $('#domisili_provinsi_1, #domisili_provinsi_2').html(options).trigger('change');
+            })
+            .fail(function() {
+                $('#domisili_provinsi_1, #domisili_provinsi_2').html('<option value="">Gagal memuat data</option>');
+            });
+
+        $('#btn-tambah-provinsi').on('click', function() {
+            $('#domisili_provinsi_2_wrap').slideDown();
+            $(this).hide();
+        });
     });
-});
-</script>
+    </script>
     <?php
     return ob_get_clean();
 }
@@ -1141,7 +1405,7 @@ function personel_thankyou_display() {
         text-align: center; 
         max-width: 500px; 
         margin: 50px auto; 
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     }
 
     /* Kartu Informasi Personel */
@@ -2261,305 +2525,569 @@ function personel_logout_handler() {
 }
 add_shortcode('form_login_personel', 'personel_login_form_shortcode');
 
-add_shortcode('form_login_personel', 'personel_login_form_shortcode');
-
 function personel_login_form_shortcode() {
-   if (is_personel_logged_in()) {
-    return '<div class="personel-box login-personel-container" style="text-align:center;">
-                <p style="color:white;">Anda sudah login sebagai <strong>'.$_SESSION['personel_nama'].'</strong></p>
-                <a href="?personel_action=logout" class="btn-login" style="display:inline-block; text-decoration:none;">Logout</a>
-            </div>';
-}
-
-global $wpdb;
-$error = '';
-
-if (isset($_POST['personel_login_submit'])) {
-    $login_input = sanitize_text_field($_POST['login_user']);
-    $password    = $_POST['login_password'];
-
-    $user = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM wp9y_personel WHERE (email = %s OR username = %s) AND status = 'approved'",
-        $login_input, $login_input
-    ));
-
-    if ($user && wp_check_password($password, $user->password, $user->id)) {
-        $_SESSION['personel_id']    = $user->id;
-        $_SESSION['personel_nama']  = $user->nama_panggilan;
-        $_SESSION['personel_email'] = $user->email;
-        
-        // =========================================================
-        // AUTO-SYNC WP LOGIN (Agar tombol Add Media muncul)
-        // =========================================================
-        $wp_user = get_user_by('email', $user->email); 
-        
-        if (!$wp_user) {
-            // Jika belum punya akun bayangan di WP, buatkan!
-            $new_user_id = wp_insert_user(array(
-                'user_login'   => $user->username, 
-                'user_email'   => $user->email,
-                'user_pass'    => wp_generate_password(), 
-                'display_name' => $user->nama_panggilan, 
-                'role'         => 'personel'
-            ));
-            if (!is_wp_error($new_user_id)) {
-                $wp_user = get_userdata($new_user_id);
-            }
-        }
-
-        // Eksekusi Login WordPress
-        if ($wp_user) {
-            wp_clear_auth_cookie();
-            wp_set_current_user($wp_user->ID);
-            wp_set_auth_cookie($wp_user->ID);
-        }
-        // =========================================================
-
-        // Alihkan ke dashboard (pakai PHP agar session tidak hilang)
-        wp_safe_redirect(home_url('/dashboard-personel'));
-        exit;
-    } else {
-        $error = 'Akses ditolak. Periksa kembali akun Anda.';
+    if (is_personel_logged_in()) {
+        ob_start();
+        ?>
+        <div style="max-width: 460px; margin: 60px auto; background: #13111a; border: 1px solid rgba(255,255,255,0.07); border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';">
+            <h3 style="font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 12px;">Sudah Terautentikasi</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 24px;">Anda saat ini masuk sebagai <strong style="color: #d4af37;"><?php echo esc_html($_SESSION['personel_nama']); ?></strong></p>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a href="<?php echo esc_url(home_url('/dashboard-personel/')); ?>" style="display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; background: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%); color: #000; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-weight: 700; font-size: 13.5px; border-radius: 12px; text-decoration: none; transition: transform 0.2s;">Dashboard</a>
+                <a href="?personel_action=logout" style="display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-weight: 600; font-size: 13.5px; border-radius: 12px; text-decoration: none; transition: all 0.25s;">Logout</a>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
     }
-}
 
-ob_start();
-?>
+    global $wpdb;
+    $error = '';
+
+    if (isset($_POST['personel_login_submit'])) {
+        $login_input = sanitize_text_field($_POST['login_user']);
+        $password    = $_POST['login_password'];
+
+        $user = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM wp9y_personel WHERE (email = %s OR username = %s) AND status = 'approved'",
+            $login_input, $login_input
+        ));
+
+        if ($user && wp_check_password($password, $user->password, $user->id)) {
+            $_SESSION['personel_id']    = $user->id;
+            $_SESSION['personel_nama']  = $user->nama_panggilan;
+            $_SESSION['personel_email'] = $user->email;
+            
+            // =========================================================
+            // AUTO-SYNC WP LOGIN (Agar tombol Add Media muncul)
+            // =========================================================
+            $wp_user = get_user_by('email', $user->email); 
+            
+            if (!$wp_user) {
+                // Jika belum punya akun bayangan di WP, buatkan!
+                $new_user_id = wp_insert_user(array(
+                    'user_login'   => $user->username, 
+                    'user_email'   => $user->email,
+                    'user_pass'    => wp_generate_password(), 
+                    'display_name' => $user->nama_panggilan, 
+                    'role'         => 'personel'
+                ));
+                if (!is_wp_error($new_user_id)) {
+                    $wp_user = get_userdata($new_user_id);
+                }
+            }
+
+            // Eksekusi Login WordPress
+            if ($wp_user) {
+                wp_clear_auth_cookie();
+                wp_set_current_user($wp_user->ID);
+                wp_set_auth_cookie($wp_user->ID);
+            }
+            // =========================================================
+
+            // Alihkan ke dashboard (pakai PHP agar session tidak hilang)
+            personel_dashboard_redirect(home_url('/dashboard-personel'));
+            exit;
+        } else {
+            $error = 'Akses ditolak. Periksa kembali akun Anda.';
+        }
+    }
+
+    ob_start();
+    ?>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        .login-personel-container { 
-            max-width: 400px; 
-            margin: 40px auto; 
-            padding: 30px; 
-            border-radius: 15px; 
-            background: #1a1a1a; /* Hitam Gelap */
-            border: 1px solid #c5a059; /* Border Emas Tipis */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            color: #ffffff;
-        }
+    /* ===== PREMIUM LOGIN SHORTCODE CSS ===== */
+    .lx-login-container {
+        --lx-bg: #0b0a0f;
+        --lx-surface: #13111a;
+        --lx-surface2: #1a1825;
+        --lx-gold: #d4af37;
+        --lx-gold-light: #ffd275;
+        --lx-gold-dim: rgba(212,175,55,0.10);
+        --lx-border: rgba(255,255,255,0.07);
+        --lx-border-gold: rgba(212,175,55,0.22);
+        --lx-text: #f0eef6;
+        --lx-text-dim: #9b98a6;
+        --lx-grad: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%);
+        --lx-grad-subtle: linear-gradient(180deg,rgba(212,175,55,0.06) 0%,transparent 100%);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        color: var(--lx-text);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin-top: 110px;
+        padding: 40px 0;
+    }
+    .lx-login-split {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        max-width: 900px;
+        width: 100%;
+        background: var(--lx-surface);
+        border: 1px solid var(--lx-border);
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+    }
+    /* Left Panel */
+    .lx-login-panel {
+        background: var(--lx-grad-subtle);
+        border-right: 1px solid var(--lx-border);
+        padding: 52px 44px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+    }
+    .lx-login-panel::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 3px;
+        background: var(--lx-grad);
+    }
+    .lx-panel-inner {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .lx-panel-logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 52px;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-weight: 800;
+        font-size: 17px;
+        color: var(--lx-text);
+    }
+    .lx-panel-logo .lx-dot {
+        width: 9px; height: 9px; border-radius: 50%;
+        background: var(--lx-gold);
+        box-shadow: 0 0 12px var(--lx-gold);
+    }
+    .lx-panel-logo span { color: var(--lx-gold); }
+    .lx-panel-tagline {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-size: clamp(22px, 2.5vw, 30px);
+        font-weight: 800;
+        color: #fff;
+        line-height: 1.25;
+        margin-bottom: 18px;
+        letter-spacing: -0.5px;
+    }
+    .lx-panel-tagline .lx-hi {
+        background: var(--lx-grad);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .lx-panel-desc {
+        font-size: 13.5px;
+        color: var(--lx-text-dim);
+        line-height: 1.7;
+        max-width: 280px;
+    }
+    .lx-panel-stats {
+        display: flex;
+        gap: 24px;
+        margin-top: 40px;
+    }
+    .lx-stat-item { text-align: left; }
+    .lx-stat-val {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--lx-gold-light);
+        display: block;
+        line-height: 1;
+    }
+    .lx-stat-label {
+        font-size: 11.5px;
+        color: var(--lx-text-dim);
+        margin-top: 4px;
+        display: block;
+    }
+    .lx-panel-ring {
+        position: absolute;
+        bottom: -40px; right: -40px;
+        width: 200px; height: 200px; border-radius: 50%;
+        border: 1px solid var(--lx-border-gold);
+        opacity: 0.3;
+    }
 
-        .login-personel-container h3 {
-            text-align: center;
-            color: #d4af37; /* Warna Emas */
-            font-size: 24px;
-            margin-bottom: 25px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+    /* Right Form */
+    .lx-login-form-wrap {
+        padding: 48px 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .lx-form-head { margin-bottom: 32px; }
+    .lx-form-head h1 {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-size: 26px;
+        font-weight: 800;
+        color: #fff;
+        margin: 0 0 6px 0;
+        letter-spacing: -0.5px;
+    }
+    .lx-form-head h1 span {
+        background: var(--lx-grad);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .lx-form-head p { font-size: 13.5px; color: var(--lx-text-dim); margin: 0; }
+    
+    .lx-form-group { margin-bottom: 18px; }
+    .lx-form-group label {
+        display: block;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-weight: 600;
+        font-size: 11px;
+        color: var(--lx-text-dim);
+        margin-bottom: 7px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    .lx-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: var(--lx-surface2);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 12px;
+        transition: all .25s;
+    }
+    .lx-input-wrap:focus-within {
+        border-color: var(--lx-gold);
+        box-shadow: 0 0 0 3px var(--lx-gold-dim);
+    }
+    .lx-input-icon {
+        padding: 0 0 0 14px;
+        color: var(--lx-text-dim);
+        font-size: 14px;
+        opacity: 0.5;
+        flex-shrink: 0;
+    }
+    .lx-input-wrap input {
+        flex: 1;
+        padding: 13px 12px 13px 10px;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--lx-text);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-size: 14px;
+    }
+    .lx-input-wrap input::placeholder { color: var(--lx-text-dim); opacity: 0.4; }
+    .lx-toggle-pass {
+        background: none; border: none; color: var(--lx-text-dim);
+        cursor: pointer; padding: 0 14px; font-size: 13px; opacity: 0.5;
+        transition: opacity .25s; flex-shrink: 0;
+    }
+    .lx-toggle-pass:hover { opacity: 1; }
+    
+    .lx-form-extras {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: -8px;
+        margin-bottom: 20px;
+    }
+    .lx-form-extras a {
+        font-size: 12px;
+        color: var(--lx-text-dim);
+        transition: color .25s;
+        text-decoration: none;
+    }
+    .lx-form-extras a:hover { color: var(--lx-gold); }
+    
+    .lx-btn-submit {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-weight: 700;
+        font-size: 13.5px;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        background: var(--lx-grad);
+        color: #000;
+        cursor: pointer;
+        box-shadow: 0 6px 20px rgba(212,175,55,0.2);
+        transition: all 0.3s;
+    }
+    .lx-btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 28px rgba(212,175,55,0.3);
+    }
+    .lx-switch-link {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 13.5px;
+        color: var(--lx-text-dim);
+    }
+    .lx-switch-link a {
+        color: var(--lx-gold);
+        font-weight: 600;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        transition: all .2s;
+        border-bottom: 1px solid transparent;
+        text-decoration: none;
+    }
+    .lx-switch-link a:hover { border-bottom-color: var(--lx-gold); }
+    
+    .lx-error-msg {
+        background: rgba(239, 68, 68, 0.1);
+        border-left: 4px solid #ef4444;
+        color: #f87171;
+        padding: 12px 14px;
+        border-radius: 8px;
+        font-size: 13.5px;
+        margin-bottom: 20px;
+    }
 
-        .personel-form label {
-            color: #f0f0f0;
-            font-size: 14px;
-            font-weight: 500;
-        }
+    /* Modal Reset Password */
+    .lx-modal-overlay {
+        display: none;
+        position: fixed;
+        z-index: 99999;
+        inset: 0;
+        background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(8px);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .lx-modal-overlay.active { display: flex; }
+    .lx-modal-box {
+        background: var(--lx-surface);
+        border: 1px solid var(--lx-border);
+        border-radius: 24px;
+        max-width: 420px;
+        width: 100%;
+        box-shadow: 0 32px 80px rgba(0,0,0,.6);
+        position: relative;
+        overflow: hidden;
+        animation: lxModalIn .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes lxModalIn {
+        from { opacity: 0; transform: scale(0.9) translateY(20px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .lx-modal-box::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        background: var(--lx-grad);
+    }
+    .lx-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 24px 26px 0;
+        margin-bottom: 8px;
+    }
+    .lx-modal-header h3 {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-weight: 700;
+        font-size: 18px;
+        color: #fff;
+        margin: 0;
+    }
+    .lx-modal-close {
+        background: none; border: none; color: var(--lx-text-dim);
+        font-size: 24px; cursor: pointer; transition: color .25s;
+        line-height: 1;
+    }
+    .lx-modal-close:hover { color: var(--lx-gold); }
+    .lx-modal-body { padding: 8px 26px 28px; }
+    .lx-modal-body p {
+        font-size: 13.5px;
+        color: var(--lx-text-dim);
+        line-height: 1.7;
+        margin: 0 0 20px 0;
+    }
+    .lx-btn-modal {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: var(--lx-grad);
+        color: #000;
+        cursor: pointer;
+        box-shadow: 0 6px 20px rgba(212,175,55,0.2);
+        transition: all .3s;
+        margin-top: 16px;
+    }
+    .lx-btn-modal:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 28px rgba(212,175,55,0.3);
+    }
 
-        .personel-form input { 
-            width: 100%; 
-            padding: 12px 15px; 
-            margin: 8px 0 20px 0; 
-            border: 1px solid #333; 
-            border-radius: 8px; 
-            background: #262626; 
-            color: #fff;
-            box-sizing: border-box;
-            transition: 0.3s;
-        }
-
-        .personel-form input:focus {
-            outline: none;
-            border-color: #d4af37;
-            box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
-        }
-
-        /* Tombol Gradasi Emas Gelap */
-        .btn-login { 
-            width: 100%; 
-            padding: 14px; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #1a1a1a; /* Teks Hitam agar kontras */
-            background: linear-gradient(135deg, #8a6d3b 0%, #d4af37 50%, #8a6d3b 100%);
-            background-size: 200% auto;
-            transition: 0.5s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        .btn-login:hover { 
-            background-position: right center;
-            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
-            transform: translateY(-2px);
-        }
-
-        .error-msg {
-            font-size: 13px;
-            text-align: center;
-            border-left: 4px solid #d4af37;
-            background: #2d2311;
-            color: #e5c07b;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-		/* Sembunyikan Modal saat awal */
-.modal-overlay-custom {
-    display: none; 
-    position: fixed;
-    z-index: 9999;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.7); /* Background Gelap */
-}
-
-/* Box Putih di Tengah */
-.modal-box-custom {
-    background-color: #fff;
-    margin: 10% auto;
-    padding: 20px;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 400px;
-    color: #333;
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-.modal-header-custom {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-}
-
-.close-custom {
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #999;
-}
-
-.form-control-custom {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-.btn-submit-custom {
-    width: 100%;
-    background: #6366F1; /* Warna Ungu sesuai gambar */
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 15px;
-    font-weight: bold;
-}
-
-.btn-submit-custom:hover { background: #4F46E5; }
+    @media(max-width: 820px) {
+        .lx-login-split { grid-template-columns: 1fr; }
+        .lx-login-panel { display: none; }
+    }
+    @media(max-width: 600px) {
+        .lx-login-form-wrap { padding: 32px 24px; }
+    }
     </style>
 
-    <div class="login-personel-container">
-        <form method="post" class="personel-form">
-            <h3>Personel Login</h3>
-            
-            <?php if ($error): ?>
-                <div class="error-msg">
-                    <?php echo $error; ?>
+    <div class="lx-login-container">
+        <div class="lx-login-split">
+            <!-- Left Panel -->
+            <div class="lx-login-panel">
+                <div class="lx-panel-inner">
+                    <div class="lx-panel-logo">
+                        <span class="lx-dot"></span>PROFESIONAL <span>INDONESIA</span>
+                    </div>
+                    <h2 class="lx-panel-tagline">Kelola karir kreatif Anda bersama <span class="lx-hi">Profesional Indonesia</span></h2>
+                    <p class="lx-panel-desc">Akses dashboard, upload portofolio, dan terhubung dengan klien melalui platform kami.</p>
+                    <div class="lx-panel-stats">
+                        <div class="lx-stat-item">
+                            <span class="lx-stat-val">500+</span>
+                            <span class="lx-stat-label">Personel Aktif</span>
+                        </div>
+                        <div class="lx-stat-item">
+                            <span class="lx-stat-val">50+</span>
+                            <span class="lx-stat-label">Kota</span>
+                        </div>
+                        <div class="lx-stat-item">
+                            <span class="lx-stat-val">7+</span>
+                            <span class="lx-stat-label">Spesialisasi</span>
+                        </div>
+                    </div>
                 </div>
-            <?php endif; ?>
+                <div class="lx-panel-ring"></div>
+            </div>
 
-            <p>
-                <label>Username / Email</label>
-                <input type="text" name="login_user" required placeholder="Email atau Username">
-            </p>
-            <p>
-                <label>Password</label>
-                <input type="password" name="login_password" required placeholder="••••••••">
-            </p>
-            <p style="margin-top: 10px;">
-                <button type="submit" name="personel_login_submit" class="btn-login">Sign In</button>
-            </p>
-        </form>
-		<a href="javascript:void(0);" id="forgotLink" style="font-size: 13px; color: #EAB308; cursor: pointer;">Lupa Password?</a>
-		
+            <!-- Right Form -->
+            <div class="lx-login-form-wrap">
+                <div class="lx-form-head">
+                    <h1>Masuk ke <span>Akun</span></h1>
+                    <p>Selamat datang kembali, personel!</p>
+                </div>
+
+                <?php if ($error): ?>
+                    <div class="lx-error-msg">
+                        <?php echo esc_html($error); ?>
+                    </div>
+                <?php endif; ?>
+
+                <form method="post">
+                    <div class="lx-form-group">
+                        <label>Username / Email</label>
+                        <div class="lx-input-wrap">
+                            <span class="lx-input-icon">👤</span>
+                            <input type="text" name="login_user" placeholder="Masukkan email atau username" required value="<?php echo isset($_POST['login_user']) ? esc_attr($_POST['login_user']) : ''; ?>">
+                        </div>
+                    </div>
+                    <div class="lx-form-group">
+                        <label>Password</label>
+                        <div class="lx-input-wrap">
+                            <span class="lx-input-icon">🔒</span>
+                            <input type="password" name="login_password" id="lxLoginPassword" placeholder="••••••••" required>
+                            <button type="button" class="lx-toggle-pass" onclick="lxTogglePass()" aria-label="Toggle">👁</button>
+                        </div>
+                    </div>
+
+                    <div class="lx-form-extras">
+                        <a href="javascript:void(0);" id="lxForgotLink">Lupa Password?</a>
+                    </div>
+
+                    <button type="submit" name="personel_login_submit" class="lx-btn-submit">Masuk Sekarang</button>
+                </form>
+
+                <div class="lx-switch-link">
+                    Belum punya akun? <a href="<?php echo esc_url(home_url('/registrasi-personel/')); ?>">Daftar sebagai Personel →</a>
+                </div>
+            </div>
+        </div>
     </div>
 
-
-<div id="forgotModalCustom" class="modal-overlay-custom">
-    <div class="modal-box-custom">
-        <form method="post" action="">
-            <div class="modal-header-custom">
-                <h5 style="margin:0;">Lupa Password Personel</h5>
-                <span class="close-custom" onclick="closeForgotModal()">&times;</span>
+    <!-- Forgot Password Modal -->
+    <div class="lx-modal-overlay" id="lxForgotModal">
+        <div class="lx-modal-box">
+            <div class="lx-modal-header">
+                <h3>🔑 Reset Password</h3>
+                <button class="lx-modal-close" onclick="lxCloseForgot()">×</button>
             </div>
-            <div class="modal-body-custom">
-                <p style="font-size: 14px; margin-bottom: 15px;">Masukkan email Anda yang terdaftar, kami akan mengirimkan link reset password.</p>
-                <input type="email" name="forgot_email" class="form-control-custom" placeholder="Email Personel" required>
+            <div class="lx-modal-body">
+                <p>Masukkan email terdaftar Anda. Kami akan mengirimkan link untuk mereset password Anda.</p>
+                <form method="post" action="">
+                    <div class="lx-input-wrap">
+                        <span class="lx-input-icon">📧</span>
+                        <input type="email" name="forgot_email" placeholder="email@personel.com" required>
+                    </div>
+                    <button type="submit" name="personel_forgot_submit" class="lx-btn-modal">Kirim Link Reset</button>
+                </form>
             </div>
-            <div class="modal-footer-custom">
-                <button type="submit" name="personel_forgot_submit" class="btn-submit-custom">KIRIM LINK RESET</button>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
-<script>
-(function() {
-    // Fungsi ini akan berjalan otomatis
-    var startModal = function() {
-        var modal = document.getElementById("forgotModalCustom");
-        var btn = document.getElementById("forgotLink");
-        var span = document.querySelector(".close-custom");
 
-        // Cek apakah elemen-elemennya ada
+    <script>
+    function lxTogglePass() {
+        const p = document.getElementById('lxLoginPassword');
+        p.type = p.type === 'password' ? 'text' : 'password';
+    }
+    (function() {
+        const modal = document.getElementById("lxForgotModal");
+        const btn = document.getElementById("lxForgotLink");
         if (btn && modal) {
             btn.onclick = function(e) {
                 e.preventDefault();
-                modal.style.display = "block";
+                modal.classList.add('active');
             }
-
-            if (span) {
-                span.onclick = function() {
-                    modal.style.display = "none";
-                }
+            window.lxCloseForgot = function() {
+                modal.classList.remove('active');
             }
-
-            window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            }
-            console.log("Modal Password Reset Siap.");
-        } else {
-            console.error("Error: Tombol 'forgotLink' atau 'forgotModalCustom' tidak ditemukan di halaman.");
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) lxCloseForgot();
+            });
         }
-    };
-
-    // Jalankan saat dokumen selesai dimuat
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", startModal);
-    } else {
-        startModal();
-    }
-})();
-</script>
+    })();
+    </script>
     <?php
     return ob_get_clean();
 }
-
 add_shortcode('dashboard_personel', 'personel_dashboard_shortcode');
 
+if (!function_exists('personel_dashboard_redirect')) {
+    function personel_dashboard_redirect($url) {
+        if (!headers_sent()) {
+            wp_redirect($url);
+            exit;
+        } else {
+            echo "<script>window.location.replace('" . esc_js($url) . "');</script>";
+            exit;
+        }
+    }
+}
+
 function personel_dashboard_shortcode() {
+    wp_enqueue_style('font-awesome-cdn');
     if (!is_personel_logged_in()) {
-        return '<div class="db-notice">Silahkan login terlebih dahulu.</div>';
+        ob_start();
+        ?>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+        <div style="max-width: 460px; margin: 100px auto 60px; background: #13111a; border: 1px solid rgba(255,255,255,0.07); border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';">
+            <h3 style="font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 12px; margin-top:0;">Akses Terbatas</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 24px; line-height: 1.6;">Silakan login terlebih dahulu untuk mengakses dashboard personel Anda.</p>
+            <a href="<?php echo esc_url(home_url('/login-personel/')); ?>" style="display: inline-flex; align-items: center; justify-content: center; padding: 12px 28px; background: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%); color: #000; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-weight: 700; font-size: 13.5px; border-radius: 12px; text-decoration: none; transition: transform 0.2s;">Login Personel</a>
+        </div>
+        <?php
+        return ob_get_clean();
     }
 	
 	
@@ -2596,7 +3124,7 @@ if (isset($_POST['submit_video']) || isset($_POST['update_video'])) {
                 'kategori_id' => $cat_id,
             ]);
         }
-        wp_redirect(add_query_arg('tab', 'video'));
+        personel_dashboard_redirect(home_url('/dashboard-personel/?tab=video'));
         exit;
     } else {
         $wpdb->insert('wp9y_portofolio_video', $data);
@@ -2610,7 +3138,7 @@ if (isset($_POST['submit_video']) || isset($_POST['update_video'])) {
                 ]);
             }
         }
-        wp_redirect(add_query_arg('tab', 'video'));
+        personel_dashboard_redirect(home_url('/dashboard-personel/?tab=video'));
         exit;
     }
 }	
@@ -2652,7 +3180,7 @@ if (isset($_POST['update_portofolio'])) {
             ]);
         }
 
-        wp_redirect(add_query_arg('tab', 'foto'));
+        personel_dashboard_redirect(home_url('/dashboard-personel/?tab=foto'));
         exit;
     }
 }	
@@ -2674,7 +3202,7 @@ if (isset($_GET['tab']) && $_GET['tab'] == 'foto' && isset($_GET['action']) && $
         $wpdb->delete('wp9y_portofolio_kategori_map', ['portofolio_id' => $porto_id]);
         $wpdb->delete('wp9y_portofolio', ['id' => $porto_id]);
         
-        wp_redirect(add_query_arg('tab', 'foto'));
+        personel_dashboard_redirect(home_url('/dashboard-personel/?tab=foto'));
         exit;
     }
 }	
@@ -2727,7 +3255,7 @@ if (isset($_POST['submit_portofolio'])) {
             }
         }
 
-        wp_redirect(add_query_arg('tab', 'foto'));
+        personel_dashboard_redirect(home_url('/dashboard-personel/?tab=foto'));
         exit;
     } else {
         // Jika user mengunggah file selain format di atas, $movefile['error'] akan berisi pesan penolakan
@@ -2934,10 +3462,10 @@ if (isset($_POST['update_profile_personel'])) {
 
         $redirect_url = remove_query_arg(['_wp_http_referer']);
         if ($draft_saved !== false) {
-            wp_redirect(add_query_arg('saved', '1', $redirect_url));
+            personel_dashboard_redirect(add_query_arg('saved', '1', $redirect_url));
             exit;
         } else {
-            wp_redirect(add_query_arg('saved', '0', $redirect_url));
+            personel_dashboard_redirect(add_query_arg('saved', '0', $redirect_url));
             exit;
         }
     }
@@ -2957,28 +3485,438 @@ $personel = $wpdb->get_row($wpdb->prepare("SELECT * FROM wp9y_personel WHERE id 
 
     ob_start();
     ?>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+    /* ===== PREMIUM DASHBOARD GLOBAL STYLES ===== */
+    .dashboard-container {
+        --lx-bg: #0b0a0f;
+        --lx-surface: #13111a;
+        --lx-surface2: #1a1825;
+        --lx-gold: #d4af37;
+        --lx-gold-light: #ffd275;
+        --lx-gold-dim: rgba(212,175,55,0.10);
+        --lx-border: rgba(255,255,255,0.07);
+        --lx-border-gold: rgba(212,175,55,0.22);
+        --lx-text: #f0eef6;
+        --lx-text-dim: #9b98a6;
+        --lx-grad: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%);
+        --lx-grad-subtle: linear-gradient(180deg,rgba(212,175,55,0.06) 0%,transparent 100%);
+        
+        display: flex;
+        max-width: 1140px;
+        width: calc(100% - 40px);
+        margin: 40px auto;
+        background: var(--lx-surface);
+        border: 1px solid var(--lx-border);
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+        min-height: 680px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        color: var(--lx-text);
+    }
+
+    /* Sidebar Redesign - Premium Pill Style */
+    .db-sidebar {
+        width: 250px !important;
+        flex-shrink: 0 !important;
+        background: #0d0b12 !important;
+        border-right: 1px solid var(--lx-border) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        position: relative !important;
+    }
+    .db-profile-section {
+        padding: 36px 20px 24px !important;
+        text-align: center !important;
+        border-bottom: 1px solid var(--lx-border) !important;
+        background: rgba(0,0,0,0.15) !important;
+    }
+    .db-avatar {
+        width: 68px !important;
+        height: 68px !important;
+        border-radius: 50% !important;
+        border: 2px solid rgba(212,175,55,0.3) !important;
+        object-fit: cover !important;
+        margin: 0 auto 12px !important;
+        background: var(--lx-surface2) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+        display: block !important;
+        transition: transform 0.3s;
+    }
+    .db-avatar-placeholder {
+        width: 68px !important;
+        height: 68px !important;
+        border-radius: 50% !important;
+        border: 2px solid rgba(212,175,55,0.3) !important;
+        margin: 0 auto 12px !important;
+        background: var(--lx-surface2) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 26px !important;
+        color: rgba(212,175,55,0.6) !important;
+        transition: transform 0.3s;
+    }
+    .db-avatar-placeholder:hover {
+        transform: scale(1.04);
+    }
+    .db-avatar:hover {
+        transform: scale(1.04);
+    }
+    .db-name {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol' !important;
+        font-weight: 700 !important;
+        font-size: 15px !important;
+        color: #fff !important;
+        margin: 0 0 2px 0 !important;
+        letter-spacing: -0.2px !important;
+    }
+    .db-status {
+        display: block !important;
+        font-size: 10.5px !important;
+        color: var(--lx-text-dim) !important;
+        letter-spacing: 0.5px !important;
+        margin-bottom: 6px !important;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol' !important;
+    }
+    .lx-badge-status {
+        display: inline-block !important;
+        font-size: 9px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.8px !important;
+        padding: 3px 10px !important;
+        border-radius: 50px !important;
+    }
+    .lx-badge-status.approved {
+        background: rgba(34,197,94,0.1) !important;
+        color: #4ade80 !important;
+        border: 1px solid rgba(34,197,94,0.15) !important;
+    }
+    .lx-badge-status.pending {
+        background: rgba(234,179,8,0.1) !important;
+        color: #facc15 !important;
+        border: 1px solid rgba(234,179,8,0.15) !important;
+    }
+    
+    .db-menu {
+        padding: 16px 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 !important;
+        margin: 0 !important;
+        gap: 3px !important;
+    }
+    .db-menu-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        color: var(--lx-text-dim) !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border-radius: 10px !important;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol' !important;
+        text-decoration: none !important;
+        background: transparent !important;
+        border: none !important;
+        margin: 0 !important;
+    }
+    .db-menu-item:hover {
+        color: #fff !important;
+        background: rgba(255,255,255,0.03) !important;
+        text-decoration: none !important;
+    }
+    .db-menu-item.active {
+        color: var(--lx-gold-light) !important;
+        background: var(--lx-gold-dim) !important;
+        box-shadow: inset 0 0 0 1px rgba(212,175,55,0.15) !important;
+    }
+    .db-menu-item.logout {
+        margin-top: 0 !important;
+        color: #f87171 !important;
+    }
+    .db-menu-item.logout:hover {
+        background: rgba(239,68,68,0.08) !important;
+        color: #ff8787 !important;
+    }
+
+    /* Main Area */
+    .db-main {
+        flex: 1;
+        padding: 48px;
+        background: var(--lx-surface);
+        overflow-y: auto;
+    }
+    
+    /* Welcome & Stats */
+    .db-welcome-card {
+        background: linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(255,210,117,0.02) 100%) !important;
+        border: 1px solid rgba(212,175,55,0.12) !important;
+        border-radius: 20px !important;
+        padding: 28px 32px !important;
+        margin-bottom: 32px !important;
+    }
+    .db-welcome-card h2 {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-weight: 800;
+        font-size: 20px;
+        color: #fff;
+        margin: 0 0 6px 0;
+    }
+    .db-welcome-card p {
+        font-size: 13.5px;
+        color: var(--lx-text-dim);
+        margin: 0;
+    }
+    .db-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 20px !important;
+        margin-bottom: 36px !important;
+    }
+    .stat-card {
+        background: var(--lx-surface2) !important;
+        border: 1px solid var(--lx-border) !important;
+        border-radius: 18px !important;
+        padding: 24px !important;
+        text-align: center !important;
+        transition: all .3s ease !important;
+    }
+    .stat-card:hover {
+        transform: translateY(-4px) !important;
+        border-color: rgba(212,175,55,0.18) !important;
+    }
+    .stat-card h4 {
+        font-size: 11px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.8px !important;
+        color: var(--lx-text-dim) !important;
+        margin: 0 0 8px 0 !important;
+    }
+    .stat-card p {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol' !important;
+        font-weight: 900 !important;
+        font-size: 36px !important;
+        color: var(--lx-gold-light) !important;
+        margin: 0 !important;
+    }
+
+    /* Forms */
+    .form-edit-container {
+        background: var(--lx-surface2) !important;
+        border: 1px solid var(--lx-border) !important;
+        border-radius: 20px !important;
+        padding: 32px !important;
+    }
+    .form-edit-container h2 {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-weight: 800;
+        font-size: 20px;
+        color: var(--lx-gold-light) !important;
+        border-bottom: 1px solid var(--lx-border) !important;
+        padding-bottom: 14px;
+        margin: 0 0 24px 0 !important;
+    }
+    .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
+    .form-group { flex: 1; display: flex; flex-direction: column; }
+    .form-group label {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-weight: 600;
+        font-size: 11px;
+        color: var(--lx-text-dim);
+        margin-bottom: 7px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .form-group input, .form-group textarea, .form-group select {
+        background: var(--lx-surface) !important;
+        border: 1px solid rgba(255,255,255,0.07) !important;
+        border-radius: 12px !important;
+        padding: 12px 16px !important;
+        color: var(--lx-text) !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-size: 13.5px;
+        outline: none;
+        transition: all .25s;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+        border-color: var(--lx-gold) !important;
+        box-shadow: 0 0 0 3px var(--lx-gold-dim) !important;
+    }
+
+    /* Portofolio Grids */
+    .porto-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px !important;
+        margin-top: 24px !important;
+    }
+    .porto-item {
+        background: var(--lx-surface2) !important;
+        border: 1px solid var(--lx-border) !important;
+        border-radius: 18px !important;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s;
+    }
+    .porto-item:hover {
+        border-color: rgba(212,175,55,0.18) !important;
+        transform: translateY(-2px);
+    }
+    .porto-image {
+        position: relative;
+        height: 200px;
+        background: var(--lx-bg) !important;
+    }
+    .porto-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .porto-content {
+        padding: 20px !important;
+        background: var(--lx-surface2) !important;
+    }
+    .porto-title {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol' !important;
+        font-weight: 700 !important;
+        font-size: 16px !important;
+        color: var(--lx-gold-light) !important;
+        margin: 0 0 10px 0 !important;
+    }
+    .porto-meta-row {
+        border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+        padding-bottom: 8px !important;
+        margin-bottom: 12px !important;
+    }
+    .p-year, .p-loc {
+        color: var(--lx-text-dim) !important;
+        font-size: 11.5px !important;
+    }
+    .tag-pill {
+        background: var(--lx-gold-dim) !important;
+        border: 1px solid var(--lx-border-gold) !important;
+        color: var(--lx-gold) !important;
+        font-size: 10px !important;
+        padding: 3px 8px !important;
+        border-radius: 6px !important;
+        margin-right: 5px !important;
+    }
+    .porto-desc {
+        font-size: 13px !important;
+        color: var(--lx-text-dim) !important;
+        line-height: 1.5 !important;
+        margin-bottom: 16px !important;
+    }
+
+    /* Buttons */
+    .btn-update, .btn-submit-gold, button[type=submit], .lx-btn-submit {
+        background: var(--lx-grad) !important;
+        color: #000 !important;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol' !important;
+        font-weight: 700 !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 12px 24px !important;
+        cursor: pointer !important;
+        transition: all 0.3s !important;
+        box-shadow: 0 6px 20px rgba(212,175,55,0.2) !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none !important;
+    }
+    .btn-update:hover, .btn-submit-gold:hover, button[type=submit]:hover, .lx-btn-submit:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 10px 28px rgba(212,175,55,0.3) !important;
+    }
+    .btn-edit-porto {
+        background: var(--lx-grad) !important;
+        color: #000 !important;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol' !important;
+        font-weight: 700 !important;
+        border-radius: 10px !important;
+        padding: 10px 16px !important;
+        transition: all 0.3s !important;
+        box-shadow: 0 4px 12px rgba(212,175,55,0.15) !important;
+        text-decoration: none !important;
+    }
+    .btn-edit-porto:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 8px 20px rgba(212,175,55,0.25) !important;
+    }
+    .btn-delete-porto {
+        background: rgba(239, 68, 68, 0.1) !important;
+        border: 1px solid rgba(239, 68, 68, 0.2) !important;
+        color: #ef4444 !important;
+        border-radius: 10px !important;
+        padding: 10px 14px !important;
+        transition: all 0.2s !important;
+        text-decoration: none !important;
+    }
+    .btn-delete-porto:hover {
+        background: #ef4444 !important;
+        color: #fff !important;
+    }
+
+    /* Notices */
+    .notice-success, .notice-info, .notice-error {
+        padding: 14px 16px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        font-size: 13.5px;
+    }
+    .notice-success { background: rgba(34,197,94,0.1); border-left: 4px solid #22c55e; color: #4ade80; }
+    .notice-info { background: rgba(59,130,246,0.1); border-left: 4px solid #3b82f6; color: #60a5fa; }
+    .notice-error { background: rgba(239,68,68,0.1); border-left: 4px solid #ef4444; color: #f87171; }
+
+    /* Responsive */
+    @media(max-width: 1024px) {
+        .dashboard-container { flex-direction: column !important; }
+        .db-sidebar { width: 100% !important; border-right: none !important; border-bottom: 1px solid var(--lx-border) !important; }
+        .db-sidebar::before { width: 100%; height: 3px; bottom: auto; }
+        .db-menu { flex-direction: row !important; flex-wrap: wrap !important; padding: 8px !important; }
+        .db-menu-item { border-left: none !important; border-bottom: 3px solid transparent !important; padding: 12px 16px !important; }
+        .db-menu-item.active { border-bottom-color: var(--lx-gold) !important; }
+    }
+    @media(max-width: 768px) {
+        .db-main { padding: 24px !important; }
+        .db-grid { grid-template-columns: 1fr !important; }
+        .porto-grid { grid-template-columns: 1fr !important; }
+    }
+    </style>
     <div class="dashboard-container">
         <aside class="db-sidebar">
             <div class="db-profile-section">
-                <img src="<?php echo esc_url($personel->foto_profil); ?>" class="db-avatar">
+                <?php if (!empty($personel->foto_profil)): ?>
+                    <img src="<?php echo esc_url($personel->foto_profil); ?>" class="db-avatar">
+                <?php else: ?>
+                    <div class="db-avatar-placeholder"><i class="fa-solid fa-user"></i></div>
+                <?php endif; ?>
                 <p class="db-name"><?php echo esc_html($personel->nama_panggilan); ?></p>
                 <span class="db-status">ID: <?php echo $personel->kode_nama; ?></span>
             </div>
             <nav class="db-menu">
                 <?php 
                 $menus = [
-                    'dashboard'   => ['icon' => '📊', 'label' => 'Dashboard'],
-                    'edit-profil' => ['icon' => '👤', 'label' => 'Edit Profil'],
-                    'foto'        => ['icon' => '📸', 'label' => 'Portofolio Foto'],
-                    'video'       => ['icon' => '🎥', 'label' => 'Portofolio Video'],
-                    'artikel'     => ['icon' => '✍️', 'label' => 'Artikel'],
+                    'dashboard'   => ['icon' => '<i class="fa-solid fa-chart-simple"></i>', 'label' => 'Dashboard'],
+                    'edit-profil' => ['icon' => '<i class="fa-solid fa-user-pen"></i>', 'label' => 'Edit Profil'],
+                    'foto'        => ['icon' => '<i class="fa-solid fa-camera"></i>', 'label' => 'Portofolio Foto'],
+                    'video'       => ['icon' => '<i class="fa-solid fa-video"></i>', 'label' => 'Portofolio Video'],
+                    'artikel'     => ['icon' => '<i class="fa-solid fa-pen-to-square"></i>', 'label' => 'Artikel'],
                 ];
                 foreach ($menus as $key => $val) {
                     $active = ($current_tab == $key) ? 'active' : '';
-                    echo '<a href="?tab='.$key.'" class="db-menu-item '.$active.'">'.$val['icon'].' '.$val['label'].'</a>';
+                    echo '<a href="?tab='.$key.'" class="db-menu-item '.$active.'"><span class="icon">'.$val['icon'].'</span> '.$val['label'].'</a>';
                 }
                 ?>
-                <a href="?personel_action=logout" class="db-menu-item logout">🚪 Logout</a>
+                <a href="?personel_action=logout" class="db-menu-item logout"><span class="icon"><i class="fa-solid fa-right-from-bracket"></i></span> Logout</a>
             </nav>
         </aside>
 
@@ -3760,7 +4698,11 @@ function render_personel_edit_profil($personel, $message = '') {
             <div class="form-group full">
                 <label>Foto Profil Saat Ini</label>
                 <div style="display:flex; align-items:center; gap:15px; margin-bottom:10px;">
-                    <img src="<?php echo esc_url($display_data->foto_profil); ?>" width="60" height="60" style="border-radius:50%; border:1px solid var(--gold);">
+                    <?php if (!empty($display_data->foto_profil)): ?>
+                        <img src="<?php echo esc_url($display_data->foto_profil); ?>" width="60" height="60" style="border-radius:50%; border:1px solid var(--gold); object-fit: cover;">
+                    <?php else: ?>
+                        <div style="width:60px; height:60px; border-radius:50%; border:1px solid rgba(212,175,55,0.3); background:#1a1825; display:inline-flex; align-items:center; justify-content:center; font-size:20px; color:rgba(212,175,55,0.6);"><i class="fa-solid fa-user"></i></div>
+                    <?php endif; ?>
                     <input type="file" name="foto_profil" accept="image/jpeg,image/png,image/webp">
                 </div>
                 <small>Max 2MB, JPG/PNG/WEBP. Biarkan kosong jika tidak ingin ganti.</small>
@@ -5200,6 +6142,7 @@ if ($filter_kota) {
 
 // TAMBAHKAN BARIS INI UNTUK SORTING PRIORITAS
 $query .= " ORDER BY CASE WHEN p.rekomendasi = 'ya' THEN 0 ELSE 1 END ASC, p.id DESC";
+$query .= " LIMIT 9";
 
     $results = $wpdb->get_results($query);
 
@@ -5293,13 +6236,42 @@ jQuery(document).ready(function($) {
             $('#filter_kota').html('<option value="">Semua Kota/Kabupaten</option>').trigger('change');
         }
     });
+
+    // AJAX Load More Personel
+    $('#load-more-personel').on('click', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var offset = parseInt($btn.attr('data-offset'));
+        
+        $btn.text('LOADING...').prop('disabled', true);
+        
+        var data = {
+            action: 'load_more_personel',
+            offset: offset,
+            search: '<?php echo esc_js($search); ?>',
+            posisi: '<?php echo esc_js($filter_posisi); ?>',
+            price: '<?php echo esc_js($filter_price); ?>',
+            provinsi: '<?php echo esc_js($filter_provinsi); ?>',
+            kota: '<?php echo esc_js($filter_kota); ?>'
+        };
+        
+        $.post('<?php echo admin_url('admin-ajax.php'); ?>', data, function(response) {
+            if ($.trim(response) !== '') {
+                $('.personel-public-grid').append(response);
+                $btn.attr('data-offset', offset + 9);
+                $btn.text('MUAT LEBIH BANYAK').prop('disabled', false);
+            } else {
+                $btn.text('SEMUA TELAH DIMUAT').prop('disabled', true).fadeOut(1500);
+            }
+        });
+    });
 });
 </script>
 
         <div class="personel-public-grid">
             <?php if ($results): foreach ($results as $p): 
                 $total_karya = $p->total_foto + $p->total_video;
-                $foto_profil = !empty($p->foto_profil) ? $p->foto_profil : 'https://placehold.co/300x300?text=No+Photo';
+                $foto_profil = !empty($p->foto_profil) ? $p->foto_profil : 'https://placehold.co/300x300/808080/ffffff?text=No+Photo';
                 
                 // Mapping kode ke kata lengkap
                 $posisi_map = [
@@ -5318,7 +6290,11 @@ jQuery(document).ready(function($) {
     <a href="<?php echo $detail_url; ?>" class="card-main-link">
         
         <div class="card-image">
-            <img src="<?php echo esc_url($foto_profil); ?>" alt="<?php echo esc_attr($p->nama_panggilan); ?>">
+            <?php if (!empty($p->foto_profil)): ?>
+                <img src="<?php echo esc_url($p->foto_profil); ?>" alt="<?php echo esc_attr($p->nama_panggilan); ?>">
+            <?php else: ?>
+                <div class="public-avatar-placeholder"><i class="fa-solid fa-user"></i></div>
+            <?php endif; ?>
             <div class="card-price-tag">
                 <?php 
                     if($p->pricelist_perhari == 'dibawah_1jt') echo '< 1Jt';
@@ -5374,86 +6350,484 @@ jQuery(document).ready(function($) {
                 <p class="no-result">Tidak ditemukan personel yang sesuai kriteria.</p>
             <?php endif; ?>
         </div>
+
+        <?php if ($results && count($results) >= 9): ?>
+        <div class="lx-load-wrap" style="text-align: center; margin-top: 40px; position: relative; z-index: 10;">
+            <button id="load-more-personel" data-offset="9" class="lx-btn-outline">MUAT LEBIH BANYAK</button>
+        </div>
+        <?php endif; ?>
     </div>
-<style>
-        :root { --gold: #d4af37; --dark: #111; --light: #fff; --gray: #222; }
-        
-        .public-personel-container { max-width: 1200px; margin: 0 auto; padding: 20px; font-family: 'Inter', sans-serif; }
+    <style>
+        .public-personel-container {
+            --bg: #09080c;
+            --card-bg: #121017;
+            --gold: #ffd275;
+            --orange: #b38622;
+            --accent: #d4af37;
+            --text-main: #f3f1f6;
+            --text-dim: #9b98a6;
+            --border: rgba(212, 134, 34, 0.08);
+            --grad-primary: linear-gradient(135deg, #b38622 0%, #ffd275 100%);
+            --font-heading: 'Plus Jakarta Sans', sans-serif;
+            --bg-nested: #18151f;
+
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 20px 60px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+            color: var(--text-main);
+        }
         
         /* Filter Styles */
-        .personel-filter-form { background: var(--gray); padding: 20px; border-radius: 15px; margin-bottom: 40px; border: 1px solid #333; }
-        .filter-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr; gap: 10px; }
-        .filter-grid input, .filter-grid select { background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; outline: none; }
-        .filter-grid input:focus { border-color: var(--gold); }
-        .select2-container--default .select2-selection--single { background-color: #000 !important; border: 1px solid #444 !important; border-radius: 8px !important; height: 46px !important; }
-        .select2-container--default .select2-selection--single .select2-selection__rendered { color: #fff !important; line-height: 46px !important; }
-        .select2-container--default .select2-selection--single .select2-selection__arrow { height: 46px !important; }
-        .select2-container--default .select2-results__option { background-color: #111; color: #fff; }
-        .select2-container--default .select2-results__option--highlighted[aria-selected] { background-color: #d4af37 !important; color: #000 !important; }
-        .select2-dropdown { background-color: #111 !important; border: 1px solid #444 !important; }
-        .btn-filter-gold { background: var(--gold); color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-        .btn-filter-gold:hover { background: #fff; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
-        .btn-clear-filter { background: transparent; color: #888; border: 1px solid #444; border-radius: 8px; padding: 12px; text-decoration: none; font-weight: bold; font-size: 13px; text-align: center; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
-        .btn-clear-filter:hover { color: #fff; border-color: #888; background: rgba(255,255,255,0.05); }
-
-        /* Grid Styles */
-        .personel-public-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
-        
-        .personel-card-public { background: var(--gray); border-radius: 20px; overflow: hidden; border: 1px solid #333; transition: 0.4s; position: relative; }
-        .personel-card-public:hover { transform: translateY(-10px); border-color: var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        .card-image { position: relative; height: 280px; overflow: hidden; }
-        .card-image img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-        .personel-card-public:hover .card-image img { transform: scale(1.1); }
-        
-        .card-price-tag { position: absolute; top: 15px; right: 15px; background: var(--gold); color: #000; padding: 5px 12px; border-radius: 50px; font-weight: 800; font-size: 11px; z-index: 2; }
-        
-        .card-body { padding: 25px; text-align: center; }
-        .p-name { color: var(--light); font-size: 22px; margin: 0 0 10px; font-weight: 700; letter-spacing: 1px; }
-        
-        .p-tags { margin-bottom: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
-        .mini-tag { font-size: 10px; background: rgba(212, 175, 55, 0.1); color: var(--gold); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.3); font-weight: 600; }
-        
-        .p-info { color: #888; font-size: 13px; display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; align-items: center; }
-        .p-lokasi { max-width: 150px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; word-break: break-word; }
-        .p-stats { color: #bbb; font-size: 14px; margin-bottom: 20px; padding-top: 10px; border-top: 1px solid #333; }
-        .p-stats b { color: var(--gold); }
-        
-        .btn-view-profile { display: block; background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 12px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 13px; transition: 0.3s; }
-        .btn-view-profile:hover { background: var(--gold); color: #000; }
-
-        .no-result { grid-column: 1/-1; text-align: center; color: #666; padding: 50px; }
-
-        @media (max-width: 992px) { .personel-public-grid { grid-template-columns: repeat(2, 1fr); } .filter-grid { grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 768px) { .filter-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 600px) { .personel-public-grid { grid-template-columns: 1fr; } .filter-grid { grid-template-columns: 1fr; } }
-    </style>
-    <style>
-        /* Perbaikan CSS agar Tag Posisi yang Panjang tetap rapi */
-        .p-tags { 
-            margin-bottom: 15px; 
-            display: flex; 
-            flex-wrap: wrap; 
-            justify-content: center; 
-            gap: 6px; 
-            min-height: 55px; /* Menjaga agar tinggi card tetap sama */
+        .personel-filter-form {
+            background: var(--card-bg);
+            padding: 28px;
+            border-radius: 24px;
+            margin-bottom: 50px;
+            border: 1px solid var(--border);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+        }
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr 1.2fr 1.2fr 1fr;
+            gap: 12px;
             align-items: center;
         }
-        .mini-tag { 
-            font-size: 10px; 
-            background: rgba(212, 175, 55, 0.1); 
-            color: #d4af37; 
-            padding: 4px 10px; 
-            border-radius: 4px; 
-            border: 1px solid rgba(212, 175, 55, 0.3); 
+        .filter-grid input, .filter-grid select {
+            background: var(--bg-nested);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 12px;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            height: 48px;
+        }
+        .filter-grid input:focus, .filter-grid select:focus {
+            border-color: var(--gold);
+        }
+        
+        /* Select2 Theme Override */
+        .select2-container--default .select2-selection--single {
+            background-color: var(--bg-nested) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 12px !important;
+            height: 48px !important;
+            transition: all 0.3s ease;
+        }
+        .select2-container--default .select2-selection--single:focus,
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: var(--gold) !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: var(--text-main) !important;
+            line-height: 46px !important;
+            padding-left: 16px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 46px !important;
+            right: 10px !important;
+        }
+        .select2-container--default .select2-results__option {
+            background-color: var(--card-bg);
+            color: var(--text-dim);
+            padding: 10px 16px;
+        }
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: var(--gold) !important;
+            color: #121017 !important;
+        }
+        .select2-dropdown {
+            background-color: var(--card-bg) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 12px !important;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .btn-filter-gold {
+            background: var(--grad-primary);
+            color: #121017;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: 48px;
+            font-family: var(--font-heading);
+            font-size: 13.5px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 5px 15px rgba(179,134,34,0.25);
+        }
+        .btn-filter-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(179,134,34,0.4);
+            filter: brightness(1.05);
+        }
+        .btn-clear-filter {
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 13px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+            font-family: var(--font-heading);
+        }
+        .btn-clear-filter:hover {
+            color: var(--text-main);
+            border-color: var(--text-dim);
+            background: rgba(255,255,255,0.03);
+        }
+
+        /* Grid Styles */
+        .personel-public-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+        
+        .personel-card-public {
+            background: linear-gradient(145deg, #16131d, #100e14);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: inset 2px 2px 5px rgba(255,255,255,0.01), 0 10px 30px rgba(0,0,0,0.25);
+        }
+        .personel-card-public:hover {
+            transform: translateY(-6px);
+            border-color: var(--gold);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.55);
+        }
+        
+        .card-main-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .card-image {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+            background: var(--bg-nested);
+        }
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .personel-card-public:hover .card-image img {
+            transform: scale(1.05);
+        }
+        .public-avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1e1b26;
+            color: rgba(212,175,55,0.35);
+            font-size: 72px;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .personel-card-public:hover .public-avatar-placeholder {
+            transform: scale(1.05);
+        }
+        
+        .card-price-tag {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--grad-primary);
+            color: #121017;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 11px;
+            z-index: 2;
+            box-shadow: 0 4px 10px rgba(179,134,34,0.3);
+            font-family: var(--font-heading);
+            letter-spacing: 0.5px;
+        }
+        
+        .card-body {
+            padding: 24px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            28px;
+            margin: 0 0 12px;
+            font-weight: 800;
+            font-family: var(--font-heading);
+            letter-spacing: -0.5px;
+            transition: color 0.3s ease;
+        }
+         
+        .personel-card-public:hover .p-name {
+            color: var(--gold);
+        }
+        
+        .p-tags {
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            min-height: 52px;
+            align-items: center;
+            width: 100%;
+        }
+        .mini-tag {
+            font-size: 10px;
+            background: rgba(212, 175, 55, 0.06);
+            color: var(--gold);
+            padding: 4px 10px;
+            border-radius: 50px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
             font-weight: 600;
             white-space: nowrap;
         }
-        /* Sisanya sama dengan CSS sebelumnya */
-		
+        
+        .p-info {
+            color: var(--text-dim);
+            font-size: 13.5px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: center;
+            width: 100%;
+        }
+        .p-lokasi {
+            max-width: 160px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .p-stats {
+            color: var(--text-dim);
+            font-size: 13.5px;
+            margin-bottom: 24px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            width: 100%;
+        }
+        .p-stats b {
+            color: #fff;
+        }
+        
+        .btn-view-profile {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background: transparent;
+            color: var(--gold);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            padding: 12px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12.5px;
+            transition: all 0.3s ease;
+            font-family: var(--font-heading);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .personel-card-public:hover .btn-view-profile {
+            background: var(--grad-primary);
+            color: #121017;
+            border-color: transparent;
+            box-shadow: 0 8px 24px rgba(179, 134, 34, 0.25);
+            transform: translateY(-2px);
+        }
+        .lx-btn-outline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            color: var(--gold);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            padding: 12px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            font-family: var(--font-heading);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            outline: none;
+        }
+        .lx-btn-outline:hover {
+            background: var(--grad-primary);
+            color: #121017;
+            border-color: transparent;
+            box-shadow: 0 8px 24px rgba(179, 134, 34, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .no-result {
+            grid-column: 1/-1;
+            text-align: center;
+            color: var(--text-dim);
+            padding: 60px;
+            font-size: 15px;
+        }
+
+        @media (max-width: 1024px) {
+            .personel-public-grid { grid-template-columns: repeat(2, 1fr); }
+            .filter-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            .filter-grid { grid-template-columns: 1fr; }
+            .public-personel-container { padding-top: 120px; }
+        }
+        @media (max-width: 600px) {
+            .personel-public-grid { grid-template-columns: 1fr; }
+        }
     </style>
     <?php
     return ob_get_clean();
+}
+
+// 4. AJAX HANDLER LOAD MORE PERSONEL
+add_action('wp_ajax_load_more_personel', 'handle_load_more_personel');
+add_action('wp_ajax_nopriv_load_more_personel', 'handle_load_more_personel');
+
+function handle_load_more_personel() {
+    global $wpdb;
+    
+    $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
+    $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+    $posisi = isset($_POST['posisi']) ? sanitize_text_field($_POST['posisi']) : '';
+    $price = isset($_POST['price']) ? sanitize_text_field($_POST['price']) : '';
+    $provinsi = isset($_POST['provinsi']) ? sanitize_text_field($_POST['provinsi']) : '';
+    $kota = isset($_POST['kota']) ? sanitize_text_field($_POST['kota']) : '';
+
+    $query = "SELECT p.*, 
+          (SELECT COUNT(*) FROM wp9y_portofolio WHERE personel_id = p.id AND status = 'approved') as total_foto,
+          (SELECT COUNT(*) FROM wp9y_portofolio_video WHERE personel_id = p.id AND status = 'approved') as total_video
+          FROM wp9y_personel p 
+          WHERE p.status = 'approved'";
+
+    if ( $search ) {
+        $like_search = '%' . $wpdb->esc_like( $search ) . '%';
+        $query .= $wpdb->prepare(
+            " AND (p.nama_panggilan LIKE %s OR p.domisili LIKE %s OR p.peralatan LIKE %s OR p.deskripsi LIKE %s OR p.tag LIKE %s OR p.pricelist LIKE %s OR p.kode_nama LIKE %s)", 
+            $like_search, $like_search, $like_search, $like_search, $like_search, $like_search, $like_search
+        );
+    }
+    if ($posisi) {
+        $query .= $wpdb->prepare(" AND p.posisi LIKE %s", '%'.$posisi.'%');
+    }
+    if ($price) {
+        $query .= $wpdb->prepare(" AND p.pricelist_perhari = %s", $price);
+    }
+    if ($provinsi) {
+        $like_prov = '%' . $wpdb->esc_like($provinsi) . '%';
+        $query .= $wpdb->prepare(" AND p.domisili LIKE %s", $like_prov);
+    }
+    if ($kota) {
+        $like_kota = '%' . $wpdb->esc_like($kota) . '%';
+        $query .= $wpdb->prepare(" AND p.domisili LIKE %s", $like_kota);
+    }
+
+    $query .= " ORDER BY CASE WHEN p.rekomendasi = 'ya' THEN 0 ELSE 1 END ASC, p.id DESC";
+    $query .= $wpdb->prepare(" LIMIT 9 OFFSET %d", $offset);
+
+    $results = $wpdb->get_results($query);
+
+    if ($results) {
+        $posisi_map = [
+            'F' => 'Fotografer',
+            'V' => 'Videografer',
+            'D' => 'Drone',
+            'E' => 'Editor',
+            'X' => 'VFX',
+            'A' => 'Animator',
+            'P' => 'AI Artist - Prompt Engineer'
+        ];
+        foreach ($results as $p) {
+            $total_karya = $p->total_foto + $p->total_video;
+            $foto_profil = !empty($p->foto_profil) ? $p->foto_profil : 'https://placehold.co/300x300/808080/ffffff?text=No+Photo';
+            $detail_url = home_url('/detail-personel/?kode=' . $p->kode_nama);
+            $nama_depan = strtok($p->nama_panggilan, ' ');
+            ?>
+            <div class="personel-card-public">
+                <a href="<?php echo $detail_url; ?>" class="card-main-link">
+                    <div class="card-image">
+                        <?php if (!empty($p->foto_profil)): ?>
+                            <img src="<?php echo esc_url($p->foto_profil); ?>" alt="<?php echo esc_attr($p->nama_panggilan); ?>">
+                        <?php else: ?>
+                            <div class="public-avatar-placeholder"><i class="fa-solid fa-user"></i></div>
+                        <?php endif; ?>
+                        <div class="card-price-tag">
+                            <?php 
+                                if($p->pricelist_perhari == 'dibawah_1jt') echo '< 1Jt';
+                                elseif($p->pricelist_perhari == '1jt_3jt') echo '1-3Jt';
+                                else echo '> 3Jt';
+                            ?>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <h3 class="p-name"><?php echo esc_html($nama_depan); ?>-<?php echo esc_html($p->kode_nama); ?></h3>
+                        
+                        <div class="p-tags">
+                            <?php 
+                            if (!empty($p->posisi)) {
+                                $posisi_user = explode(',', $p->posisi);
+                                foreach($posisi_user as $code) {
+                                    $code = trim($code);
+                                    if(isset($posisi_map[$code])) {
+                                        echo '<span class="mini-tag">'. $posisi_map[$code] .'</span>';
+                                    }
+                                }
+                            }
+                            ?>
+                        </div>
+
+                        <div class="p-info">
+                            <span class="p-lokasi" title="<?php echo esc_attr($p->domisili); ?>">📍 <?php echo esc_html($p->domisili); ?></span>
+                            <span>🎂 <?php 
+                                if (!empty($p->tanggal_lahir) && $p->tanggal_lahir !== '0000-00-00') {
+                                    $bday = new DateTime($p->tanggal_lahir);
+                                    $today = new DateTime();
+                                    echo esc_html($today->diff($bday)->y);
+                                } else {
+                                    echo '-';
+                                }
+                            ?> Thn</span>
+                        </div>
+                        
+                        <div class="p-stats">
+                            <span>Karya Portofolio: <b><?php echo $total_karya; ?></b></span>
+                        </div>
+
+                        <span class="btn-view-profile">LIHAT PROFIL</span>
+                    </div>
+                </a>
+            </div>
+            <?php
+        }
+    }
+    wp_die();
 }
 
 //detail personel
@@ -5479,192 +6853,210 @@ function render_detail_personel_shortcode() {
 
     <div class="luxury-wrapper">
         <div class="luxury-container">
-            <div class="luxury-main-flex">
-                <div class="lx-left">
-                    <div class="lx-frame">
-                        <img src="<?php echo esc_url($p->foto_profil); ?>" class="lx-profile-img">
+            <!-- PROFILE SECTION (Balanced 2-Column Grid) -->
+            <section class="profile-section">
+                <!-- Left Column: Image + Contact & Social Info -->
+                <div class="profile-left">
+                    <div class="profile-avatar-card">
+                        <?php if (!empty($p->foto_profil)): ?>
+                            <img src="<?php echo esc_url($p->foto_profil); ?>" alt="<?php echo esc_html($p->nama_panggilan); ?>" class="avatar-img">
+                        <?php else: ?>
+                            <div class="detail-avatar-placeholder"><i class="fa-solid fa-user"></i></div>
+                        <?php endif; ?>
                     </div>
-                    <div class="lx-price-box">
-    <div class="lx-divider-text"><span>Pricelist</span></div>
-    <div class="lx-price-list">
-        <?php echo wpautop(wp_kses_post($p->pricelist)); ?>
-    </div>
-</div>
 
-<?php if (intval($p->show_sosmed) !== 0): ?>
-    <div class="lx-social-box" style="background:#0a0a0a; border:1px solid #333; border-radius:2px; margin-top:20px; padding:20px;">
-      
-        <div class="lx-divider-text" style="margin-top:0; margin-bottom:25px;"><span>KONTAK & SOSMED</span></div>
+                    <?php if (intval($p->show_sosmed) !== 0): ?>
+                    <div class="meta-info-card">
+                        <div class="meta-group">
+                            <h4 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); margin-bottom: 12px;">Kontak & Sosmed</h4>
+                            <div class="contact-list" style="display: flex; flex-direction: column; gap: 12px;">
+                                <?php if (!empty($p->no_hp)): ?>
+                                <div class="contact-item">
+                                    <div class="contact-info">
+                                        <span class="contact-label">WhatsApp / Telepon</span>
+                                        <span class="contact-text-value"><?php echo esc_html($p->no_hp); ?></span>
+                                    </div>
+                                    <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $p->no_hp); ?>" target="_blank" class="contact-link-action">Hubungi</a>
+                                </div>
+                                <?php endif; ?>
 
-        
-        <?php if (!empty($p->no_hp)): ?>
-            <p style="font-size:13px; color:#ccc; margin-bottom:10px;">
-                📞 WhatsApp: <span style="font-weight:bold; color:#fff; display:block; margin-top:2px;"><?php echo esc_html($p->no_hp); ?></span>
-            </p>
-        <?php endif; ?>
+                                <?php 
+                                $socials = ['facebook', 'instagram', 'tiktok', 'thread', 'youtube'];
+                                foreach ($socials as $s) {
+                                    if (!empty($p->$s)) {
+                                ?>
+                                        <div class="contact-item">
+                                            <div class="contact-info">
+                                                <span class="contact-label"><?php echo ucfirst($s); ?></span>
+                                            </div>
+                                            <a href="<?php echo esc_url($p->$s); ?>" target="_blank" class="contact-link-action">Kunjungi Link</a>
+                                        </div>
+                                <?php
+                                    }
+                                }
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
 
-        <?php 
-        $socials = ['facebook', 'instagram', 'tiktok', 'thread', 'youtube'];
-        foreach ($socials as $s) {
-            if (!empty($p->$s)) {
-                echo '<p style="font-size:13px; margin-bottom:8px;">';
-                echo '🔗 ' . ucfirst($s) . ': ';
-                echo '<a href="' . esc_url($p->$s) . '" target="_blank" style="color:#d4af37; text-decoration:none; font-weight:bold; display:block; margin-top:2px;">Kunjungi Link</a>';
-                echo '</p>';
-            }
-        }
-        ?>
-    </div>
-<?php endif; ?>
-
+                    <?php if (!empty($p->pricelist)): ?>
+                    <div class="meta-info-card">
+                        <div class="meta-group">
+                            <h4 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); margin-bottom: 12px;">Pricelist & Estimasi</h4>
+                            <div class="meta-list" style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.6;">
+                                <?php echo wpautop(wp_kses_post($p->pricelist)); ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
-                <div class="lx-right">
-					<?php 
-				// Mengambil kata pertama saja
-				$nama_depan = strtok($p->nama_panggilan, ' '); 
-			?>
-                    <h1 class="lx-name"><?php echo esc_html($nama_depan . '-' . $p->kode_nama); ?></h1>
-                    <div class="lx-meta">
-                       <span>📱 Usia: 
-							<?php 
-							if (!empty($p->tanggal_lahir) && $p->tanggal_lahir !== '0000-00-00') {
-								$bday = new DateTime($p->tanggal_lahir);
-								$today = new DateTime();
-								echo esc_html($today->diff($bday)->y);
-							} else {
-								echo '-';
-							}
-							?> Tahun
-						</span> &nbsp; | &nbsp;
-                        <span>📍 Domisili: <?php echo esc_html($p->domisili); ?></span>
-                        <div class="lx-pos">📷 Posisi: 
+                <!-- Right Column: Identity, Bio, Certificates & Gear Info -->
+                <div class="profile-right">
+                    <div class="profile-header">
+                        <div class="profile-id">ID KREATOR: <?php echo esc_html($p->nama_panggilan . '-' . $p->kode_nama); ?></div>
+                        <div class="profile-name-row">
+                            <h1 class="profile-name"><?php echo esc_html($p->nama_panggilan); ?></h1>
+                            <span class="badge-status">● Terverifikasi</span>
+                        </div>
+                        <div class="badge-container">
                             <?php 
                                 $map = ['F'=>'Fotografer', 'V'=>'Videografer', 'D'=>'Drone', 'E'=>'Editor', 'X'=>'VFX', 'A'=>'Animator', 'P'=>'AI Artist - Prompt Engineer'];
-                                foreach(explode(',', $p->posisi) as $c) { if(isset($map[trim($c)])) echo '<span class="lx-tag-item">'.$map[trim($c)].'</span> '; }
+                                foreach(explode(',', $p->posisi) as $c) { 
+                                    if(isset($map[trim($c)])) {
+                                        echo '<span class="badge-tag">'.$map[trim($c)].'</span>'; 
+                                    }
+                                }
                             ?>
                         </div>
                     </div>
-                    <div class="lx-bio"><?php echo nl2br(esc_html($p->deskripsi)); ?></div>
-                    <div class="lx-tags">
-                        <?php if(!empty($p->tag)) { foreach(explode(',', $p->tag) as $t) echo '<span class="lx-tag-item">#'.trim($t).'</span>'; } ?>
+
+                    <div class="bio-section">
+                        <div class="bio-title">Tentang Saya</div>
+                        <p class="bio-text"><?php echo nl2br(esc_html($p->deskripsi)); ?></p>
                     </div>
-					<h5>Sertifikat</h5>
-					
-					<div class="sertifikat-grid">
 
-<?php 
-$sertifikat_data = json_decode($p->sertifikat_multiple, true);
+                    <?php if(!empty($p->tag)): ?>
+                    <div class="bio-section" style="margin-top:-10px;">
+                        <div class="badge-container">
+                            <?php foreach(explode(',', $p->tag) as $t) echo '<span class="badge-tag">#'.trim($t).'</span>'; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
 
-if (!empty($sertifikat_data) && is_array($sertifikat_data)) :
-
-    foreach ($sertifikat_data as $img) :
-
-        $img_url = is_array($img) ? $img['url'] : $img;
-
-        if (empty($img_url)) continue;
-?>
-
-        <div class="sertifikat-item">
-            <a href="javascript:void(0);" 
-               onclick="window.open('<?php echo esc_url($img_url); ?>','_blank')">
-
-                <img src="<?php echo esc_url($img_url); ?>" alt="Sertifikat">
-
-            </a>
-        </div>
-
-<?php 
-    endforeach;
-
-else : ?>
-    <p class="no-data">Belum ada sertifikat yang diunggah.</p>
-<?php endif; ?>
-
-</div>
-				
-					<h5>Peralatan</h5>
-					<div class="lx-bio"><?php echo nl2br(esc_html($p->peralatan)); ?></div>
+                    <!-- CERTIFICATES & GEAR SECTION -->
+                    <div class="contact-section">
+                        <div class="contact-title">Sertifikat & Peralatan</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+                            <div class="meta-group">
+                                <h4 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">Sertifikat</h4>
+                                <div class="sertifikat-grid">
+                                    <?php 
+                                    $sertifikat_data = json_decode($p->sertifikat_multiple, true);
+                                    if (!empty($sertifikat_data) && is_array($sertifikat_data)) :
+                                        foreach ($sertifikat_data as $img) :
+                                            $img_url = is_array($img) ? $img['url'] : $img;
+                                            if (empty($img_url)) continue;
+                                    ?>
+                                            <div class="sertifikat-item">
+                                                <a href="javascript:void(0);" onclick="window.open('<?php echo esc_url($img_url); ?>','_blank')">
+                                                    <img src="<?php echo esc_url($img_url); ?>" alt="Sertifikat">
+                                                </a>
+                                            </div>
+                                    <?php 
+                                        endforeach;
+                                    else : ?>
+                                        <p class="no-data">Belum ada sertifikat.</p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            
+                            <div class="meta-group">
+                                <h4 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">Peralatan Utama</h4>
+                                <div class="meta-list" style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.6;">
+                                    <?php 
+                                    if (!empty($p->peralatan)) {
+                                        echo wpautop(wp_kses_post($p->peralatan));
+                                    } else {
+                                        echo '<p class="no-data">Belum ada data peralatan.</p>';
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </section>
 
-				<?php if($videos): ?>
-<div class="lx-porto-section">
-    <div class="lx-divider-text"><span>🎥 Portofolio Video</span></div>
-    
-    <div class="lx-video-grid">
-        <?php foreach($videos as $v): ?>
-		<?php 
-				// Mengambil kata pertama saja
-				$nama_depan = strtok($p->nama_panggilan, ' '); 
-			?>
-            <div class="lx-video-item">
-                <div class="lx-video-card porto-clickable" 
-                     data-type="video" 
-                     data-url="<?php echo get_video_embed_url($v->video_url); ?>"
-                     data-title="<?php echo esc_attr($v->judul); ?>"
-                     data-desc="<?php echo esc_attr($v->deskripsi); ?>"
-                     data-author="<?php echo esc_attr($p->nama_panggilan . '-' . $p->kode_nama); ?>"
-                     data-tahun="<?php echo $v->tahun; ?>"
-                     data-lokasi="<?php echo $v->lokasi; ?>"
-                     data-tanggal="<?php echo date('d M Y', strtotime($v->tanggal_kegiatan)); ?>">
-                    
-                    <div class="lx-video-thumb">
+            <!-- PORTFOLIO SECTION: VIDEO -->
+            <?php if($videos): ?>
+            <section class="portfolio-section">
+                <div class="section-header">
+                    <h2 class="section-title">Portofolio <span>Video</span></h2>
+                    <a href="<?php echo home_url('/portofolio-video/'); ?>" class="btn-view-all">Lihat Semua Video</a>
+                </div>
+
+                <div class="portfolio-grid">
+                    <?php foreach($videos as $v): ?>
                         <?php preg_match('/(v=|be\/)([a-zA-Z0-9_-]+)/', $v->video_url, $m); ?>
-                        <img src="https://img.youtube.com/vi/<?php echo $m[2] ?? ''; ?>/mqdefault.jpg" alt="<?php echo esc_attr($v->judul); ?>">
-                        <div class="lx-play-icon">▶</div>
-                    </div>
-                    
-                    <div class="lx-video-info">
-                        <strong><?php echo esc_html($v->judul); ?></strong><br>
-                        <small><?php echo $v->tahun; ?></small>
-                    </div>
+                        <div class="portfolio-card porto-clickable" 
+                             data-type="video" 
+                             data-url="<?php echo get_video_embed_url($v->video_url); ?>"
+                             data-title="<?php echo esc_attr($v->judul); ?>"
+                             data-desc="<?php echo esc_attr($v->deskripsi); ?>"
+                             data-author="<?php echo esc_attr($p->nama_panggilan . '-' . $p->kode_nama); ?>"
+                             data-tahun="<?php echo $v->tahun; ?>"
+                             data-lokasi="<?php echo $v->lokasi; ?>"
+                             data-tanggal="<?php echo date('d M Y', strtotime($v->tanggal_kegiatan)); ?>">
+                            
+                            <div class="thumb-container">
+                                <img src="https://img.youtube.com/vi/<?php echo $m[2] ?? ''; ?>/mqdefault.jpg" alt="<?php echo esc_attr($v->judul); ?>" class="thumb-img">
+                                <div class="video-badge"><?php echo esc_html($v->tahun); ?></div>
+                            </div>
+                            <div class="card-body">
+                                <h3 class="card-title"><?php echo esc_html($v->judul); ?></h3>
+                                <p class="card-desc"><?php echo esc_html($v->deskripsi); ?></p>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
-            </div>
-        <?php endforeach; ?>
-    </div>
+            </section>
+            <?php endif; ?>
 
-    <div class="lx-more-btn-wrap">
-        <a href="<?php echo home_url('/portofolio-video/'); ?>" class="lx-btn-outline">Lihat Semua Video Portofolio ❯</a>
-    </div>
-</div>
-<?php endif; ?>
-
+            <!-- PORTFOLIO SECTION: FOTO -->
             <?php if($fotos): ?>
-<div class="lx-porto-section">
-    <div class="lx-divider-text"><span>📷 Portofolio Foto</span></div>
-    
-    <div class="lx-foto-grid">
-        <?php foreach($fotos as $f): ?>
-		<?php 
-				// Mengambil kata pertama saja
-				$nama_depan = strtok($p->nama_panggilan, ' '); 
-			?>
-            <div class="lx-foto-item">
-                <div class="lx-foto-card porto-clickable"
-                     data-type="image"
-                     data-url="<?php echo esc_url($f->foto_url); ?>"
-                     data-title="<?php echo esc_attr($f->judul); ?>"
-                     data-desc="<?php echo esc_attr($f->deskripsi); ?>"
-                     data-tahun="<?php echo $f->tahun; ?>"
-                     data-lokasi="<?php echo $f->lokasi; ?>" 
-                     data-author="<?php echo esc_attr($nama_depan . '-' . $p->kode_nama); ?>"
-                     data-tanggal="<?php echo date('d M Y', strtotime($f->tanggal_kegiatan)); ?>">
-                    
-                    <div class="lx-foto-wrapper">
-                        <img src="<?php echo esc_url($f->foto_url); ?>" alt="<?php echo esc_attr($f->judul); ?>">
-                    </div>
-                    <div class="lx-foto-meta-mini"><?php echo esc_html($f->judul); ?></div>
+            <section class="portfolio-section">
+                <div class="section-header">
+                    <h2 class="section-title">Portofolio <span>Foto</span></h2>
+                    <a href="<?php echo home_url('/portofolio-foto/'); ?>" class="btn-view-all">Lihat Semua Foto</a>
                 </div>
-            </div>
-        <?php endforeach; ?>
-    </div>
 
-    <div class="lx-more-btn-wrap">
-        <a href="<?php echo home_url('/portofolio-foto/'); ?>" class="lx-btn-outline">Lihat Semua Foto Portofolio ❯</a>
-    </div>
-</div>
-<?php endif; ?>
+                <div class="portfolio-grid">
+                    <?php foreach($fotos as $f): ?>
+                        <div class="portfolio-card porto-clickable"
+                             data-type="image"
+                             data-url="<?php echo esc_url($f->foto_url); ?>"
+                             data-title="<?php echo esc_attr($f->judul); ?>"
+                             data-desc="<?php echo esc_attr($f->deskripsi); ?>"
+                             data-tahun="<?php echo $f->tahun; ?>"
+                             data-lokasi="<?php echo $f->lokasi; ?>" 
+                             data-author="<?php echo esc_attr($p->nama_panggilan . '-' . $p->kode_nama); ?>"
+                             data-tanggal="<?php echo date('d M Y', strtotime($f->tanggal_kegiatan)); ?>">
+                            
+                            <div class="thumb-container">
+                                <img src="<?php echo esc_url($f->foto_url); ?>" alt="<?php echo esc_attr($f->judul); ?>" class="thumb-img">
+                                <div class="video-badge"><?php echo esc_html($f->tahun); ?></div>
+                            </div>
+                            <div class="card-body">
+                                <h3 class="card-title"><?php echo esc_html($f->judul); ?></h3>
+                                <p class="card-desc"><?php echo esc_html($f->deskripsi); ?></p>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -5674,164 +7066,482 @@ else : ?>
             <div class="lx-modal-body">
                 <div id="portoMedia" class="lx-modal-media"></div>
                 <div class="lx-modal-info">
-                    <h2 id="modalTitle" style="color:#d4af37; margin-bottom:5px;"></h2>
-                    <div id="modalMeta" class="lx-modal-meta-row"></div>
-                    <hr style="border:0; border-top:1px solid #333; margin:15px 0;">
-                    <p id="modalDesc" style="color:#ccc; line-height:1.6;"></p>
+                    <h2 id="modalTitle" style="color:var(--gold); margin-bottom:12px; font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:1.4rem;"></h2>
+                    <div id="modalMeta" class="lx-modal-meta-row" style="margin-bottom:16px;"></div>
+                    <p id="modalDesc" style="color:var(--text-dim); line-height:1.7; font-size:0.95rem;"></p>
                 </div>
             </div>
         </div>
     </div>
 
     <style>
-        .luxury-wrapper { background: #000; color: #fff; padding: 40px 0; font-family: 'Inter', sans-serif; }
-        .luxury-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
-        .luxury-main-flex { display: flex; gap: 40px; margin-bottom: 50px; text-align: left; }
-        .lx-left { width: 35%; }
-        .lx-right { width: 65%; }
-        .lx-frame { background: #0a0a0a; padding: 10px; border: 1px solid #333; }
-        .lx-profile-img { width: 100%; border-radius: 2px; }
-        .lx-name { font-size: 42px; color: #d4af37; font-family: 'Playfair Display', serif; margin-bottom: 10px; }
-        .lx-meta { color: #d4af37; font-size: 14px; margin-bottom: 20px; }
-        .lx-bio { background: rgba(255,255,255,0.03); border: 1px solid #222; padding: 20px; border-radius: 4px; font-size: 14px; margin-bottom: 20px; }
-        .lx-tag-item { border: 1px solid #d4af37; color: #d4af37; padding: 2px 10px; font-size: 11px; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
-        .lx-divider-text { border-top: 1px solid rgba(212,175,55,0.3); margin: 30px 0; position: relative; text-align: center; }
-        .lx-divider-text span { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #000; padding: 0 15px; color: #d4af37; font-size: 13px; text-transform: uppercase; }
+        .luxury-wrapper {
+            --bg: #09080c;
+            --card-bg: #121017;
+            --gold: #ffd275;
+            --orange: #b38622;
+            --accent: #d4af37;
+            --text-main: #f3f1f6;
+            --text-dim: #9b98a6;
+            --border: rgba(212, 134, 34, 0.08);
+            --grad-primary: linear-gradient(135deg, #b38622 0%, #ffd275 100%);
+            --font-heading: 'Plus Jakarta Sans', sans-serif;
+            --bg-nested: #18151f;
+
+            background: var(--bg);
+            color: var(--text-main);
+            padding: 120px 0 60px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+            position: relative;
+            z-index: 1;
+        }
+        .luxury-container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
         
-        .lx-video-card, .lx-foto-card { background: #0a0a0a; border: 1px solid #222; overflow: hidden; cursor: pointer; transition: 0.3s; position: relative;}
-        .lx-video-card:hover, .lx-foto-card:hover { border-color: #d4af37; }
-        .lx-video-thumb { position: relative; height: 140px; }
-        .lx-video-thumb img, .lx-foto-card img { width: 100%; height: 100%; object-fit: cover; }
-        .lx-foto-card { height: 180px; }
-        .lx-foto-meta-mini { position: absolute; bottom: 0; background: rgba(0,0,0,0.7); width: 100%; font-size: 10px; padding: 5px; text-align: center; color: #d4af37; }
-        .lx-play-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #d4af37; font-size: 30px; background: rgba(0,0,0,0.2); }
-        .lx-more-btn-wrap { text-align: center; margin-top: 30px; }
-        .lx-btn-outline { display: inline-block; border: 1px solid #d4af37; color: #d4af37; padding: 10px 25px; border-radius: 5px; text-decoration: none; font-size: 12px; font-weight: bold; transition: 0.3s; }
-        .lx-btn-outline:hover { background: #d4af37; color: #000; }
+        /* Grid Layout */
+        .profile-section {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 32px;
+            margin-bottom: 48px;
+            align-items: start;
+        }
+        .profile-left {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .profile-avatar-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 16px;
+            text-align: center;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: border-color 0.3s ease;
+        }
+        .profile-avatar-card:hover {
+            border-color: var(--gold);
+        }
+        .avatar-img {
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            object-fit: cover;
+            border-radius: 16px;
+            background: #24202b;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+        .profile-avatar-card:hover .avatar-img {
+            transform: scale(1.03);
+        }
+        .detail-avatar-placeholder {
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            border-radius: 16px;
+            background: #1e1b26;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 72px;
+            color: rgba(212,175,55,0.35);
+            transition: transform 0.5s ease;
+        }
+        .profile-avatar-card:hover .detail-avatar-placeholder {
+            transform: scale(1.03);
+        }
+
+        /* Meta and Info Cards */
+        .meta-info-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: border-color 0.3s ease;
+            text-align: left;
+        }
+        .meta-info-card:hover {
+            border-color: var(--gold);
+        }
+        .meta-group h4 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gold);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-heading);
+            font-weight: 800;
+        }
+        .meta-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+        .meta-list li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .meta-list li::before {
+            content: "•";
+            color: var(--orange);
+            font-weight: bold;
+        }
+
+        /* Right Column */
+        .profile-right {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: border-color 0.3s ease;
+            text-align: left;
+        }
+        .profile-right:hover {
+            border-color: var(--gold);
+        }
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .profile-id {
+            font-size: 1rem;
+            font-family: monospace;
+            background: var(--bg-nested);
+            padding: 4px 12px;
+            border-radius: 6px;
+            width: fit-content;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+        }
+        .profile-name-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .profile-name {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #fff;
+            font-family: var(--font-heading);
+        }
+        .badge-status {
+            background: rgba(46, 213, 115, 0.15);
+            color: #2ed573;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .badge-tag {
+            background: var(--bg-nested);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .badge-tag:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+        .bio-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .bio-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--gold);
+            font-family: var(--font-heading);
+        }
+        .bio-text {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            text-align: justify;
+        }
+
+        /* Contact & Social Section */
+        .contact-section {
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+            width: 100%;
+        }
+        .contact-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            font-family: var(--font-heading);
+        }
+        .contact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .contact-item {
+            background: var(--bg-nested);
+            border: 1px solid var(--border);
+            padding: 16px 20px;
+            border-radius: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.2);
+            text-align: left;
+        }
+        .contact-item:hover {
+            border-color: var(--gold);
+            transform: translateX(4px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .contact-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .contact-value {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+        .contact-text-value {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .contact-link-action {
+            color: var(--gold);
+            text-decoration: none;
+            font-family: var(--font-heading);
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .contact-link-action:hover {
+            color: #121017;
+            background: var(--grad-primary);
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(212, 134, 34, 0.4);
+        }
+
+        /* Sertifikat Grid */
+        .sertifikat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .sertifikat-item {
+            aspect-ratio: 1/1;
+            overflow: hidden;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: #000;
+            transition: all 0.3s ease;
+        }
+        .sertifikat-item:hover {
+            border-color: var(--gold);
+            transform: scale(1.04);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .sertifikat-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .no-data { font-size: 13.5px; color: var(--text-dim); font-style: italic; }
+
+        /* Portfolio Sections */
+        .portfolio-section {
+            margin-top: 56px;
+            position: relative;
+            z-index: 1;
+            text-align: left;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: #fff;
+            font-family: var(--font-heading);
+        }
+        .section-title span {
+            color: var(--gold);
+        }
+        .btn-view-all {
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            font-family: var(--font-heading);
+        }
+        .btn-view-all:hover {
+            color: var(--gold);
+            border-color: var(--gold);
+            background: rgba(255, 179, 71, 0.04);
+        }
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .portfolio-card {
+            background: linear-gradient(145deg, #16131d, #100e14);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            box-shadow: inset 2px 2px 5px rgba(255,255,255,0.02), 4px 4px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        .portfolio-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--gold);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+        }
+        .thumb-container {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #1c1924;
+            position: relative;
+            overflow: hidden;
+        }
+        .thumb-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .portfolio-card:hover .thumb-img {
+            transform: scale(1.05);
+        }
+        .video-badge {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #fff;
+            z-index: 2;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            color: var(--gold);
+            font-family: var(--font-heading);
+        }
+        .card-desc {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.5;
+        }
 
         /* MODAL CSS */
-        .lx-modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); backdrop-filter: blur(5px); }
-        .lx-modal-content { position: relative; margin: 5% auto; width: 80%; max-width: 900px; background: #111; border-radius: 10px; border: 1px solid #333; overflow: hidden; animation: lxFadeIn 0.3s; }
-        .lx-close { position: absolute; right: 20px; top: 15px; color: #fff; font-size: 30px; cursor: pointer; z-index: 10; }
-        .lx-modal-body { display: flex; flex-direction: column; }
-        .lx-modal-media { width: 100%; background: #000; min-height: 300px; display: flex; align-items: center; justify-content: center; }
-        .lx-modal-media iframe, .lx-modal-media img { width: 100%; max-height: 500px; object-fit: contain; }
-        .lx-modal-info { padding: 30px; }
-        .lx-modal-meta-row { font-size: 13px; color: #888; }
+        .lx-modal { display: none; position: fixed; z-index: 9999; inset: 0; background-color: rgba(0,0,0,0.92); backdrop-filter: blur(8px); padding: 40px 20px; overflow-y: auto; }
+        .lx-modal-content { position: relative; margin: 40px auto; width: 100%; max-width: 1080px; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; animation: lxFadeIn 0.3s; box-shadow: 0 25px 60px rgba(0,0,0,0.9); }
+        .lx-close { position: absolute; right: 16px; top: 16px; width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; cursor: pointer; z-index: 100; transition: all 0.25s ease; line-height: 1; }
+        .lx-close:hover { color: var(--gold); background: rgba(0,0,0,0.85); border-color: var(--gold); transform: scale(1.05) rotate(90deg); }
+        .lx-modal-body { display: flex; flex-direction: row; }
+        .lx-modal-media { width: 60%; background: #000; min-height: 350px; display: flex; align-items: center; justify-content: center; }
+        .lx-modal-media iframe, .lx-modal-media img { width: 100%; max-height: 75vh; object-fit: contain; display: block; border: none; }
+        .lx-modal-info { width: 40%; padding: 36px; text-align: left; display: flex; flex-direction: column; background: var(--card-bg); border-left: 1px solid var(--border); }
+        .lx-modal-meta-row { font-size: 13px; color: var(--text-dim); }
+        .lx-modal-meta-row a { color: var(--gold); text-decoration: none; font-weight: 600; }
+        .lx-modal-meta-row a:hover { color: #fff; }
         @keyframes lxFadeIn { from {opacity: 0; transform: scale(0.95);} to {opacity: 1; transform: scale(1);} }
-        @media (max-width: 768px) { .luxury-main-flex { flex-direction: column; } .lx-left, .lx-right { width: 100%; } .lx-modal-content { width: 95%; margin: 10% auto; } }
-			/* Sertifikat Grid */
-					.sertifikat-grid {
-						display: grid;
-						grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-						gap: 15px;
-						margin-top: 15px;
-					}
 
-					.sertifikat-item {
-						aspect-ratio: 1 / 1;
-						overflow: hidden;
-						border-radius: 8px;
-						border: 1px solid #333;
-						background: #1a1a1a;
-						cursor: pointer;
-						transition: 0.3s;
-					}
-
-					.sertifikat-item img {
-						width: 100%;
-						height: 100%;
-						object-fit: cover;
-						transition: 0.5s;
-					}
-
-					.sertifikat-item:hover { border-color: #d4af37; }
-					.sertifikat-item:hover img { transform: scale(1.1); }
-
-					/* Mobile view */
-					@media (max-width: 600px) {
-						.sertifikat-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
-					}
-		/* Container Grid */
-.lx-video-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 kolom sama rata */
-    gap: 20px; /* Jarak antar item */
-    margin-bottom: 30px;
-}
-
-/* Responsif untuk layar lebih kecil */
-@media (max-width: 1024px) {
-    .lx-video-grid {
-        grid-template-columns: repeat(3, 1fr); /* 3 kolom di tablet */
-    }
-}
-
-@media (max-width: 768px) {
-    .lx-video-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 kolom di HP */
-        gap: 15px;
-    }
-}
-
-@media (max-width: 480px) {
-    .lx-video-grid {
-        grid-template-columns: repeat(1, 1fr); /* 1 kolom di HP kecil */
-    }
-}
-
-/* Pastikan gambar thumb responsif */
-.lx-video-thumb img {
-    width: 100%;
-    height: auto;
-    display: block;
-    border-radius: 8px;
-}
-		/* Container Grid untuk Foto */
-.lx-foto-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 kolom */
-    gap: 15px; /* Jarak antar foto */
-    margin-bottom: 30px;
-}
-
-/* Styling Card Foto agar seragam */
-.lx-foto-card {
-    position: relative;
-    cursor: pointer;
-    overflow: hidden;
-    border-radius: 8px;
-    background: #f0f0f0;
-}
-
-.lx-foto-wrapper {
-    aspect-ratio: 1 / 1; /* Membuat foto jadi kotak (square), opsional */
-    overflow: hidden;
-}
-
-.lx-foto-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Agar gambar tidak gepeng */
-    transition: transform 0.3s ease;
-}
-
-.lx-foto-card:hover img {
-    transform: scale(1.05); /* Efek zoom saat hover */
-}
-
-/* Responsif */
-@media (max-width: 1024px) {
-    .lx-foto-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (max-width: 768px) {
-    .lx-foto-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
+        /* Responsive Layouts */
+        @media (max-width: 1024px) {
+            .profile-section {
+                grid-template-columns: 1fr;
+            }
+            .profile-left {
+                max-width: 400px;
+                margin: 0 auto;
+                width: 100%;
+            }
+        }
+        @media (max-width: 900px) {
+            .lx-modal-content { max-width: 600px; }
+            .lx-modal-body { display: flex; flex-direction: column; }
+            .lx-modal-media { width: 100%; }
+            .lx-modal-info { width: 100%; border-left: none; border-top: 1px solid var(--border); padding: 24px; }
+        }
+        @media (max-width: 600px) {
+            .profile-right {
+                padding: 24px;
+            }
+            .contact-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .contact-link-action {
+                align-self: flex-end;
+            }
+            .lx-modal-content { width: 95%; }
+        }
     </style>
 
     <script>
@@ -6356,25 +8066,36 @@ function lx_universal_porto_assets() { ?>
             <span class="lx-close">&times;</span>
             <div id="lx-m-media"></div>
             <div class="lx-m-info">
-                <h3 id="lx-m-title" style="color:#d4af37;margin:0;font-family:'Playfair Display',serif;"></h3>
-                <div id="lx-m-meta" style="font-size:12px;color:#888;margin:10px 0"></div>
-                <div id="lx-m-tags" style="margin-bottom:15px"></div>
-                <p id="lx-m-desc" style="font-size:14px;color:#ccc;line-height:1.6;border-top:1px solid #222;padding-top:15px"></p>
+                <h3 id="lx-m-title"></h3>
+                <div id="lx-m-meta"></div>
+                <div id="lx-m-tags"></div>
+                <p id="lx-m-desc"></p>
             </div>
         </div>
     </div>
 
     <style>
-        .lx-m { display: none; position: fixed; z-index: 99999; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); padding: 20px; }
-        .lx-m-content { max-width: 850px; margin: 40px auto; background: #111; border-radius: 10px; position: relative; overflow: hidden; border: 1px solid #333; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
-        .lx-close { position: absolute; right: 20px; top: 15px; font-size: 35px; color: #fff; cursor: pointer; z-index: 100; transition: 0.3s; }
-        .lx-close:hover { color: #d4af37; transform: rotate(90deg); }
-        #lx-m-media { background: #000; min-height: 200px; }
-        #lx-m-media img { width: 100%; max-height: 80vh; object-fit: contain; display: block; }
+        .lx-m { display: none; position: fixed; z-index: 99999; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(8px); padding: 40px 20px; overflow-y: auto; }
+        .lx-m-content { display: flex; flex-direction: row; max-width: 1080px; margin: 40px auto; background: #121017; border-radius: 20px; position: relative; overflow: hidden; border: 1px solid rgba(212, 134, 34, 0.15); box-shadow: 0 25px 60px rgba(0,0,0,0.9); }
+        .lx-close { position: absolute; right: 16px; top: 16px; width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; cursor: pointer; z-index: 100; transition: all 0.25s ease; line-height: 1; }
+        .lx-close:hover { color: #ffd275; background: rgba(0,0,0,0.85); border-color: #ffd275; transform: scale(1.05) rotate(90deg); }
+        #lx-m-media { width: 60%; background: #000; min-height: 350px; display: flex; align-items: center; justify-content: center; }
+        #lx-m-media img { width: 100%; max-height: 75vh; object-fit: contain; display: block; }
         #lx-m-media iframe { width: 100%; aspect-ratio: 16/9; display: block; border: none; }
-        .lx-m-info { padding: 30px; text-align: left; }
-        .m-tag { display: inline-block; background: rgba(212,175,55,0.1); color: #d4af37; padding: 2px 8px; border-radius: 3px; font-size: 10px; margin-right: 5px; border: 1px solid rgba(212,175,55,0.3); }
-        @media (max-width: 768px) { .lx-m-content { margin: 10% auto; width: 95%; } }
+        .lx-m-info { width: 40%; padding: 36px; text-align: left; display: flex; flex-direction: column; background: #121017; border-left: 1px solid rgba(212, 134, 34, 0.08); }
+        #lx-m-title { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 700 !important; color: #fff; font-size: 24px; margin-bottom: 8px; }
+        #lx-m-meta { font-size: 13px; color: #9b98a6; margin: 12px 0; }
+        #lx-m-meta a { color: #ffd275; text-decoration: none; font-weight: 600; }
+        #lx-m-meta a:hover { color: #fff; }
+        #lx-m-tags { margin-bottom: 15px; }
+        .m-tag { display: inline-block; background: rgba(212,175,55,0.1); color: #d4af37; padding: 3px 10px; border-radius: 50px; font-size: 11px; margin-right: 6px; border: 1px solid rgba(212,175,55,0.25); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500; }
+        #lx-m-desc { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14.5px; color: #9b98a6; line-height: 1.7; border-top: 1px solid rgba(212, 134, 34, 0.08); padding-top: 16px; margin-top: 16px; }
+        @media (max-width: 900px) {
+            .lx-m-content { flex-direction: column; max-width: 600px; }
+            #lx-m-media { width: 100%; }
+            .lx-m-info { width: 100%; border-left: none; border-top: 1px solid rgba(212, 134, 34, 0.08); padding: 24px; }
+        }
+        @media (max-width: 768px) { .lx-m-content { width: 95%; } }
     </style>
 
     <script type="text/javascript">
@@ -6723,7 +8444,7 @@ function render_carousel_event_terbaru() {
             <div class="swiper-wrapper">
                 <?php while ($query->have_posts()) : $query->the_post(); 
                     $thumb_url = get_the_post_thumbnail_url(get_the_ID(), 'medium_large');
-                    if (!$thumb_url) $thumb_url = 'https://placehold.co/300x300?text=No+Photo';
+                    if (!$thumb_url) $thumb_url = 'https://placehold.co/300x300/808080/ffffff?text=No+Photo';
                 ?>
                 <div class="swiper-slide">
                     <a href="<?php the_permalink(); ?>" class="lx-event-card">
@@ -7305,7 +9026,7 @@ function lx_handle_artikel_personel() {
                 update_post_meta($post_id, '_personel_author_id', $_SESSION['personel_id']);
             }
 
-            wp_redirect(add_query_arg('tab', 'artikel'));
+            personel_dashboard_redirect(home_url('/dashboard-personel/?tab=artikel'));
             exit;
         }
     }
@@ -8130,21 +9851,407 @@ function render_article_sidebar_content($content) {
         $related = $related_query->posts;
     }
 
-    // 2. Sidebar ad — per artikel via post meta
+    // 2. Sidebar ad
     $ad_image   = get_post_meta(get_the_ID(), '_sidebar_ad_image', true);
     $ad_link    = get_post_meta(get_the_ID(), '_sidebar_ad_link', true);
     $ad_caption = get_post_meta(get_the_ID(), '_sidebar_ad_caption', true);
     $ad_active  = get_post_meta(get_the_ID(), '_sidebar_ad_active', true) === '1' && !empty($ad_image);
 
+    // 3. Author info
+    $author_id   = get_the_author_meta('ID');
+    $author_name = get_the_author();
+    $author_bio  = get_the_author_meta('description');
+    $avatar_url  = get_avatar_url($author_id, ['size' => 80]);
+
+    // 4. Reading info
+    $word_count = str_word_count(strip_tags(get_the_content()));
+    $read_min   = max(1, round($word_count / 200));
     ?>
+    <style>
+    /* ===== ARTIKEL DETAIL – PREMIUM DARK LAYOUT ===== */
+    .lx-article-wrap {
+        --lx-gold:     #d4af37;
+        --lx-gold-dim: rgba(212,175,55,0.1);
+        --lx-border:   rgba(255,255,255,0.07);
+        --lx-bg-card:  rgba(255,255,255,0.03);
+        --lx-text-dim: rgba(255,255,255,0.4);
+        display: flex;
+        gap: 36px;
+        align-items: flex-start;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    }
+
+    /* ── Main Content ── */
+    .lx-content-main {
+        flex: 1;
+        min-width: 0;
+        padding-top: 32px;
+    }
+
+    /* Article meta bar above content */
+    .lx-art-meta-bar {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        padding: 18px 0 24px;
+        border-bottom: 1px solid var(--lx-border);
+        margin-bottom: 28px;
+        font-size: 13px;
+        color: var(--lx-text-dim);
+    }
+    .lx-art-meta-bar span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .lx-art-meta-bar .lx-cat-pill {
+        background: var(--lx-gold-dim);
+        border: 1px solid rgba(212,175,55,0.25);
+        color: var(--lx-gold);
+        padding: 4px 14px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-decoration: none;
+    }
+
+    /* Article body typography */
+    .lx-content-main .entry-content,
+    .lx-content-main .post-content {
+        font-size: 16px;
+        line-height: 1.85;
+        color: rgba(255,255,255,0.75);
+    }
+    .lx-content-main .entry-content h2,
+    .lx-content-main .entry-content h3 {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        color: #fff;
+        margin-top: 2em;
+    }
+    .lx-content-main .entry-content img {
+        border-radius: 12px;
+        max-width: 100%;
+    }
+    .lx-content-main .entry-content blockquote {
+        border-left: 3px solid var(--lx-gold);
+        margin: 24px 0;
+        padding: 16px 20px;
+        background: var(--lx-gold-dim);
+        border-radius: 0 12px 12px 0;
+        color: rgba(255,255,255,0.65);
+        font-style: italic;
+    }
+
+    /* Author card below content */
+    .lx-author-card {
+        display: flex;
+        gap: 18px;
+        align-items: flex-start;
+        background: var(--lx-bg-card);
+        border: 1px solid var(--lx-border);
+        border-radius: 20px;
+        padding: 24px;
+        margin-top: 40px;
+    }
+    .lx-author-card img {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(212,175,55,0.3);
+        flex-shrink: 0;
+    }
+    .lx-author-card-body h4 {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-size: 17px;
+        font-weight: 700;
+        color: #fff;
+        margin: 0 0 4px;
+    }
+    .lx-author-card-body .lx-author-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--lx-gold);
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+    .lx-author-card-body p {
+        font-size: 13.5px;
+        color: var(--lx-text-dim);
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    /* Tags row */
+    .lx-art-tags-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 28px;
+    }
+    .lx-art-tags-row a {
+        padding: 5px 14px;
+        border-radius: 50px;
+        border: 1px solid var(--lx-border);
+        color: var(--lx-text-dim);
+        font-size: 12px;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .lx-art-tags-row a:hover {
+        border-color: var(--lx-gold);
+        color: var(--lx-gold);
+        background: var(--lx-gold-dim);
+        text-decoration: none;
+    }
+
+    /* Share buttons */
+    .lx-share-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid var(--lx-border);
+        flex-wrap: wrap;
+    }
+    .lx-share-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--lx-text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+    .lx-share-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 16px;
+        border-radius: 50px;
+        border: 1px solid var(--lx-border);
+        background: var(--lx-bg-card);
+        color: rgba(255,255,255,0.6);
+        font-size: 12.5px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.25s;
+    }
+    .lx-share-btn:hover {
+        border-color: var(--lx-gold);
+        color: var(--lx-gold);
+        background: var(--lx-gold-dim);
+        text-decoration: none;
+    }
+
+    /* ── Sidebar ── */
+    .lx-article-sidebar {
+        width: 310px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 100px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .lx-sb-card {
+        background: var(--lx-bg-card);
+        border: 1px solid var(--lx-border);
+        border-radius: 20px;
+        padding: 22px;
+        transition: border-color 0.3s;
+    }
+    .lx-sb-card:hover { border-color: rgba(212,175,55,0.18); }
+
+    /* Sidebar section heading */
+    .lx-sb-heading {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--lx-gold);
+        margin: 0 0 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--lx-border);
+    }
+    .lx-sb-heading::before {
+        content: '';
+        display: inline-block;
+        width: 3px;
+        height: 14px;
+        background: var(--lx-gold);
+        border-radius: 2px;
+    }
+
+    /* Reading stats pill row */
+    .lx-sb-stats {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .lx-sb-stat {
+        flex: 1;
+        min-width: 80px;
+        background: rgba(212,175,55,0.05);
+        border: 1px solid rgba(212,175,55,0.12);
+        border-radius: 12px;
+        padding: 12px 10px;
+        text-align: center;
+    }
+    .lx-sb-stat-val {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--lx-gold);
+        display: block;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+    .lx-sb-stat-label {
+        font-size: 10.5px;
+        color: var(--lx-text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Related list */
+    .lx-related-list { list-style: none; padding: 0; margin: 0; }
+    .lx-related-item {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--lx-border);
+    }
+    .lx-related-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .lx-related-item:first-child { padding-top: 0; }
+    .lx-related-link {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        text-decoration: none;
+        transition: all 0.25s;
+    }
+    .lx-related-link:hover { opacity: 1; text-decoration: none; }
+    .lx-related-thumb {
+        width: 64px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 10px;
+        flex-shrink: 0;
+        transition: transform 0.3s;
+    }
+    .lx-related-link:hover .lx-related-thumb { transform: scale(1.04); }
+    .lx-related-no-thumb {
+        width: 64px;
+        height: 50px;
+        border-radius: 10px;
+        background: linear-gradient(135deg,#1c1c1c,#252525);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(212,175,55,0.3);
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+    .lx-related-text { flex: 1; min-width: 0; }
+    .lx-related-title {
+        display: block;
+        color: rgba(255,255,255,0.75);
+        font-size: 13px;
+        line-height: 1.45;
+        font-weight: 500;
+        transition: color 0.2s;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .lx-related-link:hover .lx-related-title { color: var(--lx-gold); }
+    .lx-related-date {
+        display: block;
+        color: var(--lx-text-dim);
+        font-size: 11px;
+        margin-top: 5px;
+    }
+
+    /* Ad card */
+    .lx-sb-ad-img {
+        width: 100%;
+        border-radius: 12px;
+        display: block;
+        transition: opacity 0.3s;
+    }
+    .lx-sb-ad-img:hover { opacity: 0.88; }
+    .lx-sb-ad-caption {
+        font-size: 12.5px;
+        color: var(--lx-text-dim);
+        line-height: 1.55;
+        margin: 12px 0 0;
+    }
+    .lx-sb-ad-badge {
+        display: inline-block;
+        font-size: 9.5px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.25);
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 2px 8px;
+        border-radius: 50px;
+        margin-bottom: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .lx-article-wrap { flex-direction: column; }
+        .lx-article-sidebar { width: 100%; position: static; }
+    }
+    @media (max-width: 600px) {
+        .lx-art-meta-bar { gap: 10px; }
+    }
+    </style>
+
+    <?php
+    // Build meta bar HTML
+    $categories = get_the_category();
+    $cat_name   = !empty($categories) ? $categories[0]->name : '';
+    $cat_link   = !empty($categories) ? get_category_link($categories[0]->term_id) : '';
+    $tags_list  = get_the_tags();
+    $post_date  = get_the_date('d F Y');
+    $post_url   = get_the_permalink();
+    $post_title = get_the_title();
+    ?>
+
+    <!-- META BAR (injected before content) -->
+    <div class="lx-art-meta-bar">
+        <?php if ($cat_name) : ?>
+        <a href="<?php echo esc_url($cat_link); ?>" class="lx-cat-pill"><?php echo esc_html($cat_name); ?></a>
+        <?php endif; ?>
+        <span>📅 <?php echo esc_html($post_date); ?></span>
+        <span>👤 <?php echo esc_html($author_name); ?></span>
+        <span>⏱ <?php echo $read_min; ?> menit baca</span>
+        <span>💬 <?php echo get_comments_number(); ?> komentar</span>
+    </div>
+
+    <!-- SIDEBAR -->
     <aside class="lx-article-sidebar">
+
+        <!-- Related Articles -->
         <?php if (!empty($related)) : ?>
-        <div class="lx-sidebar-section">
-            <h3 class="lx-sidebar-title">Artikel Terkait</h3>
+        <div class="lx-sb-card">
+            <h4 class="lx-sb-heading">Artikel Terkait</h4>
             <ul class="lx-related-list">
                 <?php foreach ($related as $rp) :
                     $rp_title = get_the_title($rp->ID);
-                    $rp_date  = get_the_date('d F Y', $rp->ID);
+                    $rp_date  = get_the_date('d M Y', $rp->ID);
                     $rp_link  = get_permalink($rp->ID);
                     $rp_thumb = get_the_post_thumbnail_url($rp->ID, 'thumbnail');
                 ?>
@@ -8152,10 +10259,12 @@ function render_article_sidebar_content($content) {
                     <a href="<?php echo esc_url($rp_link); ?>" class="lx-related-link">
                         <?php if ($rp_thumb) : ?>
                             <img src="<?php echo esc_url($rp_thumb); ?>" alt="" class="lx-related-thumb">
+                        <?php else : ?>
+                            <div class="lx-related-no-thumb">📰</div>
                         <?php endif; ?>
                         <span class="lx-related-text">
                             <span class="lx-related-title"><?php echo esc_html($rp_title); ?></span>
-                            <span class="lx-related-date"><?php echo esc_html($rp_date); ?></span>
+                            <span class="lx-related-date">📅 <?php echo esc_html($rp_date); ?></span>
                         </span>
                     </a>
                 </li>
@@ -8164,118 +10273,102 @@ function render_article_sidebar_content($content) {
         </div>
         <?php endif; ?>
 
+        <!-- Ad Card -->
         <?php if ($ad_active) : ?>
-        <div class="lx-sidebar-section lx-sidebar-ad">
-            <h3 class="lx-sidebar-title">Featured</h3>
+        <div class="lx-sb-card">
+            <span class="lx-sb-ad-badge">Iklan</span>
+            <h4 class="lx-sb-heading">Featured</h4>
             <?php if (!empty($ad_link)) : ?>
-                <a href="<?php echo esc_url($ad_link); ?>" target="_blank" rel="noopener">
-                    <img src="<?php echo esc_url($ad_image); ?>" alt="Iklan" style="width:100%;height:auto;border-radius:8px;">
+                <a href="<?php echo esc_url($ad_link); ?>" target="_blank" rel="noopener nofollow">
+                    <img src="<?php echo esc_url($ad_image); ?>" alt="Iklan" class="lx-sb-ad-img">
                 </a>
             <?php else : ?>
-                <img src="<?php echo esc_url($ad_image); ?>" alt="Iklan" style="width:100%;height:auto;border-radius:8px;">
+                <img src="<?php echo esc_url($ad_image); ?>" alt="Iklan" class="lx-sb-ad-img">
             <?php endif; ?>
             <?php if ($ad_caption) : ?>
-                <p style="color:#ccc;font-size:13px;margin:10px 0 0;line-height:1.4;"><?php echo esc_html($ad_caption); ?></p>
+            <p class="lx-sb-ad-caption"><?php echo esc_html($ad_caption); ?></p>
             <?php endif; ?>
         </div>
         <?php endif; ?>
+
     </aside>
 
-    <style>
-    .lx-article-wrap {
-        display: flex;
-        gap: 40px;
-        align-items: flex-start;
-    }
-    .lx-article-wrap > .lx-content-main {
-        flex: 1;
-        min-width: 0;
-    }
-    .lx-article-sidebar {
-        width: 300px;
-        flex-shrink: 0;
-    }
-    .lx-sidebar-section {
-        background: #1a1a1a;
-        border: 1px solid #333;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    .lx-sidebar-title {
-        color: #d4af37;
-        font-size: 16px;
-        margin: 0 0 15px 0;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #333;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    .lx-related-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    .lx-related-item {
-        padding: 12px 0;
-        border-bottom: 1px solid #2a2a2a;
-    }
-    .lx-related-item:last-child {
-        border-bottom: none;
-    }
-    .lx-related-link {
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-        text-decoration: none;
-        transition: opacity 0.2s;
-    }
-    .lx-related-link:hover {
-        opacity: 0.85;
-    }
-    .lx-related-thumb {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 6px;
-        flex-shrink: 0;
-    }
-    .lx-related-text {
-        flex: 1;
-        min-width: 0;
-    }
-    .lx-related-title {
-        display: block;
-        color: #fff;
-        font-size: 13px;
-        line-height: 1.4;
-        font-weight: 500;
-        transition: color 0.2s;
-    }
-    .lx-related-link:hover .lx-related-title {
-        color: #d4af37;
-    }
-    .lx-related-date {
-        display: block;
-        color: #888;
-        font-size: 11px;
-        margin-top: 4px;
-    }
-    @media (max-width: 768px) {
-        .lx-article-wrap {
-            flex-direction: column;
-        }
-        .lx-article-sidebar {
-            width: 100%;
-        }
-    }
-    </style>
+    <!-- AUTHOR CARD & TAGS & SHARE (appended after content) -->
+    <div class="lx-post-footer">
+        <?php if (!empty($tags_list)) : ?>
+        <div class="lx-art-tags-row">
+            <?php foreach ($tags_list as $tag) : ?>
+            <a href="<?php echo get_tag_link($tag->term_id); ?>"># <?php echo esc_html($tag->name); ?></a>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+
+        <!-- Author Card -->
+        <div class="lx-author-card">
+            <img src="<?php echo esc_url($avatar_url); ?>" alt="<?php echo esc_attr($author_name); ?>">
+            <div class="lx-author-card-body">
+                <span class="lx-author-label">✍️ Ditulis oleh</span>
+                <h4><?php echo esc_html($author_name); ?></h4>
+                <?php if ($author_bio) : ?>
+                <p><?php echo esc_html($author_bio); ?></p>
+                <?php else : ?>
+                <p style="color:rgba(255,255,255,0.3);font-style:italic;">Belum ada bio penulis.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Share -->
+        <div class="lx-share-row">
+            <span class="lx-share-label">Bagikan:</span>
+            <a class="lx-share-btn" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode($post_url); ?>" target="_blank" rel="noopener">
+                📘 Facebook
+            </a>
+            <a class="lx-share-btn" href="https://twitter.com/intent/tweet?url=<?php echo urlencode($post_url); ?>&text=<?php echo urlencode($post_title); ?>" target="_blank" rel="noopener">
+                🐦 Twitter
+            </a>
+            <a class="lx-share-btn" href="https://wa.me/?text=<?php echo urlencode($post_title . ' ' . $post_url); ?>" target="_blank" rel="noopener">
+                💬 WhatsApp
+            </a>
+            <button class="lx-share-btn" onclick="navigator.clipboard.writeText('<?php echo esc_js($post_url); ?>');this.textContent='✅ Copied!'">
+                🔗 Copy Link
+            </button>
+        </div>
+    </div>
+
     <?php
     $sidebar_html = ob_get_clean();
 
-    return '<div class="lx-article-wrap"><div class="lx-content-main">' . $content . '</div>' . $sidebar_html . '</div>';
+    // Inject meta bar before content, post-footer after, sidebar alongside
+    $meta_bar   = '<div class="lx-art-meta-bar">';
+    $split      = explode($meta_bar, $sidebar_html, 2);
+    $before_sidebar = $split[0]; // contains meta bar + sidebar aside
+    // Rebuild: wrap layout
+    // sidebar_html contains both <aside> and .lx-post-footer
+    // We wrap: [meta_bar][content][post-footer] | [sidebar]
+
+    preg_match('/<div class="lx-art-meta-bar">.*?<\/div>/s', $sidebar_html, $meta_match);
+    preg_match('/<aside class="lx-article-sidebar">.*?<\/aside>/s', $sidebar_html, $aside_match);
+    preg_match('/<div class="lx-post-footer">.*?<\/div>\s*$/s', $sidebar_html, $footer_match);
+
+    $style_block  = substr($sidebar_html, 0, strpos($sidebar_html, '<!-- META BAR'));
+    $meta_bar_html  = isset($meta_match[0])   ? $meta_match[0]   : '';
+    $aside_html     = isset($aside_match[0])  ? $aside_match[0]  : '';
+    $post_footer    = isset($footer_match[0]) ? $footer_match[0] : '';
+
+    $output  = $style_block;
+    $output .= '<div class="lx-article-wrap">';
+    $output .=   '<div class="lx-content-main">';
+    $output .=     $meta_bar_html;
+    $output .=     $content;
+    $output .=     $post_footer;
+    $output .=   '</div>';
+    $output .=   $aside_html;
+    $output .= '</div>';
+
+    return $output;
 }
 add_filter('the_content', 'render_article_sidebar_content');
+
 
 // ============================================================
 // SISTEM KATEGORI PORTOFOLIO (MANY-TO-MANY)
@@ -9471,6 +11564,7 @@ add_action('wp_enqueue_scripts', 'enqueue_landing_page_assets');
  */
 function render_landing_content_shortcode() {
     wp_enqueue_style('landing-css');
+    wp_enqueue_style('font-awesome-cdn');
     wp_enqueue_script('landing-js');
 
     global $wpdb;
@@ -9543,7 +11637,7 @@ function render_landing_content_shortcode() {
     <div class="hero-content">
       <span class="hero-eyebrow">Dipercaya 50+ perusahaan di Indonesia</span>
       <h1>Solusi Video &amp; <br><span>Event Profesional</span> untuk Brand Anda</h1>
-      <p class="hero-sub">Fotografi, videografi, pilot drone, hingga produksi event end-to-end — dikerjakan tim kreatif berpengalaman yang tersebar di seluruh Indonesia.</p>
+      <p class="hero-sub">Fotografi, Videografi, pilot drone, hingga produksi event end-to-end — dikerjakan tim kreatif berpengalaman yang tersebar di seluruh Indonesia.</p>
       <div class="hero-actions">
         <a href="#" class="btn-fluid-primary btn-enlarged">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -9581,6 +11675,51 @@ function render_landing_content_shortcode() {
     </div>
   </div>
 </header>
+
+<!-- QUICK NAVIGATION SECTION -->
+<section class="quick-nav-section reveal">
+  <div class="quick-nav-grid">
+    <a href="#layanan" class="quick-nav-card card-kreatif">
+      <div class="quick-nav-icon-box">
+        <i class="fas fa-camera-retro"></i>
+      </div>
+      <div class="quick-nav-details">
+        <h3>Layanan Kreatif</h3>
+        <p>Produksi video &amp; foto komersial sinematik</p>
+      </div>
+    </a>
+
+    <a href="#event" class="quick-nav-card card-fasilitas">
+      <div class="quick-nav-icon-box">
+        <i class="fas fa-sliders"></i>
+      </div>
+      <div class="quick-nav-details">
+        <h3>Sewa Fasilitas Event</h3>
+        <p>Logistik, panggung, sound, &amp; videotron</p>
+      </div>
+    </a>
+
+    <a href="#personel" class="quick-nav-card card-kru">
+      <div class="quick-nav-icon-box">
+        <i class="fas fa-users-gear"></i>
+      </div>
+      <div class="quick-nav-details">
+        <h3>Sewa Kru</h3>
+        <p>Tim fotografer, videografer, &amp; editor berpengalaman</p>
+      </div>
+    </a>
+
+    <a href="#portofolio" class="quick-nav-card card-portofolio">
+      <div class="quick-nav-icon-box">
+        <i class="fas fa-images"></i>
+      </div>
+      <div class="quick-nav-details">
+        <h3>Portofolio</h3>
+        <p>Koleksi hasil karya visual terbaik kami</p>
+      </div>
+    </a>
+  </div>
+</section>
 
 <!-- LAYANAN KREATIF -->
 <section id="layanan">
@@ -10704,3 +12843,1514 @@ function render_wedding_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('wedding_prawedding', 'render_wedding_shortcode');
+
+/**
+ * HALAMAN EVENT PRODUCTION & EVENT ORGANIZER
+ */
+function enqueue_event_production_assets() {
+    $css_version = file_exists(get_stylesheet_directory() . '/assets/css/event-production.css') ? filemtime(get_stylesheet_directory() . '/assets/css/event-production.css') : '1.0.0';
+    wp_register_style('event-production-css', get_stylesheet_directory_uri() . '/assets/css/event-production.css', [], $css_version);
+}
+add_action('wp_enqueue_scripts', 'enqueue_event_production_assets');
+
+function render_event_production_shortcode() {
+    global $wpdb;
+    wp_enqueue_style('event-production-css');
+
+    // Query event production videos (category: multimedia-production-service)
+    $videos = $wpdb->get_results(
+        "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
+         FROM wp9y_portofolio_video v
+         JOIN wp9y_personel p ON v.personel_id = p.id
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug = 'multimedia-production-service'
+         ORDER BY v.id DESC
+         LIMIT 9"
+    );
+
+    // Fallback: if database has fewer than 3 videos, use hardcoded list from mockup
+    $use_fallback = (!$videos || count($videos) < 3);
+
+    ob_start();
+    ?>
+    <div class="page-event-production">
+      <div class="fluid-glow glow-left"></div>
+      <div class="fluid-glow glow-right"></div>
+
+      <section class="hero">
+        <div class="hero__inner reveal">
+          <span class="hero__tag">Layanan — Event Production & Event Organizer</span>
+          <h1 class="hero__title">Event Production <span>&amp; Event Organizer</span></h1>
+          <p class="hero__desc">
+            Kami adalah tim profesional di bidang Event Production & Event Organizer yang berpengalaman dalam merancang dan menyelenggarakan berbagai jenis acara, mulai dari event corporate, gathering, launching produk, hingga acara privat. Dengan mengutamakan kreativitas, detail, dan kualitas eksekusi, kami menghadirkan konsep yang tidak hanya menarik secara visual, tetapi juga mampu menciptakan pengalaman yang berkesan bagi setiap audiens.
+          </p>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="section">
+        <div class="reveal-zoom">
+          <div class="video-showcase">
+            <?php if ($use_fallback): 
+                // Hardcoded fallback list matching mockup
+                $fallback_items = [
+                    ['title' => 'Event Showcase 1', 'author' => 'ONO-0001-FVDE', 'yt' => 'NkycgR8UoIY', 'tag' => 'Event Production'],
+                    ['title' => 'Event Showcase 2', 'author' => '@rto-0002-FVEP', 'yt' => '1yCklnC5aoY', 'tag' => 'Event Organizer'],
+                    ['title' => 'Event Showcase 3', 'author' => 'Adrian-0030-VD', 'yt' => 'YM-ZanSFvlo', 'tag' => 'Event Production'],
+                    ['title' => 'Corporate Gathering', 'author' => 'Aan-0014-FVE', 'yt' => 'duLzCt-xKJE', 'tag' => 'Corporate Event'],
+                    ['title' => 'Product Launching', 'author' => 'cegum-0043-FVDE', 'yt' => 'qMhCdTJk3uw', 'tag' => 'Launching Event'],
+                    ['title' => 'Private Event', 'author' => 'ian-0064-FVD', 'yt' => 'AWLDShDOwLU', 'tag' => 'Private Event'],
+                    ['title' => 'Stage Production', 'author' => 'ONO-0001-FVDE', 'yt' => '_CXpqsRkhAk', 'tag' => 'Event Stage'],
+                    ['title' => 'Event Documentation', 'author' => 'Adrian-0030-VD', 'yt' => 'btdW-kv_Nf0', 'tag' => 'Event Documentation'],
+                    ['title' => 'Creative Concept Event', 'author' => '@rto-0002-FVEP', 'yt' => 'BbMEzFYObIQ', 'tag' => 'Event Concept'],
+                ];
+                foreach ($fallback_items as $item):
+                    $embed_url = "https://www.youtube.com/embed/" . $item['yt'] . "?autoplay=1";
+                    $thumb_url = "https://img.youtube.com/vi/" . $item['yt'] . "/mqdefault.jpg";
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($item['author']));
+            ?>
+                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url); ?>')">
+                      <div class="video-card__thumb">
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($item['tag']); ?>" loading="lazy">
+                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+                      </div>
+                      <div class="video-card__body">
+                        <div class="video-card__title"><?php echo esc_html($item['title']); ?></div>
+                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($item['author']); ?></a></div>
+                      </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: 
+                foreach ($videos as $v):
+                    $embed_url = get_video_embed_url($v->video_url);
+                    $yt_id = '';
+                    if (preg_match('/(embed\/|v=|be\/)([a-zA-Z0-9_-]+)/', $embed_url, $m)) {
+                        $yt_id = $m[2];
+                    }
+                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&q=80";
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($v->kode_nama));
+            ?>
+                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url . "?autoplay=1"); ?>')">
+                      <div class="video-card__thumb">
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="Event Production" loading="lazy">
+                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+                      </div>
+                      <div class="video-card__body">
+                        <div class="video-card__title"><?php echo esc_html($v->judul); ?></div>
+                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($v->nama_panggilan); ?>-<?php echo esc_html($v->kode_nama); ?></a></div>
+                      </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+          </div>
+        </div>
+      </section>
+
+      <div class="video-modal" id="videoModal">
+        <div class="video-modal__backdrop" onclick="closeVideo()"></div>
+        <div class="video-modal__content">
+          <button class="video-modal__close" onclick="closeVideo()">&times;</button>
+          <div class="video-modal__wrap">
+            <iframe id="videoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+
+      <script>
+      function openVideo(url){
+        document.getElementById('videoIframe').src = url;
+        document.getElementById('videoModal').style.display = 'block';
+      }
+      function closeVideo(){
+        document.getElementById('videoIframe').src = '';
+        document.getElementById('videoModal').style.display = 'none';
+      }
+      document.getElementById('videoModal').addEventListener('click', function(e){
+        if(e.target === this) closeVideo();
+      });
+      </script>
+
+      <section class="section">
+        <div class="content-section reveal">
+          <h2>Jasa <span class="hl">Event Production & Event Organizer</span></h2>
+
+          <h3>Solusi Event Produksi & Organizer Profesional untuk Corporate, Brand, & Acara Privat</h3>
+          <p>Kami menghadirkan layanan event production dan event organizer yang terintegrasi, siap mewujudkan acara Anda dari konsep hingga eksekusi. Dengan pengalaman menangani berbagai skala dan jenis acara, tim kami memastikan setiap detail berjalan sesuai rencana — menghasilkan event yang tidak hanya sukses secara teknis, tetapi juga berkesan bagi setiap peserta.</p>
+
+          <hr>
+
+          <h3>Kenapa Memilih Jasa Event Production & Event Organizer Kami</h3>
+          <p>Menyelenggarakan acara yang sukses membutuhkan perencanaan matang, koordinasi tim yang solid, serta eksekusi yang presisi. Sebagai event production dan event organizer profesional, kami membantu Anda mengelola seluruh aspek acara — dari konsep kreatif, produksi teknis, hingga manajemen acara di lapangan — sehingga Anda dapat fokus pada tamu dan tujuan acara Anda.</p>
+
+          <ul>
+            <li><strong>Tim profesional berpengalaman</strong> dalam menangani event corporate, launching, gathering, hingga acara privat</li>
+            <li><strong>Layanan end-to-end</strong> dari perencanaan konsep, produksi, hingga eksekusi dan evaluasi acara</li>
+            <li><strong>Peralatan produksi berkualitas tinggi</strong> untuk mendukung kebutuhan teknis acara Anda</li>
+            <li><strong>Konsep kreatif yang customized</strong> disesuaikan dengan identitas brand dan tujuan acara</li>
+            <li><strong>Manajemen acara yang terstruktur</strong> dengan timeline, anggaran, dan koordinasi vendor yang transparan</li>
+            <li><strong>Jangkauan nasional</strong> — siap menyelenggarakan acara di berbagai kota di Indonesia</li>
+          </ul>
+
+          <hr>
+
+          <h3>Layanan Event Production & Event Organizer Kami</h3>
+          <p>Kami menyediakan berbagai layanan event production dan event organizer yang dapat disesuaikan dengan kebutuhan acara Anda, baik skala kecil, menengah, maupun besar.</p>
+
+          <div class="service-list">
+            <div class="service-item"><strong>Corporate Event & Gathering</strong><span>Perencanaan dan produksi acara perusahaan, termasuk seminar, workshop, raker, anniversary perusahaan, dan family gathering.</span></div>
+            <div class="service-item"><strong>Product Launching & Brand Activation</strong><span>Event produksi untuk peluncuran produk, brand activation, dan campaign marketing yang impactful and memorable.</span></div>
+            <div class="service-item"><strong>Event Stage & Technical Production</strong><span>Produksi panggung lengkap dengan lighting, sound system, LED screen, rigging, dan kebutuhan teknis acara lainnya.</span></div>
+            <div class="service-item"><strong>Private & Social Event</strong><span>Event organizer untuk acara privat seperti ulang tahun, anniversary, reunion, dan acara sosial lainnya.</span></div>
+            <div class="service-item"><strong>Exhibition & Booth Production</strong><span>Desain dan produksi booth pameran, exhibition stand, serta kebutuhan display untuk event expo dan trade show.</span></div>
+          </div>
+
+          <hr>
+
+          <h3>Proses Kerja Event Production & Event Organizer</h3>
+          <p>Kami memiliki sistem kerja yang terstruktur untuk memastikan setiap acara berjalan lancar, tepat waktu, dan sesuai ekspektasi Anda.</p>
+
+          <div class="steps">
+            <div class="step-card reveal"><div class="step-card__num">1</div><h4>Konsultasi & Briefing</h4><p>Memahami visi, tujuan, anggaran, dan kebutuhan spesifik acara Anda secara mendalam.</p></div>
+            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">2</div><h4>Concept Development</h4><p>Merancang konsep acara yang kreatif, tematik, dan sesuai dengan identitas brand atau tujuan acara.</p></div>
+            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">3</div><h4>Perencanaan & Produksi</h4><p>Menyusun timeline, anggaran, koordinasi vendor, dan produksi seluruh elemen teknis acara.</p></div>
+            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">4</div><h4>Eksekusi Acara</h4><p>Pelaksanaan acara dengan tim profesional, manajemen lapangan, dan pengawasan teknis secara real-time.</p></div>
+            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">5</div><h4>Evaluasi & Dokumentasi</h4><p>Evaluasi pasca-acara serta penyerahan dokumentasi foto dan video sebagai portofolio acara Anda.</p></div>
+          </div>
+
+          <hr>
+
+          <h3>Keunggulan Layanan Event Production & Event Organizer Kami</h3>
+          <ul>
+            <li><strong>Tim kreatif dan teknis yang berpengalaman</strong> dalam menangani berbagai jenis dan skala acara</li>
+            <li><strong>Konsep event yang inovatif dan customized</strong>, bukan template atau paket standar</li>
+            <li><strong>Manajemen vendor dan produksi yang terintegrasi</strong>, mengurangi kompleksitas koordinasi untuk klien</li>
+            <li><strong>Kualitas produksi broadcast</strong> untuk dokumentasi dan live streaming acara</li>
+            <li><strong>Fleksibilitas skala acara</strong> — dari intimate gathering hingga event skala nasional</li>
+            <li><strong>Layanan after-event</strong> termasuk dokumentasi, report, dan rekomendasi pengembangan acara berikutnya</li>
+          </ul>
+
+          <hr>
+
+          <h3>Pertanyaan Seputar Jasa Event Production & Event Organizer</h3>
+
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa lama waktu yang dibutuhkan untuk merencanakan sebuah acara?<span class="arrow">▾</span></div><div class="faq-item__a">Waktu perencanaan tergantung pada kompleksitas dan skala acara. Untuk acara corporate skala kecil hingga menengah, umumnya membutuhkan waktu 2-4 minggu. Untuk acara besar dengan banyak elemen produksi, kami merekomendasikan persiapan minimal 4-8 minggu.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Bagaimana dengan biaya jasa event production dan event organizer?<span class="arrow">▾</span></div><div class="faq-item__a">Biaya layanan event production dan event organizer disesuaikan dengan skala acara, kompleksitas teknis, jumlah tamu, dan kebutuhan spesifik lainnya. Kami memberikan proposal yang transparan dan detail sesuai anggaran Anda. Silakan hubungi tim kami untuk diskusi lebih lanjut.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah bisa menyelenggarakan acara di luar kota?<span class="arrow">▾</span></div><div class="faq-item__a">Tentu saja. Kami melayani event production dan event organizer di berbagai kota di seluruh Indonesia. Tim kami siap mobile dan berkoordinasi dengan vendor lokal untuk memastikan kelancaran acara di lokasi manapun.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apa saja yang termasuk dalam layanan event organizer?<span class="arrow">▾</span></div><div class="faq-item__a">Layanan event organizer kami mencakup perencanaan konsep, manajemen anggaran, koordinasi vendor, produksi teknis (lighting, sound, stage), manajemen acara di hari-H, serta dokumentasi acara. Semua dapat disesuaikan dengan kebutuhan spesifik acara Anda.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah kami bisa request tema atau konsep tertentu untuk acara?<span class="arrow">▾</span></div><div class="faq-item__a">Ya, kami sangat terbuka dengan ide dan konsep yang Anda miliki. Tim kreatif kami akan membantu mengembangkan konsep tersebut menjadi eksekusi acara yang nyata, dengan sentuhan profesional dan inovatif sesuai dengan identitas brand atau tujuan acara Anda.</div></div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+    // FAQ Toggle
+    if (typeof toggleFaq !== 'function') {
+      function toggleFaq(el) {
+        el.classList.toggle('open');
+        const answer = el.nextElementSibling;
+        answer.classList.toggle('open');
+      }
+    }
+    
+    // Scroll Reveal for dynamic shortcode content
+    jQuery(document).ready(function($) {
+      const ep_observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          }
+        });
+      }, { threshold: 0.1 });
+      $('.page-event-production .reveal, .page-event-production .reveal-zoom').each(function() {
+        ep_observer.observe(this);
+      });
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('event_production', 'render_event_production_shortcode');
+
+
+/**
+ * HALAMAN DOKUMENTASI EVENT
+ */
+function enqueue_dokumentasi_event_assets() {
+    $css_version = file_exists(get_stylesheet_directory() . '/assets/css/dokumentasi-event.css') ? filemtime(get_stylesheet_directory() . '/assets/css/dokumentasi-event.css') : '1.0.0';
+    wp_register_style('dokumentasi-event-css', get_stylesheet_directory_uri() . '/assets/css/dokumentasi-event.css', [], $css_version);
+}
+add_action('wp_enqueue_scripts', 'enqueue_dokumentasi_event_assets');
+
+function render_dokumentasi_event_shortcode() {
+    global $wpdb;
+    wp_enqueue_style('dokumentasi-event-css');
+
+    // Query event-documentation videos
+    $videos = $wpdb->get_results(
+        "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
+         FROM wp9y_portofolio_video v
+         JOIN wp9y_personel p ON v.personel_id = p.id
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug = 'event-documentation'
+         ORDER BY v.id DESC
+         LIMIT 6"
+    );
+
+    // Fallback: if database has fewer than 2 videos, use hardcoded list from mockup
+    $use_fallback = (!$videos || count($videos) < 2);
+
+    ob_start();
+    ?>
+    <div class="page-dokumentasi-event">
+      <div class="fluid-glow glow-left"></div>
+      <div class="fluid-glow glow-right"></div>
+
+      <section class="hero">
+        <div class="hero__inner reveal">
+          <span class="hero__tag">Layanan — Dokumentasi Event</span>
+          <h1 class="hero__title">Dokumentasi <span>Event</span></h1>
+          <p class="hero__desc">
+            Kami menyediakan layanan Dokumentasi Event yang profesional untuk mengabadikan setiap momen penting dalam acara Anda. Dengan perpaduan teknik pengambilan gambar yang tepat dan sentuhan editing yang berkualitas, kami memastikan setiap detail terekam dengan jelas dan berkesan.
+          </p>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="section">
+        <div class="reveal-zoom">
+          <div class="video-showcase">
+            <?php if ($use_fallback): 
+                // Hardcoded fallback list matching mockup
+                $fallback_items = [
+                    ['title' => 'Dokumentasi Event 1', 'author' => 'ian-0064-FVD', 'yt' => 'NkycgR8UoIY', 'tag' => 'Dokumentasi Event'],
+                    ['title' => 'Dokumentasi Event 2', 'author' => 'ian-0064-FVD', 'yt' => '1yCklnC5aoY', 'tag' => 'Dokumentasi Event'],
+                ];
+                foreach ($fallback_items as $item):
+                    $embed_url = "https://www.youtube.com/embed/" . $item['yt'] . "?autoplay=1";
+                    $thumb_url = "https://img.youtube.com/vi/" . $item['yt'] . "/mqdefault.jpg";
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($item['author']));
+            ?>
+                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url); ?>')">
+                      <div class="video-card__thumb">
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($item['tag']); ?>" loading="lazy">
+                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+                      </div>
+                      <div class="video-card__body">
+                        <div class="video-card__title"><?php echo esc_html($item['title']); ?></div>
+                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($item['author']); ?></a></div>
+                      </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: 
+                foreach ($videos as $v):
+                    $embed_url = get_video_embed_url($v->video_url);
+                    $yt_id = '';
+                    if (preg_match('/(embed\/|v=|be\/)([a-zA-Z0-9_-]+)/', $embed_url, $m)) {
+                        $yt_id = $m[2];
+                    }
+                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "https://images.unsplash.com/photo-1551817958-20204d6ab212?w=600&q=80";
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($v->kode_nama));
+            ?>
+                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url . "?autoplay=1"); ?>')">
+                      <div class="video-card__thumb">
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="Dokumentasi Event" loading="lazy">
+                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+                      </div>
+                      <div class="video-card__body">
+                        <div class="video-card__title"><?php echo esc_html($v->judul); ?></div>
+                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($v->nama_panggilan); ?>-<?php echo esc_html($v->kode_nama); ?></a></div>
+                      </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+          </div>
+        </div>
+      </section>
+
+      <div class="video-modal" id="videoModal">
+        <div class="video-modal__backdrop" onclick="closeVideo()"></div>
+        <div class="video-modal__content">
+          <button class="video-modal__close" onclick="closeVideo()">&times;</button>
+          <div class="video-modal__wrap">
+            <iframe id="videoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+
+      <script>
+      function openVideo(url){
+        document.getElementById('videoIframe').src = url;
+        document.getElementById('videoModal').style.display = 'block';
+      }
+      function closeVideo(){
+        document.getElementById('videoIframe').src = '';
+        document.getElementById('videoModal').style.display = 'none';
+      }
+      document.getElementById('videoModal').addEventListener('click', function(e){
+        if(e.target === this) closeVideo();
+      });
+      </script>
+
+      <section class="section">
+        <div class="content-section reveal">
+          <h2>Jasa <span class="hl">Dokumentasi Event Profesional</span></h2>
+
+          <h3>Layanan Dokumentasi Foto & Video untuk Berbagai Acara</h3>
+          <p>Kami menghadirkan layanan dokumentasi event yang profesional dan menyeluruh — mengabadikan setiap momen berharga dalam acara Anda dengan kualitas visual terbaik. Dari foto candid hingga video sinematik, tim kami memastikan tidak ada detail penting yang terlewatkan. Setiap hasil dokumentasi kami kelola dengan pendekatan storytelling visual, sehingga bukan sekadar rekaman, tetapi cerita yang hidup dan bermakna.</p>
+
+          <hr>
+
+          <h3>Kenapa Dokumentasi Event Profesional Itu Penting</h3>
+          <p>Setiap acara yang Anda selenggarakan adalah investasi waktu, tenaga, dan biaya. Dokumentasi yang berkualitas menjadi bukti nyata kesuksesan acara dan aset berharga untuk berbagai keperluan — mulai dari publikasi, portofolio, laporan kegiatan, hingga kenangan yang dapat dilihat kembali kapan saja. Dokumentasi event yang profesional juga memperkuat citra brand dan kredibilitas penyelenggara di mata publik dan stakeholder.</p>
+
+          <ul>
+            <li><strong>Mengabadikan momen berharga</strong> yang tidak akan terulang untuk kedua kalinya</li>
+            <li><strong>Mendukung publikasi dan promosi acara</strong> untuk media sosial, website, dan press release</li>
+            <li><strong>Menjadi portofolio dan bukti kredibilitas</strong> penyelenggara untuk acara-acara selanjutnya</li>
+            <li><strong>Menyediakan materi dokumentasi</strong> untuk klien, sponsor, dan stakeholder acara</li>
+            <li><strong>Hasil editing profesional</strong> dengan color grading, pemilihan momen terbaik, dan narasi visual yang kuat</li>
+          </ul>
+
+          <hr>
+
+          <h3>Layanan Dokumentasi Event Kami</h3>
+          <p>Kami menyediakan berbagai paket dokumentasi event yang dapat disesuaikan dengan jenis, skala, dan kebutuhan acara Anda.</p>
+
+          <div class="service-list">
+            <div class="service-item"><strong>Dokumentasi Foto Event</strong><span>Dokumentasi foto lengkap dari persiapan hingga akhir acara, termasuk foto candid, group photo, detail dekorasi, dan momen-momen spontan yang berkesan.</span></div>
+            <div class="service-item"><strong>Dokumentasi Video Event</strong><span>Video highlights sinematik yang merangkum keseluruhan acara dalam durasi 3-5 menit, dilengkapi dengan musik latar, interview, dan storytelling yang kuat.</span></div>
+            <div class="service-item"><strong>Live Streaming & Multi-Camera Recording</strong><span>Layanan siaran langsung dan rekaman multi-kamera untuk acara seminar, konferensi, konser, dan event berskala besar.</span></div>
+            <div class="service-item"><strong>Dokumentasi Drone (Aerial)</strong><span>Pengambilan gambar dari udara untuk menangkap perspektif luas lokasi acara, area outdoor, dan momen spektakuler dari ketinggian.</span></div>
+            <div class="service-item"><strong>Video Interview & Testimoni</strong><span>Dokumentasi wawancara dengan peserta, pembicara, atau penyelenggara acara untuk memperkaya konten dokumentasi dan menambah dimensi cerita.</span></div>
+          </div>
+
+          <hr>
+
+          <h3>Proses Dokumentasi Event</h3>
+          <p>Kami memiliki alur kerja yang terstruktur untuk memastikan dokumentasi acara Anda berjalan lancar dan menghasilkan kualitas terbaik.</p>
+
+          <div class="steps">
+            <div class="step-card reveal"><div class="step-card__num">1</div><h4>Konsultasi Kebutuhan</h4><p>Diskusi tentang jenis acara, rundown, lokasi, dan kebutuhan dokumentasi spesifik Anda.</p></div>
+            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">2</div><h4>Perencanaan Teknis</h4><p>Menentukan posisi kru, jenis peralatan, angle kamera, dan konsep visual yang sesuai.</p></div>
+            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">3</div><h4>Pelaksanaan Liputan</h4><p>Dokumentasi langsung di lokasi oleh tim profesional dengan peralatan broadcast quality.</p></div>
+            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">4</div><h4>Editing & Kurasi</h4><p>Seleksi momen terbaik, color grading, dan penyusunan video/foto menjadi cerita visual yang utuh.</p></div>
+            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">5</div><h4>Delivery</h4><p>Penyerahan hasil dokumentasi dalam format siap pakai untuk publikasi, arsip, dan distribusi.</p></div>
+          </div>
+
+          <hr>
+
+          <h3>Keunggulan Jasa Dokumentasi Event Kami</h3>
+          <ul>
+            <li><strong>Tim berpengalaman</strong> dalam mendokumentasikan berbagai jenis acara — corporate, gathering, konser, pernikahan, seminar, dan event sosial</li>
+            <li><strong>Peralatan broadcast quality</strong> — kamera mirrorless/full-frame, stabilizer, drone, dan audio profesional</li>
+            <li><strong>Pendekatan storytelling</strong> yang membuat hasil dokumentasi bukan sekadar rekaman, tetapi cerita yang hidup</li>
+            <li><strong>Editing cepat dan berkualitas</strong> — hasil foto dan video siap dalam waktu singkat tanpa mengorbankan kualitas</li>
+            <li><strong>Fleksibel untuk berbagai platform</strong> — format dioptimalkan untuk media sosial, website, YouTube, dan TV</li>
+            <li><strong>Layanan setelah acara</strong> — siap membantu proses pasca-event hingga final delivery.</li>
+          </ul>
+
+          <hr>
+
+          <h3>Pertanyaan Seputar Jasa Dokumentasi Event</h3>
+
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa biaya jasa dokumentasi event?<span class="arrow">▾</span></div><div class="faq-item__a">Biaya dokumentasi event bervariasi tergantung pada durasi acara, jumlah kru, jenis dokumentasi (foto/video/keduanya), dan kebutuhan peralatan khusus. Kami memberikan penawaran yang transparan sesuai dengan kebutuhan acara Anda. Hubungi tim kami untuk konsultasi dan simulasi biaya.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa lama hasil dokumentasi selesai?<span class="arrow">▾</span></div><div class="faq-item__a">Untuk foto, hasil edit biasanya selesai dalam 3-7 hari kerja. Untuk video highlights, estimasi pengerjaan 1-2 minggu tergantung kompleksitas editing. Kami juga menyediakan layanan express jika diperlukan.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah bisa menangani acara di luar kota?<span class="arrow">▾</span></div><div class="faq-item__a">Tentu. Kami melayani dokumentasi event di seluruh Indonesia. Tim kami siap mobilisasi ke lokasi acara Anda dengan peralatan lengkap. Biaya transportasi dan akomodasi akan disesuaikan dengan lokasi.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apa saja jenis acara yang pernah didokumentasikan?<span class="arrow">▾</span></div><div class="faq-item__a">Kami telah mendokumentasikan berbagai jenis acara: corporate event, product launching, seminar & konferensi, gathering, konser musik, pernikahan, pameran, festival, dan various event sosial maupun komersial lainnya.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah hasil dokumentasi bisa digunakan untuk keperluan komersial?<span class="arrow">▾</span></div><div class="faq-item__a">Ya, hasil dokumentasi sepenuhnya menjadi hak milik klien dan dapat digunakan untuk keperluan komersial, publikasi, promosi, dan arsip perusahaan tanpa royalti tambahan.</div></div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+    // FAQ Toggle
+    if (typeof toggleFaq !== 'function') {
+      function toggleFaq(el) {
+        el.classList.toggle('open');
+        const answer = el.nextElementSibling;
+        answer.classList.toggle('open');
+      }
+    }
+    
+    // Scroll Reveal for dynamic shortcode content
+    jQuery(document).ready(function($) {
+      const de_observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          }
+        });
+      }, { threshold: 0.1 });
+      $('.page-dokumentasi-event .reveal, .page-dokumentasi-event .reveal-zoom').each(function() {
+        de_observer.observe(this);
+      });
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('dokumentasi_event', 'render_dokumentasi_event_shortcode');
+
+/**
+ * HALAMAN VIDEO KLIP
+ */
+function enqueue_video_klip_assets() {
+    $css_version = file_exists(get_stylesheet_directory() . '/assets/css/video-klip.css') ? filemtime(get_stylesheet_directory() . '/assets/css/video-klip.css') : '1.0.0';
+    wp_register_style('video-klip-css', get_stylesheet_directory_uri() . '/assets/css/video-klip.css', [], $css_version);
+}
+add_action('wp_enqueue_scripts', 'enqueue_video_klip_assets');
+
+function render_video_klip_shortcode() {
+    global $wpdb;
+    wp_enqueue_style('video-klip-css');
+
+    // Query video klip videos (categories: media-entertainment, film-cinematic)
+    $videos = $wpdb->get_results(
+        "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
+         FROM wp9y_portofolio_video v
+         JOIN wp9y_personel p ON v.personel_id = p.id
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug IN ('media-entertainment', 'film-cinematic')
+         ORDER BY v.id DESC
+         LIMIT 6"
+    );
+
+    // Fallback: if database has fewer than 2 videos, use hardcoded list from mockup
+    $use_fallback = (!$videos || count($videos) < 2);
+
+    ob_start();
+    ?>
+    <div class="page-video-klip">
+      <div class="fluid-glow glow-left"></div>
+      <div class="fluid-glow glow-right"></div>
+
+      <section class="hero">
+        <div class="hero__inner reveal">
+          <span class="hero__tag">Layanan — Video Klip</span>
+          <h1 class="hero__title">Video <span>Klip</span></h1>
+          <p class="hero__desc">
+            Kami menghadirkan layanan produksi Video Klip yang dirancang untuk menampilkan identitas dan karakter karya secara visual yang kuat dan berkesan. Dengan menggabungkan konsep kreatif, sinematografi yang menarik, serta proses editing yang profesional, kami membantu setiap karya tampil lebih hidup dan memiliki daya tarik tersendiri.
+          </p>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="section">
+        <div class="reveal-zoom">
+          <div class="video-showcase">
+            <?php if ($use_fallback): 
+                // Hardcoded fallback list matching mockup
+                $fallback_items = [
+                    ['title' => 'Video Klip 1', 'author' => 'ONO-0001-FVDE', 'yt' => 'zHjHO4iVxU8', 'tag' => 'Video Klip'],
+                    ['title' => 'Video Klip 2', 'author' => 'cegum-0043-FVDE', 'yt' => 'btdW-kv_Nf0', 'tag' => 'Video Klip'],
+                ];
+                foreach ($fallback_items as $item):
+                    $embed_url = "https://www.youtube.com/embed/" . $item['yt'] . "?autoplay=1";
+                    $thumb_url = "https://img.youtube.com/vi/" . $item['yt'] . "/mqdefault.jpg";
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($item['author']));
+            ?>
+                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url); ?>')">
+                      <div class="video-card__thumb">
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($item['tag']); ?>" loading="lazy">
+                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+                      </div>
+                      <div class="video-card__body">
+                        <div class="video-card__title"><?php echo esc_html($item['title']); ?></div>
+                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($item['author']); ?></a></div>
+                      </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: 
+                foreach ($videos as $v):
+                    $embed_url = get_video_embed_url($v->video_url);
+                    $yt_id = '';
+                    if (preg_match('/(embed\/|v=|be\/)([a-zA-Z0-9_-]+)/', $embed_url, $m)) {
+                        $yt_id = $m[2];
+                    }
+                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&q=80";
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($v->kode_nama));
+            ?>
+                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url . "?autoplay=1"); ?>')">
+                      <div class="video-card__thumb">
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="Video Klip" loading="lazy">
+                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+                      </div>
+                      <div class="video-card__body">
+                        <div class="video-card__title"><?php echo esc_html($v->judul); ?></div>
+                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($v->nama_panggilan); ?>-<?php echo esc_html($v->kode_nama); ?></a></div>
+                      </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+          </div>
+        </div>
+      </section>
+
+      <div class="video-modal" id="videoModal">
+        <div class="video-modal__backdrop" onclick="closeVideo()"></div>
+        <div class="video-modal__content">
+          <button class="video-modal__close" onclick="closeVideo()">&times;</button>
+          <div class="video-modal__wrap">
+            <iframe id="videoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+
+      <script>
+      function openVideo(url){
+        document.getElementById('videoIframe').src = url;
+        document.getElementById('videoModal').style.display = 'block';
+      }
+      function closeVideo(){
+        document.getElementById('videoIframe').src = '';
+        document.getElementById('videoModal').style.display = 'none';
+      }
+      document.getElementById('videoModal').addEventListener('click', function(e){
+        if(e.target === this) closeVideo();
+      });
+      </script>
+
+      <section class="section">
+        <div class="content-section reveal">
+          <h2>Jasa Pembuatan <span class="hl">Video Klip</span></h2>
+
+          <h3>Layanan Produksi Video Klip Profesional</h3>
+          <p>Kami menghadirkan solusi produksi video klip yang dirancang untuk menampilkan identitas dan karakter karya musik secara visual yang kuat dan berkesan. Dengan menggabungkan konsep kreatif yang matang, sinematografi yang memukau, serta proses editing dan color grading yang profesional, setiap video klip yang kami produksi mampu membawa karya musik Anda ke level berikutnya — baik untuk distribusi digital, televisi, maupun platform streaming.</p>
+
+          <hr>
+
+          <h3>Kenapa Video Klip Penting untuk Karya Musik Anda</h3>
+          <p>Video klip bukan sekadar pelengkap lagu — ia adalah medium storytelling visual yang memperkuat pesan, emosi, dan identitas dari sebuah karya musik. Di era digital di mana konten visual mendominasi, video klip yang berkualitas dapat menjadi pembeda yang signifikan, membantu artis dan musisi menjangkau audiens yang lebih luas, meningkatkan engagement, dan memperkuat personal branding di industri musik.</p>
+
+          <ul>
+            <li><strong>Meningkatkan daya tarik dan engagement audiens</strong> melalui visual yang kuat dan sinematik</li>
+            <li><strong>Memperkuat identitas dan karakter artistik</strong> dengan konsep visual yang unik dan personal</li>
+            <li><strong>Memperluas jangkauan distribusi</strong> — siap tayang di YouTube, Spotify Canvas, Instagram Reels, TikTok, dan platform digital lainnya</li>
+            <li><strong>Membangun koneksi emosional</strong> antara pendengar dan karya melalui narasi visual yang mendalam</li>
+            <li><strong>Meningkatkan nilai produksi</strong> dan kredibilitas artis di mata industri dan audiens</li>
+          </ul>
+
+          <hr>
+
+          <h3>Layanan Produksi Video Klip Kami</h3>
+          <p>Kami menyediakan berbagai layanan produksi video klip yang dapat disesuaikan dengan genre musik, konsep kreatif, dan anggaran Anda — dari artis independen hingga label rekaman.</p>
+
+          <div class="service-list">
+            <div class="service-item"><strong>Video Klip Live Performance</strong><span>Pengambilan gambar penampilan live dengan tata cahaya panggung profesional, multi-angle camera setup, dan audio yang disinkronisasi dengan sempurna.</span></div>
+            <div class="service-item"><strong>Video Klip Narrative / Storytelling</strong><span>Video klip dengan alur cerita yang kuat — cocok untuk lagu dengan pesan naratif yang ingin divisualisasikan secara sinematik.</span></div>
+            <div class="service-item"><strong>Video Klip Concept / Visual Art</strong><span>Pendekatan visual artistik dengan konsep abstrak, simbolis, dan eksekusi sinematografi yang eksperimental dan ikonik.</span></div>
+            <div class="service-item"><strong>Lyric Video</strong><span>Video lirik dengan tipografi dinamis, motion graphic, dan visual pendukung yang estetis — ideal untuk distribusi digital.</span></div>
+            <div class="service-item"><strong>Behind The Scene & Content BTS</strong><span>Dokumentasi proses kreatif di balik produksi video klip — cocok untuk konten media sosial dan strategi branding artis.</span></div>
+          </div>
+
+          <hr>
+
+          <h3>Proses Produksi Video Klip</h3>
+          <p>Kami memiliki alur kerja produksi yang terstruktur untuk memastikan setiap video klip yang kami kerjakan menghasilkan kualitas sinematik terbaik sesuai visi artistik Anda.</p>
+
+          <div class="steps">
+            <div class="step-card reveal"><div class="step-card__num">1</div><h4>Konsep &amp; Brief</h4><p>Diskusi mendalam tentang lagu, visi artistik, referensi visual, dan konsep kreatif yang ingin diwujudkan.</p></div>
+            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">2</div><h4>Storyboard &amp; Treatment</h4><p>Menyusun storyboard visual, mood board, dan treatment lengkap sebagai panduan produksi.</p></div>
+            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">3</div><h4>Produksi</h4><p>Shooting dengan kamera sinematik, tata cahaya artistik, dan arahan kreatif dari tim profesional.</p></div>
+            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">4</div><h4>Post-Production</h4><p>Editing, color grading sinematik, sound design, dan efek visual untuk hasil akhir yang maksimal.</p></div>
+            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">5</div><h4>Revisi &amp; Delivery</h4><p>Finishing, revisi terarah, dan pengiriman file dalam format siap distribusi ke berbagai platform.</p></div>
+          </div>
+
+          <hr>
+
+          <h3>Keunggulan Jasa Video Klip Kami</h3>
+          <ul>
+            <li><strong>Tim kreatif dan teknisi berpengalaman</strong> dalam produksi video klip untuk berbagai genre musik</li>
+            <li><strong>Peralatan sinematik profesional</strong> — kamera cinema, lighting, dan audio berkualitas broadcast</li>
+            <li><strong>Pendekatan artistik yang personal</strong> — setiap video klip dirancang sesuai dengan karakter unik karya musik Anda</li>
+            <li><strong>Fleksibel untuk berbagai platform</strong> — format video dioptimalkan untuk YouTube, Instagram, TikTok, dan platform digital lainnya</li>
+            <li><strong>Layanan one-stop</strong> — dari konsep, produksi, hingga post-production dalam satu tim terpadu</li>
+            <li><strong>Proses kerja transparan</strong> dengan timeline dan komunikasi yang jelas sepanjang proyek</li>
+          </ul>
+
+          <hr>
+
+          <h3>Pertanyaan Seputar Jasa Video Klip</h3>
+
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa biaya produksi video klip?<span class="arrow">▾</span></div><div class="faq-item__a">Biaya produksi video klip bervariasi tergantung pada kompleksitas konsep, durasi, jumlah lokasi, talent, dan kebutuhan efek visual. Kami memberikan penawaran yang transparan sesuai dengan anggaran dan kebutuhan artistik Anda. Hubungi tim kami untuk konsultasi gratis.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa lama proses produksi video klip?<span class="arrow">▾</span></div><div class="faq-item__a">Proses produksi video klip umumnya memakan waktu 1-3 minggu, tergantung pada kompleksitas proyek. Untuk proyek dengan kebutuhan produksi yang lebih kompleks seperti efek visual atau multi-lokasi, waktu pengerjaan dapat disesuaikan melalui diskusi awal.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah bisa produksi video klip untuk semua genre musik?<span class="arrow">▾</span></div><div class="faq-item__a">Tentu. Kami memiliki pengalaman dalam memproduksi video klip untuk berbagai genre musik — dari pop, rock, jazz, tradisional, hingga EDM dan musik eksperimental. Setiap genre memiliki pendekatan visual yang berbeda dan kami akan menyesuaikan konsep dengan karakter musik Anda.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah video klip bisa digunakan untuk distribusi digital dan media sosial?<span class="arrow">▾</span></div><div class="faq-item__a">Ya, video klip kami diproduksi dengan format yang optimal untuk berbagai platform digital termasuk YouTube, Instagram Reels, TikTok, Facebook, dan platform streaming musik seperti Spotify Canvas. Kami juga dapat menyesuaikan aspek rasio dan durasi sesuai spesifikasi masing-masing platform.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah melayani pembuatan lyric video juga?<span class="arrow">▾</span></div><div class="faq-item__a">Ya, kami menyediakan layanan pembuatan lyric video dengan tipografi dinamis, motion graphic yang estetis, dan visual pendukung yang menarik. Lyric video cocok untuk distribusi digital sebagai konten pendamping perilisan single atau album.</div></div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+    // FAQ Toggle
+    if (typeof toggleFaq !== 'function') {
+      function toggleFaq(el) {
+        el.classList.toggle('open');
+        const answer = el.nextElementSibling;
+        answer.classList.toggle('open');
+      }
+    }
+    
+    // Scroll Reveal for dynamic shortcode content
+    jQuery(document).ready(function($) {
+      const vk_observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          }
+        });
+      }, { threshold: 0.1 });
+      $('.page-video-klip .reveal, .page-video-klip .reveal-zoom').each(function() {
+        vk_observer.observe(this);
+      });
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('video_klip', 'render_video_klip_shortcode');
+
+
+/**
+ * HALAMAN VIDEO PRODUK & BRANDING IKLAN
+ */
+function enqueue_video_produk_iklan_assets() {
+    $css_version = file_exists(get_stylesheet_directory() . '/assets/css/video-produk-iklan.css') ? filemtime(get_stylesheet_directory() . '/assets/css/video-produk-iklan.css') : '1.0.0';
+    wp_register_style('video-produk-iklan-css', get_stylesheet_directory_uri() . '/assets/css/video-produk-iklan.css', [], $css_version);
+}
+add_action('wp_enqueue_scripts', 'enqueue_video_produk_iklan_assets');
+
+function render_video_produk_iklan_shortcode() {
+    global $wpdb;
+    wp_enqueue_style('video-produk-iklan-css');
+
+    // Query video produk videos (category: commercial-advertising)
+    $videos = $wpdb->get_results(
+        "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
+         FROM wp9y_portofolio_video v
+         JOIN wp9y_personel p ON v.personel_id = p.id
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug = 'commercial-advertising'
+         ORDER BY v.id DESC
+         LIMIT 6"
+    );
+
+    // Fallback: if database has fewer than 3 videos, use hardcoded list from mockup
+    $use_fallback = (!$videos || count($videos) < 3);
+
+    ob_start();
+    ?>
+    <div class="page-video-produk-iklan">
+      <div class="fluid-glow glow-left"></div>
+      <div class="fluid-glow glow-right"></div>
+
+      <section class="hero">
+        <div class="hero__inner reveal">
+          <span class="hero__tag">Layanan — Video Produk & Branding Iklan</span>
+          <h1 class="hero__title">Foto &amp; Video Produk — TVC — <span>Branding Iklan</span></h1>
+          <p class="hero__desc">
+            Kami menyediakan layanan Video Produk untuk kebutuhan branding dan iklan yang dirancang secara kreatif dan strategis. Setiap video diproduksi dengan pendekatan visual yang menarik serta storytelling yang kuat, sehingga mampu menyampaikan pesan brand secara efektif dan meningkatkan daya tarik produk di mata audiens.
+          </p>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="section">
+        <div class="reveal-zoom">
+          <div class="video-showcase">
+            <?php if ($use_fallback): 
+                // Hardcoded fallback list matching mockup
+                $fallback_items = [
+                    ['title' => 'Video Produk 1', 'author' => '@rto-0002-FVEP', 'yt' => 'Zefbc4R8NVU', 'tag' => 'Video Produk'],
+                    ['title' => 'Video Produk 2', 'author' => 'Adrian-0030-VD', 'yt' => 'ofJj2MyINhs', 'tag' => 'Video Produk'],
+                    ['title' => 'TVC Iklan', 'author' => 'Adrian-0030-VD', 'yt' => '-9_Y3gpA1R8', 'tag' => 'TVC Iklan'],
+                    ['title' => 'Video Branding', 'author' => 'ian-0064-FVD', 'yt' => 'cnXHtR8rPU4', 'tag' => 'Video Branding'],
+                    ['title' => 'Video Iklan Produk', 'author' => 'Adrian-0030-VD', 'yt' => 'Ju8zx6CzC7c', 'tag' => 'Video Iklan Produk'],
+                ];
+                foreach ($fallback_items as $item):
+                    $embed_url = "https://www.youtube.com/embed/" . $item['yt'] . "?autoplay=1";
+                    $thumb_url = "https://img.youtube.com/vi/" . $item['yt'] . "/mqdefault.jpg";
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($item['author']));
+            ?>
+                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url); ?>')">
+                      <div class="video-card__thumb">
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($item['tag']); ?>" loading="lazy">
+                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+                      </div>
+                      <div class="video-card__body">
+                        <div class="video-card__title"><?php echo esc_html($item['title']); ?></div>
+                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($item['author']); ?></a></div>
+                      </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: 
+                foreach ($videos as $v):
+                    $embed_url = get_video_embed_url($v->video_url);
+                    $yt_id = '';
+                    if (preg_match('/(embed\/|v=|be\/)([a-zA-Z0-9_-]+)/', $embed_url, $m)) {
+                        $yt_id = $m[2];
+                    }
+                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&q=80";
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($v->kode_nama));
+            ?>
+                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url . "?autoplay=1"); ?>')">
+                      <div class="video-card__thumb">
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="Video Produk" loading="lazy">
+                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+                      </div>
+                      <div class="video-card__body">
+                        <div class="video-card__title"><?php echo esc_html($v->judul); ?></div>
+                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($v->nama_panggilan); ?>-<?php echo esc_html($v->kode_nama); ?></a></div>
+                      </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+          </div>
+        </div>
+      </section>
+
+      <div class="section">
+        <div class="photo-section reveal">
+          <div class="photo-section__img">
+            <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/Black-Healthy-Food-Photo-Collage-1024x819.png" alt="Produk Food Photography Collage" loading="lazy">
+          </div>
+          <div class="photo-section__info">
+            <h3>Foto Produk <span>Food Photography</span></h3>
+            <p>Visual produk yang memikat adalah kunci dalam branding. Kami menghadirkan foto produk berkualitas tinggi dengan pencahayaan profesional, komposisi artistik, dan editing yang memperkuat daya tarik visual produk Anda — siap digunakan untuk katalog, website, media sosial, hingga materi promosi cetak.</p>
+            <div class="credit">Photo by <a href="<?php echo esc_url(home_url('/detail-personel/?kode=0032-FV')); ?>">Rezky-0032-FV</a></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="video-modal" id="videoModal">
+        <div class="video-modal__backdrop" onclick="closeVideo()"></div>
+        <div class="video-modal__content">
+          <button class="video-modal__close" onclick="closeVideo()">&times;</button>
+          <div class="video-modal__wrap">
+            <iframe id="videoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+
+      <script>
+      function openVideo(url){
+        document.getElementById('videoIframe').src = url;
+        document.getElementById('videoModal').style.display = 'block';
+      }
+      function closeVideo(){
+        document.getElementById('videoIframe').src = '';
+        document.getElementById('videoModal').style.display = 'none';
+      }
+      document.getElementById('videoModal').addEventListener('click', function(e){
+        if(e.target === this) closeVideo();
+      });
+      </script>
+
+      <section class="section">
+        <div class="content-section reveal">
+          <h2>Jasa Pembuatan <span class="hl">Video Produk &amp; Branding Iklan</span></h2>
+
+          <h3>Layanan Video Produk, TVC &amp; Branding Iklan Profesional</h3>
+          <p>Kami menghadirkan solusi produksi video produk dan iklan yang dirancang secara kreatif dan strategis — membantu brand Anda tampil menonjol di tengah persaingan pasar. Dari video produk untuk e-commerce hingga TVC untuk siaran televisi dan iklan digital, setiap frame kami produksi dengan standar kualitas broadcast dan pendekatan storytelling yang kuat.</p>
+
+          <hr>
+
+          <h3>Kenapa Video Produk &amp; Branding Iklan Penting untuk Bisnis Anda</h3>
+          <p>Di era digital yang serba visual, konten video menjadi medium paling efektif untuk menarik perhatian audiens dan membangun koneksi emosional dengan konsumen. Video produk yang berkualitas tidak hanya menampilkan fitur dan keunggulan produk, tetapi juga menyampaikan nilai brand secara keseluruhan — meningkatkan kepercayaan, mendorong konversi, dan memperkuat positioning brand di pasar.</p>
+
+          <ul>
+            <li><strong>Meningkatkan engagement dan konversi penjualan</strong> melalui visual produk yang menarik dan meyakinkan</li>
+            <li><strong>Memperkuat brand identity</strong> dengan konsistensi visual dan pesan yang terkurasi</li>
+            <li><strong>Memenangkan kompetisi pasar</strong> dengan konten iklan yang kreatif dan berbeda dari kompetitor</li>
+            <li><strong>Multi-platform siap pakai</strong> — untuk Instagram, TikTok, YouTube, TV, hingga iklan digital (Google Ads, Meta Ads)</li>
+            <li><strong>Membangun kepercayaan konsumen</strong> melalui presentasi produk yang profesional dan transparan</li>
+          </ul>
+
+          <hr>
+
+          <h3>Layanan Video Produk &amp; Branding Iklan Kami</h3>
+          <p>Kami menyediakan berbagai layanan produksi video dan foto produk yang dapat disesuaikan dengan kebutuhan brand dan anggaran Anda.</p>
+
+          <div class="service-list">
+            <div class="service-item"><strong>Video Produk untuk E-Commerce &amp; Marketplace</strong><span>Video produk singkat yang menonjolkan fitur, fungsi, dan keunggulan produk — optimal untuk katalog Shopee, Tokopedia, Lazada, dan platform e-commerce lainnya.</span></div>
+            <div class="service-item"><strong>TVC &amp; Video Iklan Komersial</strong><span>Produksi TVC (Television Commercial) dan video iklan digital untuk siaran TV, YouTube, Instagram, TikTok, dan platform media sosial lainnya.</span></div>
+            <div class="service-item"><strong>Branding Video &amp; Company Story</strong><span>Video branding yang menceritakan kisah brand, value proposition, dan misi perusahaan secara visual dan emosional.</span></div>
+            <div class="service-item"><strong>Foto Produk Profesional</strong><span>Foto produk berkualitas broadcast dengan berbagai gaya — flat lay, isolated, lifestyle, dan creative composition — untuk kebutuhan katalog dan promosi.</span></div>
+            <div class="service-item"><strong>Motion Graphic &amp; Product Animation</strong><span>Animasi produk and motion graphic untuk menjelaskan fitur produk secara visual yang menarik dan mudah dipahami audiens.</span></div>
+          </div>
+
+          <hr>
+
+          <h3>Proses Produksi Video Produk &amp; Iklan</h3>
+          <p>Kami memiliki alur kerja yang terstruktur untuk memastikan setiap proyek video produk dan iklan menghasilkan kualitas terbaik sesuai dengan standar brand Anda.</p>
+
+          <div class="steps">
+            <div class="step-card reveal"><div class="step-card__num">1</div><h4>Brief &amp; Konsep</h4><p>Diskusi mendalam tentang produk, target audiens, dan tujuan kampanye branding/iklan Anda.</p></div>
+            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">2</div><h4>Storyboard &amp; Script</h4><p>Menyusun storyboard visual dan naskah yang efektif untuk menyampaikan pesan brand.</p></div>
+            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">3</div><h4>Produksi</h4><p>Shooting dengan peralatan broadcast, tata cahaya profesional, dan arahan kreatif yang detail.</p></div>
+            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">4</div><h4>Post-Production</h4><p>Editing, color grading, sound design, dan motion graphic untuk hasil final yang memukau.</p></div>
+            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">5</div><h4>Revisi &amp; Delivery</h4><p>Proses revisi terarah hingga video siap tayang di seluruh platform yang Anda targetkan.</p></div>
+          </div>
+
+          <hr>
+
+          <h3>Keunggulan Jasa Video Produk &amp; Branding Iklan Kami</h3>
+          <ul>
+            <li><strong>Tim kreatif dan teknisi berpengalaman</strong> dalam produksi video produk dan iklan untuk berbagai industri</li>
+            <li><strong>Peralatan broadcast quality</strong> — kamera, lighting, audio, dan rigging profesional</li>
+            <li><strong>Pendekatan strategis</strong> — setiap video dirancang untuk mencapai tujuan bisnis dan branding spesifik Anda</li>
+            <li><strong>Fleksibel untuk berbagai platform</strong> — format video dioptimalkan untuk TV, digital, hingga media sosial</li>
+            <li><strong>Layanan foto &amp; video one-stop</strong> — kebutuhan visual brand Anda dapat kami penuhi dalam satu tempat</li>
+            <li><strong>Proses kerja transparan</strong> dengan timeline dan komunikasi yang jelas sepanjang proyek</li>
+          </ul>
+
+          <hr>
+
+          <h3>Pertanyaan Seputar Jasa Video Produk &amp; Branding Iklan</h3>
+
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa biaya pembuatan video produk atau iklan?<span class="arrow">▾</span></div><div class="faq-item__a">Biaya produksi video produk dan iklan bervariasi tergantung pada kompleksitas konsep, durasi, jumlah lokasi, talent, dan kebutuhan efek visual. Kami memberikan penawaran yang transparan sesuai dengan anggaran dan kebutuhan brand Anda. Hubungi tim kami untuk konsultasi gratis.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa lama proses produksi video produk?<span class="arrow">▾</span></div><div class="faq-item__a">Proses produksi video produk umumnya memakan waktu 1-3 minggu, tergantung pada kompleksitas proyek. Untuk proyek TVC atau iklan dengan kebutuhan produksi yang lebih kompleks, waktu pengerjaan dapat disesuaikan melalui diskusi awal.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah bisa produksi video untuk produk makanan/minuman?<span class="arrow">▾</span></div><div class="faq-item__a">Tentu. Kami memiliki pengalaman dalam food photography dan videography, termasuk teknik styling makanan, pencahayaan khusus, dan pengaturan komposisi yang membuat produk makanan dan minuman terlihat lebih menggugah selera.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah video produk bisa digunakan untuk iklan berbayar (Meta Ads, Google Ads)?<span class="arrow">▾</span></div><div class="faq-item__a">Ya, video produk kami diproduksi dengan format yang optimal untuk berbagai platform iklan digital, termasuk Meta Ads (Facebook/Instagram), Google Ads, TikTok Ads, dan YouTube Ads. Kami juga dapat menyesuaikan durasi dan format sesuai spesifikasi platform.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah melayani jasa foto produk juga?<span class="arrow">▾</span></div><div class="faq-item__a">Ya, kami menyediakan layanan foto produk profesional dengan berbagai gaya: isolated white background, flat lay, lifestyle, dan creative composition. Foto produk kami siap digunakan untuk katalog, website, marketplace, dan materi promosi cetak maupun digital.</div></div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+    // FAQ Toggle
+    if (typeof toggleFaq !== 'function') {
+      function toggleFaq(el) {
+        el.classList.toggle('open');
+        const answer = el.nextElementSibling;
+        answer.classList.toggle('open');
+      }
+    }
+    
+    // Scroll Reveal for dynamic shortcode content
+    jQuery(document).ready(function($) {
+      const vpi_observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          }
+        });
+      }, { threshold: 0.1 });
+      $('.page-video-produk-iklan .reveal, .page-video-produk-iklan .reveal-zoom').each(function() {
+        vpi_observer.observe(this);
+      });
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('video_produk_iklan', 'render_video_produk_iklan_shortcode');
+
+
+/* =========================================================
+ * SHORTCODE: list_artikel_publik
+ * Usage: [list_artikel_publik per_page="9" category=""]
+ * ========================================================= */
+function render_list_artikel_publik($atts) {
+    $atts = shortcode_atts([
+        'per_page' => 9,
+        'category' => '',
+    ], $atts);
+
+    $paged    = get_query_var('paged') ? get_query_var('paged') : 1;
+    $cat_filter = isset($_GET['cat_filter']) ? sanitize_text_field($_GET['cat_filter']) : $atts['category'];
+    $s_filter   = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
+
+    $args = [
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'posts_per_page' => intval($atts['per_page']),
+        'paged'          => $paged,
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+    ];
+    if (!empty($cat_filter)) {
+        $args['tax_query'] = [[
+            'taxonomy' => 'category',
+            'field'    => 'slug',
+            'terms'    => explode(',', $cat_filter),
+        ]];
+    }
+    if (!empty($s_filter)) {
+        $args['s'] = $s_filter;
+    }
+
+    $query = new WP_Query($args);
+    $total_pages = $query->max_num_pages;
+
+    ob_start();
+    ?>
+    <style>
+    /* ===== ARTIKEL LIST – PREMIUM DARK ===== */
+    .lx-artikel-wrap {
+        --lx-gold: #d4af37;
+        --lx-gold-dim: rgba(212,175,55,0.12);
+        --lx-bg-card: rgba(255,255,255,0.03);
+        --lx-border: rgba(255,255,255,0.07);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+    }
+    .lx-artikel-header {
+        text-align: center;
+        margin-bottom: 48px;
+    }
+    .lx-artikel-header h2 {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 800;
+        color: #fff;
+        margin: 0 0 10px;
+        letter-spacing: -1px;
+    }
+    .lx-artikel-header h2 .lx-grad-text {
+        background: linear-gradient(90deg, #d4af37, #fff5a0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .lx-artikel-header p {
+        color: rgba(255,255,255,0.4);
+        font-size: 15px;
+        margin: 0;
+    }
+    .lx-artikel-divider {
+        display: block;
+        width: 56px;
+        height: 3px;
+        border-radius: 2px;
+        background: linear-gradient(90deg, #d4af37, transparent);
+        margin: 14px auto 0;
+    }
+    /* Filter pills */
+    .lx-art-filter {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        margin-bottom: 36px;
+    }
+    .lx-art-filter a {
+        padding: 7px 18px;
+        border-radius: 50px;
+        border: 1px solid var(--lx-border);
+        background: var(--lx-bg-card);
+        color: rgba(255,255,255,0.5);
+        font-size: 12.5px;
+        text-decoration: none;
+        transition: all 0.25s;
+    }
+    .lx-art-filter a:hover,
+    .lx-art-filter a.active {
+        border-color: var(--lx-gold);
+        color: var(--lx-gold);
+        background: var(--lx-gold-dim);
+        text-decoration: none;
+    }
+    /* Search */
+    .lx-art-search-form {
+        display: flex;
+        max-width: 460px;
+        margin: 0 auto 40px;
+        background: var(--lx-bg-card);
+        border: 1px solid var(--lx-border);
+        border-radius: 50px;
+        overflow: hidden;
+        transition: border-color 0.3s;
+    }
+    .lx-art-search-form:focus-within { border-color: var(--lx-gold); }
+    .lx-art-search-form input {
+        flex: 1; background: transparent; border: none; outline: none;
+        padding: 12px 20px; color: #fff; font-size: 14px;
+    }
+    .lx-art-search-form input::placeholder { color: rgba(255,255,255,0.25); }
+    .lx-art-search-form button {
+        background: transparent; border: none; padding: 0 18px;
+        color: rgba(255,255,255,0.35); cursor: pointer;
+        font-size: 16px; transition: color 0.2s;
+    }
+    .lx-art-search-form button:hover { color: var(--lx-gold); }
+    /* Grid */
+    .lx-art-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 26px;
+    }
+    .lx-art-grid .lx-art-card:first-child {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+    .lx-art-grid .lx-art-card:first-child .lx-art-thumb { height: 100%; min-height: 280px; }
+    /* Card */
+    .lx-art-card {
+        background: var(--lx-bg-card);
+        border: 1px solid var(--lx-border);
+        border-radius: 20px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        transition: transform 0.35s cubic-bezier(.4,0,.2,1),
+                    box-shadow 0.35s cubic-bezier(.4,0,.2,1),
+                    border-color 0.3s;
+    }
+    .lx-art-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 24px 56px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,175,55,0.2);
+        border-color: rgba(212,175,55,0.28);
+        text-decoration: none;
+    }
+    /* Thumb */
+    .lx-art-thumb {
+        position: relative;
+        height: 210px;
+        overflow: hidden;
+        background: #131313;
+        flex-shrink: 0;
+    }
+    .lx-art-thumb img {
+        width: 100%; height: 100%; object-fit: cover;
+        transition: transform 0.55s ease;
+    }
+    .lx-art-card:hover .lx-art-thumb img { transform: scale(1.06); }
+    .lx-art-no-thumb {
+        width: 100%; height: 100%;
+        display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(135deg,#1a1a1a,#252525);
+        font-size: 60px; color: rgba(212,175,55,0.25);
+    }
+    .lx-art-badge {
+        position: absolute; top: 14px; left: 14px;
+        background: rgba(212,175,55,0.9); backdrop-filter: blur(4px);
+        color: #000; font-size: 10.5px; font-weight: 700;
+        letter-spacing: 0.7px; text-transform: uppercase;
+        padding: 4px 12px; border-radius: 50px;
+    }
+    .lx-art-time-badge {
+        position: absolute; bottom: 12px; right: 12px;
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+        color: rgba(255,255,255,0.65); font-size: 11px;
+        padding: 4px 10px; border-radius: 20px;
+    }
+    /* Body */
+    .lx-art-body {
+        padding: 22px 22px 18px;
+        display: flex; flex-direction: column; flex: 1;
+    }
+    .lx-art-meta {
+        font-size: 11.5px; color: rgba(255,255,255,0.3);
+        margin-bottom: 10px;
+        display: flex; gap: 12px; flex-wrap: wrap;
+    }
+    .lx-art-title {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-size: 17px; font-weight: 700; color: #fff;
+        margin: 0 0 10px; line-height: 1.4;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        transition: color 0.3s;
+    }
+    .lx-art-card:hover .lx-art-title { color: var(--lx-gold); }
+    /* Featured title */
+    .lx-art-grid .lx-art-card:first-child .lx-art-title {
+        font-size: 26px; -webkit-line-clamp: 3;
+    }
+    .lx-art-excerpt {
+        font-size: 13px; color: rgba(255,255,255,0.4);
+        line-height: 1.75; margin: 0 0 16px;
+        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+        flex: 1;
+    }
+    .lx-art-footer {
+        display: flex; align-items: center; gap: 10px;
+        padding-top: 14px; border-top: 1px solid var(--lx-border);
+        margin-top: auto;
+    }
+    .lx-art-avatar {
+        width: 32px; height: 32px; border-radius: 50%;
+        object-fit: cover; border: 1.5px solid var(--lx-border); flex-shrink: 0;
+    }
+    .lx-art-author-col { flex: 1; min-width: 0; }
+    .lx-art-author-name {
+        font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.7);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .lx-art-author-date { font-size: 11px; color: rgba(255,255,255,0.28); }
+    .lx-art-cta {
+        font-size: 12px; color: var(--lx-gold); font-weight: 600;
+        white-space: nowrap; display: flex; align-items: center; gap: 4px;
+        transition: gap 0.2s;
+    }
+    .lx-art-card:hover .lx-art-cta { gap: 8px; }
+    /* Pagination */
+    .lx-art-pagination {
+        display: flex; justify-content: center;
+        gap: 8px; margin-top: 52px; flex-wrap: wrap;
+    }
+    .lx-art-pagination a,
+    .lx-art-pagination span {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 42px; height: 42px; border-radius: 12px;
+        border: 1px solid var(--lx-border); background: var(--lx-bg-card);
+        color: rgba(255,255,255,0.5); font-size: 13.5px; font-weight: 600;
+        text-decoration: none; transition: all 0.25s; padding: 0 10px;
+    }
+    .lx-art-pagination a:hover {
+        border-color: var(--lx-gold); color: var(--lx-gold);
+        background: var(--lx-gold-dim); text-decoration: none;
+    }
+    .lx-art-pagination .current {
+        background: linear-gradient(135deg,#d4af37,#b8952d);
+        border-color: transparent; color: #000; font-weight: 700;
+    }
+    /* Empty */
+    .lx-art-empty {
+        text-align: center; padding: 80px 20px; color: rgba(255,255,255,0.3);
+    }
+    .lx-art-empty span { font-size: 52px; display: block; margin-bottom: 16px; }
+    .lx-art-empty h3 { font-size: 20px; color: rgba(255,255,255,0.45); margin: 0 0 8px; }
+    /* Responsive */
+    @media (max-width: 900px) {
+        .lx-art-grid { grid-template-columns: repeat(2, 1fr); }
+        .lx-art-grid .lx-art-card:first-child { grid-column: 1/-1; grid-template-columns: 1fr; }
+        .lx-art-grid .lx-art-card:first-child .lx-art-thumb { height: 220px; }
+    }
+    @media (max-width: 600px) {
+        .lx-art-grid { grid-template-columns: 1fr; }
+    }
+    </style>
+
+    <div class="lx-artikel-wrap">
+        <div class="lx-artikel-header">
+            <h2>✍️ <span class="lx-grad-text">Artikel</span> & Insights</h2>
+            <p>Tips, teknik, dan inspirasi dari kreator kami</p>
+            <span class="lx-artikel-divider"></span>
+        </div>
+
+        <?php
+        $all_cats = get_categories(['hide_empty' => true, 'orderby' => 'count', 'order' => 'DESC']);
+        if (!empty($all_cats)) :
+            $base_url = strtok($_SERVER['REQUEST_URI'], '?');
+        ?>
+        <div class="lx-art-filter">
+            <a href="<?php echo esc_url($base_url); ?>" class="<?php echo empty($cat_filter) ? 'active' : ''; ?>">🗂 Semua</a>
+            <?php foreach ($all_cats as $cat) : ?>
+            <a href="<?php echo esc_url($base_url . '?cat_filter=' . $cat->slug); ?>"
+               class="<?php echo $cat_filter === $cat->slug ? 'active' : ''; ?>">
+                <?php echo esc_html($cat->name); ?>
+                <span style="opacity:.45">(<?php echo $cat->count; ?>)</span>
+            </a>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+
+        <form class="lx-art-search-form" method="get" action="">
+            <?php if (!empty($cat_filter)) : ?>
+            <input type="hidden" name="cat_filter" value="<?php echo esc_attr($cat_filter); ?>">
+            <?php endif; ?>
+            <input type="text" name="s" placeholder="🔍  Cari artikel..." value="<?php echo esc_attr($s_filter); ?>">
+            <button type="submit">→</button>
+        </form>
+
+        <?php if ($query->have_posts()) : ?>
+        <div class="lx-art-grid">
+            <?php while ($query->have_posts()) : $query->the_post();
+                $thumb_url   = get_the_post_thumbnail_url(get_the_ID(), 'large');
+                $cats        = get_the_category();
+                $cat_name    = !empty($cats) ? $cats[0]->name : 'Artikel';
+                $author_id   = get_the_author_meta('ID');
+                $author_name = get_the_author();
+                $avatar_url  = get_avatar_url($author_id, ['size' => 64]);
+                $word_count  = str_word_count(strip_tags(get_the_content()));
+                $read_min    = max(1, round($word_count / 200));
+                $excerpt     = wp_trim_words(get_the_excerpt() ?: get_the_content(), 22, '…');
+            ?>
+            <a class="lx-art-card" href="<?php the_permalink(); ?>">
+                <div class="lx-art-thumb">
+                    <?php if ($thumb_url) : ?>
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy">
+                    <?php else : ?>
+                        <div class="lx-art-no-thumb">📰</div>
+                    <?php endif; ?>
+                    <span class="lx-art-badge"><?php echo esc_html($cat_name); ?></span>
+                    <span class="lx-art-time-badge">⏱ <?php echo $read_min; ?> mnt</span>
+                </div>
+                <div class="lx-art-body">
+                    <div class="lx-art-meta">
+                        <span>📅 <?php echo get_the_date('d M Y'); ?></span>
+                        <span>💬 <?php echo get_comments_number(); ?></span>
+                    </div>
+                    <h3 class="lx-art-title"><?php the_title(); ?></h3>
+                    <p class="lx-art-excerpt"><?php echo esc_html($excerpt); ?></p>
+                    <div class="lx-art-footer">
+                        <img class="lx-art-avatar" src="<?php echo esc_url($avatar_url); ?>" alt="<?php echo esc_attr($author_name); ?>">
+                        <div class="lx-art-author-col">
+                            <div class="lx-art-author-name"><?php echo esc_html($author_name); ?></div>
+                            <div class="lx-art-author-date"><?php echo human_time_diff(get_the_time('U'), current_time('timestamp')); ?> lalu</div>
+                        </div>
+                        <span class="lx-art-cta">Baca <span>→</span></span>
+                    </div>
+                </div>
+            </a>
+            <?php endwhile; wp_reset_postdata(); ?>
+        </div>
+
+        <?php if ($total_pages > 1) : ?>
+        <div class="lx-art-pagination">
+            <?php echo paginate_links([
+                'total'     => $total_pages,
+                'current'   => $paged,
+                'mid_size'  => 2,
+                'prev_text' => '← Prev',
+                'next_text' => 'Next →',
+                'type'      => 'plain',
+            ]); ?>
+        </div>
+        <?php endif; ?>
+
+        <?php else : ?>
+        <div class="lx-art-empty">
+            <span>📭</span>
+            <h3>Belum ada artikel</h3>
+            <p>Artikel akan tampil di sini setelah dipublikasikan.</p>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('list_artikel_publik', 'render_list_artikel_publik');
+
+/**
+ * Render Kebutuhan Event Page shortcode [kebutuhan_event_page]
+ */
+function render_kebutuhan_event_page_shortcode() {
+    wp_enqueue_style('font-awesome-cdn');
+    
+    $query = new WP_Query(array(
+        'post_type'      => 'post',
+        'posts_per_page' => -1,
+        'category_name'  => 'kebutuhan event',
+        'orderby'        => 'date',
+        'order'          => 'DESC'
+    ));
+
+    ob_start();
+    ?>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+    .kebutuhan-page-container {
+        max-width: 1140px;
+        width: calc(100% - 40px);
+        margin: 120px auto 60px;
+        font-family: 'Inter', sans-serif;
+        color: #f0eef6;
+    }
+    .kebutuhan-header {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+    .kebutuhan-header h1 {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 42px;
+        color: #fff;
+        margin-bottom: 16px;
+        letter-spacing: -1px;
+    }
+    .kebutuhan-header h1 span {
+        background: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .kebutuhan-header p {
+        font-size: 16px;
+        color: #9b98a6;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+    .kebutuhan-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+    .kebutuhan-card {
+        background: #13111a;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 24px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .kebutuhan-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(212,175,55,0.3);
+        box-shadow: 0 15px 40px rgba(212,175,55,0.08), 0 20px 50px rgba(0,0,0,0.45);
+    }
+    .kebutuhan-image-wrapper {
+        position: relative;
+        height: 220px;
+        overflow: hidden;
+        background: #0b0a0f;
+    }
+    .kebutuhan-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .kebutuhan-card:hover .kebutuhan-image-wrapper img {
+        transform: scale(1.05);
+    }
+    .kebutuhan-badge {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        background: rgba(18, 16, 23, 0.85);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(212,175,55,0.25);
+        color: #ffd275;
+        font-family: 'Outfit', sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 4px 12px;
+        border-radius: 50px;
+    }
+    .kebutuhan-content {
+        padding: 28px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+    .kebutuhan-content h3 {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 20px;
+        color: #fff;
+        margin: 0 0 12px 0;
+        line-height: 1.3;
+        transition: color 0.3s;
+    }
+    .kebutuhan-card:hover .kebutuhan-content h3 {
+        color: #ffd275;
+    }
+    .kebutuhan-excerpt {
+        font-size: 13.5px;
+        color: #9b98a6;
+        line-height: 1.6;
+        margin-bottom: 24px;
+        flex: 1;
+    }
+    .kebutuhan-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid rgba(255,255,255,0.07);
+        padding-top: 20px;
+        margin-top: auto;
+    }
+    .kebutuhan-link {
+        font-family: 'Outfit', sans-serif;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #ffd275;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: transform 0.2s;
+    }
+    .kebutuhan-link i {
+        font-size: 11px;
+        transition: transform 0.2s;
+    }
+    .kebutuhan-card:hover .kebutuhan-link i {
+        transform: translateX(3px);
+    }
+    .kebutuhan-date {
+        font-size: 11px;
+        color: #646271;
+    }
+    
+    @media (max-width: 991px) {
+        .kebutuhan-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    @media (max-width: 600px) {
+        .kebutuhan-grid {
+            grid-template-columns: 1fr;
+        }
+        .kebutuhan-header h1 {
+            font-size: 32px;
+        }
+    }
+    </style>
+
+    <div class="kebutuhan-page-container">
+        <div class="kebutuhan-header">
+            <h1>Kebutuhan <span>Event & Logistik</span></h1>
+            <p>Temukan solusi sewa logistik event, panggung, sound, LED, videotron, dan berbagai kebutuhan teknis untuk menyukseskan acara Anda.</p>
+        </div>
+
+        <div class="kebutuhan-grid">
+            <?php 
+            if ($query->have_posts()) :
+                while ($query->have_posts()) : $query->the_post();
+                    $thumb = get_the_post_thumbnail_url(get_the_ID(), 'large');
+                    if (!$thumb) $thumb = 'https://placehold.co/600x400/1a1825/ffd275?text=Kebutuhan+Event';
+                    
+                    $excerpt = get_the_excerpt();
+                    if (!$excerpt) {
+                        $excerpt = get_the_content();
+                    }
+                    $excerpt = wp_strip_all_tags(strip_shortcodes($excerpt));
+                    $excerpt = wp_trim_words($excerpt, 16, '...');
+            ?>
+                <div class="kebutuhan-card">
+                    <div class="kebutuhan-image-wrapper">
+                        <img src="<?php echo esc_url($thumb); ?>" alt="<?php the_title_attribute(); ?>">
+                        <span class="kebutuhan-badge">Logistik</span>
+                    </div>
+                    <div class="kebutuhan-content">
+                        <h3><?php the_title(); ?></h3>
+                        <p class="kebutuhan-excerpt"><?php echo esc_html($excerpt); ?></p>
+                        <div class="kebutuhan-footer">
+                            <span class="kebutuhan-date"><?php echo get_the_date('d M Y'); ?></span>
+                            <a href="<?php the_permalink(); ?>" class="kebutuhan-link">Baca Selengkapnya <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            <?php 
+                endwhile;
+                wp_reset_postdata();
+            else :
+            ?>
+                <p style="grid-column: 1/-1; text-align: center; color: #9b98a6;">Belum ada artikel kebutuhan event saat ini.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('kebutuhan_event_page', 'render_kebutuhan_event_page_shortcode');
