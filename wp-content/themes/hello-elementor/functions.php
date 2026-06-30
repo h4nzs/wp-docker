@@ -157,6 +157,13 @@ if ( ! function_exists( 'hello_elementor_scripts_styles' ) ) {
 			file_exists( get_template_directory() . '/style.css' ) ? filemtime( get_template_directory() . '/style.css' ) : HELLO_ELEMENTOR_VERSION
 		);
 
+		wp_enqueue_style(
+			'font-awesome-cdn',
+			'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+			[],
+			'6.5.1'
+		);
+
 		if ( hello_elementor_display_header_footer() ) {
 			wp_enqueue_style(
 				'hello-elementor-header-footer',
@@ -1711,7 +1718,8 @@ function personel_admin_page() {
             <th>Tanggal</th>
             <th>Rekomendasi</th>
             <th>Show Sosmed</th>
-            <th width="20%">Aksi</th> </tr>
+            <th>Rating</th>
+            <th width="25%">Aksi</th> </tr>
     </thead>
     <tbody>
         <?php foreach ($personels as $p): 
@@ -1753,29 +1761,37 @@ $nama_depan = strtok($p->nama_panggilan, ' ');
                         <?php echo ($is_show_sosmed ? 'YA' : 'TIDAK'); ?>
                 </button>
             </td>
+            <td>
+                <select class="lx-rating-select" data-id="<?php echo $p->id; ?>" data-type="personel" style="margin-right: 10px; max-width: 100%;">
+                    <option value="">- No Rating -</option>
+                    <?php for($i=1; $i<=5; $i++): ?>
+                        <option value="<?php echo $i; ?>" <?php selected($p->rating, $i); ?>><?php echo $i; ?> ⭐</option>
+                    <?php endfor; ?>
+                </select>
+            </td>
 
             <td>
-                <a href="?page=personel-admin&view=<?php echo $p->id; ?>" class="button button-small" title="Lihat">👁️</a>
+                <a href="?page=personel-admin&view=<?php echo $p->id; ?>" class="button button-small" title="Lihat" style="margin-right: 4px; display: inline-block; vertical-align: middle;">👁️</a>
 
                 <?php if ($p->status === 'approved'): ?>
                     <button type="button" class="btn-status-toggle status-active" 
                             data-id="<?php echo $p->id; ?>" 
-                            data-status="approved">NON-AKTIFKAN</button>
+                            data-status="approved" style="margin-right: 4px; vertical-align: middle;">NON-AKTIFKAN</button>
                 <?php elseif ($p->status === 'non-aktif'): ?>
                     <button type="button" class="btn-status-toggle status-inactive" 
                             data-id="<?php echo $p->id; ?>" 
-                            data-status="non-aktif">AKTIFKAN</button>
+                            data-status="non-aktif" style="margin-right: 4px; vertical-align: middle;">AKTIFKAN</button>
                 <?php endif; ?>
 
                 <?php if ($p->status == 'pending'): ?>
-                    <form method="post" style="display:inline;">
+                    <form method="post" style="display:inline; margin-right: 4px; vertical-align: middle;">
                         <?php wp_nonce_field('personel_action'); ?>
                         <input type="hidden" name="personel_id" value="<?php echo $p->id; ?>">
                         <button type="submit" name="action" value="approve" class="button button-small button-primary">Approve</button>
                     </form>
                 <?php endif; ?>
 
-                <form method="post" style="display:inline;">
+                <form method="post" style="display:inline; vertical-align: middle;">
                     <?php wp_nonce_field('personel_action'); ?>
                     <input type="hidden" name="personel_id" value="<?php echo $p->id; ?>">
                     <button type="submit" name="action" value="delete" class="button button-small" 
@@ -5362,6 +5378,7 @@ function personel_porto_admin_page() {
             <th>Detail</th>
             <th>Deskripsi & Tags</th>
             <th width="100">Status</th>
+            <th width="120">Rating</th>
             <th width="180">Aksi</th> </tr>
     </thead>
     <tbody>
@@ -5398,6 +5415,14 @@ function personel_porto_admin_page() {
                 <span class="status-pill status-badge <?php echo $row->status; ?>">
                     <?php echo ucfirst($row->status); ?>
                 </span>
+            </td>
+            <td>
+                <select class="lx-rating-select" data-id="<?php echo $row->id; ?>" data-type="foto">
+                    <option value="">- No Rating -</option>
+                    <?php for($i=1; $i<=5; $i++): ?>
+                        <option value="<?php echo $i; ?>" <?php selected($row->rating, $i); ?>><?php echo $i; ?> ⭐</option>
+                    <?php endfor; ?>
+                </select>
             </td>
             <td>
                 <div style="margin-bottom: 5px;">
@@ -5992,6 +6017,7 @@ function personel_video_admin_page() {
             <th>Info Kegiatan</th>
             <th>Deskripsi & Tags</th>
             <th width="100">Status</th>
+            <th width="120">Rating</th>
             <th width="130">Aksi</th>
         </tr>
     </thead>
@@ -6032,6 +6058,14 @@ function personel_video_admin_page() {
                 <span class="v-status status-badge <?php echo $row->status; ?>">
                     <?php echo ucfirst($row->status); ?>
                 </span>
+            </td>
+            <td>
+                <select class="lx-rating-select" data-id="<?php echo $row->id; ?>" data-type="video">
+                    <option value="">- No Rating -</option>
+                    <?php for($i=1; $i<=5; $i++): ?>
+                        <option value="<?php echo $i; ?>" <?php selected($row->rating, $i); ?>><?php echo $i; ?> ⭐</option>
+                    <?php endfor; ?>
+                </select>
             </td>
             <td>
                 <div style="margin-bottom: 8px;">
@@ -6094,6 +6128,7 @@ add_shortcode('list_personel_publik', 'render_list_personel_publik');
 
 function render_list_personel_publik() {
     global $wpdb;
+    wp_enqueue_style('font-awesome-cdn');
     
     // 1. Ambil Parameter Filter & Search
     $search = isset($_GET['p_search']) ? sanitize_text_field($_GET['p_search']) : '';
@@ -6140,14 +6175,16 @@ if ($filter_kota) {
     $query .= $wpdb->prepare(" AND p.domisili LIKE %s", $like_kota);
 }
 
-// TAMBAHKAN BARIS INI UNTUK SORTING PRIORITAS
-$query .= " ORDER BY CASE WHEN p.rekomendasi = 'ya' THEN 0 ELSE 1 END ASC, p.id DESC";
+// TAMBAHKAN BARIS INI UNTUK SORTING PRIORITAS (Rating DESC, then random)
+$seed = rand(1, 999999);
+$query .= $wpdb->prepare(" ORDER BY CASE WHEN p.rating IS NULL THEN 0 ELSE p.rating END DESC, RAND(%d)", $seed);
 $query .= " LIMIT 9";
 
     $results = $wpdb->get_results($query);
 
     ob_start();
     ?>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <div class="public-personel-container">
         <form method="get" class="personel-filter-form">
             <div class="filter-grid">
@@ -6248,6 +6285,7 @@ jQuery(document).ready(function($) {
         var data = {
             action: 'load_more_personel',
             offset: offset,
+            seed: $btn.attr('data-seed') || 0,
             search: '<?php echo esc_js($search); ?>',
             posisi: '<?php echo esc_js($filter_posisi); ?>',
             price: '<?php echo esc_js($filter_price); ?>',
@@ -6353,7 +6391,7 @@ jQuery(document).ready(function($) {
 
         <?php if ($results && count($results) >= 9): ?>
         <div class="lx-load-wrap" style="text-align: center; margin-top: 40px; position: relative; z-index: 10;">
-            <button id="load-more-personel" data-offset="9" class="lx-btn-outline">MUAT LEBIH BANYAK</button>
+            <button id="load-more-personel" data-offset="9" data-seed="<?php echo $seed; ?>" class="lx-btn-outline">MUAT LEBIH BANYAK</button>
         </div>
         <?php endif; ?>
     </div>
@@ -6714,6 +6752,7 @@ function handle_load_more_personel() {
     global $wpdb;
     
     $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
+    $seed = isset($_POST['seed']) ? intval($_POST['seed']) : 0;
     $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
     $posisi = isset($_POST['posisi']) ? sanitize_text_field($_POST['posisi']) : '';
     $price = isset($_POST['price']) ? sanitize_text_field($_POST['price']) : '';
@@ -6748,7 +6787,7 @@ function handle_load_more_personel() {
         $query .= $wpdb->prepare(" AND p.domisili LIKE %s", $like_kota);
     }
 
-    $query .= " ORDER BY CASE WHEN p.rekomendasi = 'ya' THEN 0 ELSE 1 END ASC, p.id DESC";
+    $query .= $wpdb->prepare(" ORDER BY CASE WHEN p.rating IS NULL THEN 0 ELSE p.rating END DESC, RAND(%d)", $seed);
     $query .= $wpdb->prepare(" LIMIT 9 OFFSET %d", $offset);
 
     $results = $wpdb->get_results($query);
@@ -6836,6 +6875,7 @@ add_shortcode('detail_personel_luxury', 'render_detail_personel_shortcode');
 
 function render_detail_personel_shortcode() {
     global $wpdb;
+    wp_enqueue_style('font-awesome-cdn');
     
     $kode = isset($_GET['kode']) ? sanitize_text_field($_GET['kode']) : '';
     if (!$kode) return "<p style='color:white; text-align:center;'>Pilih personel untuk melihat profil.</p>";
@@ -6848,6 +6888,7 @@ function render_detail_personel_shortcode() {
 
     ob_start(); 
     ?>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
@@ -7572,17 +7613,22 @@ function render_detail_personel_shortcode() {
                 $('#portoMedia').html(`<img src="${data.url}" style="width:100%;">`);
             }
             modal.show();
+            $('body').css('overflow', 'hidden');
         });
 
         close.on('click', () => {
             modal.hide();
             $('#portoMedia').empty();
+            $('body').css('overflow', '');
+            $('html').css('overflow', '');
         });
 
         $(window).on('click', (e) => {
             if (e.target == modal[0]) {
                 modal.hide();
                 $('#portoMedia').empty();
+                $('body').css('overflow', '');
+                $('html').css('overflow', '');
             }
         });
     });
@@ -7648,24 +7694,18 @@ function shortcode_arsip_foto() {
             <button id="btn-filter-foto" class="lx-btn-gold">CARI</button>
         </div>
 
-        <div class="lx-sort-wrapper">
-            <select id="sort-foto" class="lx-input-sort">
-                <option value="newest_post">Postingan Terbaru</option>
-                <option value="oldest_post">Postingan Terlama</option>
-                <option value="newest_event">Tanggal Kegiatan (Baru-Lama)</option>
-                <option value="oldest_event">Tanggal Kegiatan (Lama-Baru)</option>
-            </select>
-        </div>
+        <?php /* Sort: Rating DESC, lalu Random per grup */ ?>
 
         <div class="lx-grid" id="foto-container">
             <?php 
-            $res = $wpdb->get_results("SELECT f.*, p.nama_panggilan, p.kode_nama FROM wp9y_portofolio f JOIN wp9y_personel p ON f.personel_id = p.id WHERE f.status = 'approved' AND p.status = 'approved' ORDER BY f.id DESC LIMIT 12");
+            $seed = rand(1, 999999);
+            $res = $wpdb->get_results($wpdb->prepare("SELECT f.*, p.nama_panggilan, p.kode_nama FROM wp9y_portofolio f JOIN wp9y_personel p ON f.personel_id = p.id WHERE f.status = 'approved' AND p.status = 'approved' ORDER BY CASE WHEN f.rating IS NULL THEN 0 ELSE f.rating END DESC, RAND(%d) LIMIT 12", $seed));
             if($res) foreach($res as $f) echo render_porto_item_html($f, 'image'); 
             ?>
         </div>
         
         <div class="lx-load-wrap">
-            <button id="load-more-foto" data-offset="12" class="lx-btn-outline">MUAT LEBIH BANYAK</button>
+            <button id="load-more-foto" data-offset="12" data-seed="<?php echo $seed; ?>" class="lx-btn-outline">MUAT LEBIH BANYAK</button>
         </div>
     </div>
     <?php return ob_get_clean();
@@ -7683,6 +7723,7 @@ function handle_ajax_load_more() {
     $tgl    = sanitize_text_field($_POST['tanggal']);
     $tahun  = sanitize_text_field($_POST['tahun']);
     $sort   = sanitize_text_field($_POST['sort']);
+    $seed   = isset($_POST['seed']) ? intval($_POST['seed']) : 0;
 
     $category = isset($_POST['category']) ? sanitize_text_field($_POST['category']) : '';
 
@@ -7707,13 +7748,8 @@ function handle_ajax_load_more() {
     if(!empty($search)) {
         $query .= $wpdb->prepare(" AND (t.judul LIKE %s OR t.lokasi LIKE %s OR p.nama_panggilan LIKE %s OR t.tags LIKE %s)", '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%');
     }
-    // Sorting Logic
-    switch ($sort) {
-        case 'oldest_post': $query .= " ORDER BY t.id ASC"; break;
-        case 'newest_event': $query .= " ORDER BY t.tanggal_kegiatan DESC"; break;
-        case 'oldest_event': $query .= " ORDER BY t.tanggal_kegiatan ASC"; break;
-        default: $query .= " ORDER BY t.id DESC"; break;
-    }
+    // Sorting: Rating DESC, lalu Random per grup (sort dropdown dihapus dari UI)
+    $query .= $wpdb->prepare(" ORDER BY CASE WHEN t.rating IS NULL THEN 0 ELSE t.rating END DESC, RAND(%d)", $seed);
 
     $query .= " LIMIT $offset, 12";
     $res = $wpdb->get_results($query);
@@ -7802,6 +7838,8 @@ jQuery(document).ready(function($) {
 
         if(isNew) {
             container.css('opacity', '0.5');
+            let newSeed = Math.floor(Math.random() * 999999) + 1;
+            btn.attr('data-seed', newSeed);
         }
 
         btn.text('LOADING...').prop('disabled', true);
@@ -7811,8 +7849,9 @@ jQuery(document).ready(function($) {
             type: 'image',
             offset: offset,
             search: $('#search-foto').val(),
-            sort: $('#sort-foto').val(),
-            category: $('#active-category-slug').val()
+            sort: 'newest_post', // Rating-based sort otomatis
+            category: $('#active-category-slug').val(),
+            seed: btn.attr('data-seed') || 0
 
         }, function(res) {
 
@@ -7977,21 +8016,15 @@ function shortcode_arsip_video_fixed() {
             <input type="text" id="search-video" class="lx-input-flex" placeholder="Cari nama, lokasi, atau tags...">
             <button id="btn-filter-video" class="lx-btn-gold">CARI VIDEO</button>
         </div>
-        <div class="lx-sort-wrapper">
-            <select id="sort-video" class="lx-input-sort">
-                <option value="newest_post">Postingan Terbaru</option>
-                <option value="oldest_post">Postingan Terlama</option>
-                <option value="newest_event">Tanggal (Baru-Lama)</option>
-                <option value="oldest_event">Tanggal (Lama-Baru)</option>
-            </select>
-        </div>
+        <?php /* Sort: Rating DESC, lalu Random per grup */ ?>
         <div class="lx-grid" id="video-container">
             <?php 
-            $res = $wpdb->get_results("SELECT v.*, p.nama_panggilan, p.kode_nama FROM wp9y_portofolio_video v JOIN wp9y_personel p ON v.personel_id = p.id WHERE v.status = 'approved' AND p.status = 'approved' ORDER BY v.id DESC LIMIT 12");
+            $seed = rand(1, 999999);
+            $res = $wpdb->get_results($wpdb->prepare("SELECT v.*, p.nama_panggilan, p.kode_nama FROM wp9y_portofolio_video v JOIN wp9y_personel p ON v.personel_id = p.id WHERE v.status = 'approved' AND p.status = 'approved' ORDER BY CASE WHEN v.rating IS NULL THEN 0 ELSE v.rating END DESC, RAND(%d) LIMIT 12", $seed));
             if($res) foreach($res as $v) echo render_video_item_html($v); 
             ?>
         </div>
-        <div class="lx-load-wrap"><button id="load-more-video" data-offset="12" class="lx-btn-outline">MUAT LEBIH BANYAK</button></div>
+        <div class="lx-load-wrap"><button id="load-more-video" data-offset="12" data-seed="<?php echo $seed; ?>" class="lx-btn-outline">MUAT LEBIH BANYAK</button></div>
     </div>
     <?php return ob_get_clean();
 }
@@ -8009,6 +8042,7 @@ function ajax_video_handler_fixed() {
     $tgl    = isset($_POST['tanggal']) ? sanitize_text_field($_POST['tanggal']) : '';
     $tahun  = isset($_POST['tahun']) ? sanitize_text_field($_POST['tahun']) : '';
     $sort   = isset($_POST['sort']) ? sanitize_text_field($_POST['sort']) : '';
+    $seed   = isset($_POST['seed']) ? intval($_POST['seed']) : 0;
 
     $category = isset($_POST['category']) ? sanitize_text_field($_POST['category']) : '';
 
@@ -8032,13 +8066,8 @@ function ajax_video_handler_fixed() {
         $query .= $wpdb->prepare(" AND (v.judul LIKE %s OR v.lokasi LIKE %s OR p.nama_panggilan LIKE %s OR v.tags LIKE %s OR p.kode_nama LIKE %s)", '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%');
     }
     
-    // Sorting
-    switch ($sort) {
-        case 'oldest_post': $query .= " ORDER BY v.id ASC"; break;
-        case 'newest_event': $query .= " ORDER BY v.tanggal_kegiatan DESC"; break;
-        case 'oldest_event': $query .= " ORDER BY v.tanggal_kegiatan ASC"; break;
-        default: $query .= " ORDER BY v.id DESC"; break;
-    }
+    // Sorting: Rating DESC, lalu Random per grup (sort dropdown dihapus dari UI)
+    $query .= $wpdb->prepare(" ORDER BY CASE WHEN v.rating IS NULL THEN 0 ELSE v.rating END DESC, RAND(%d)", $seed);
 
     $query .= " LIMIT $offset, 12";
     
@@ -8076,6 +8105,7 @@ function lx_universal_porto_assets() { ?>
 
     <style>
         .lx-m { display: none; position: fixed; z-index: 99999; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(8px); padding: 40px 20px; overflow-y: auto; }
+        body.modal-open, html.modal-open { overflow: hidden !important; height: 100vh !important; }
         .lx-m-content { display: flex; flex-direction: row; max-width: 1080px; margin: 40px auto; background: #121017; border-radius: 20px; position: relative; overflow: hidden; border: 1px solid rgba(212, 134, 34, 0.15); box-shadow: 0 25px 60px rgba(0,0,0,0.9); }
         .lx-close { position: absolute; right: 16px; top: 16px; width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; cursor: pointer; z-index: 100; transition: all 0.25s ease; line-height: 1; }
         .lx-close:hover { color: #ffd275; background: rgba(0,0,0,0.85); border-color: #ffd275; transform: scale(1.05) rotate(90deg); }
@@ -8152,6 +8182,7 @@ $('#lx-m-meta').html(metaHtml);
 
             // 4. Tampilkan Modal
             $('#lx-modal').fadeIn(300);
+            $('body, html').addClass('modal-open');
         });
 
         // FUNGSI TUTUP MODAL
@@ -8160,6 +8191,15 @@ $('#lx-m-meta').html(metaHtml);
                 $('#lx-modal').fadeOut(200, function() {
                     $('#lx-m-media').empty(); // STOP VIDEO SAAT TUTUP
                 });
+                $('body, html').removeClass('modal-open');
+            }
+        });
+
+        // ESC key tutup modal
+        $(document).on('keydown', function(ev) {
+            if(ev.key === 'Escape' && $('#lx-modal').is(':visible')) {
+                $('#lx-modal').fadeOut(200, function() { $('#lx-m-media').empty(); });
+                $('body, html').removeClass('modal-open');
             }
         });
 
@@ -8171,7 +8211,7 @@ $('#lx-m-meta').html(metaHtml);
                 o = b.data('offset'),
                 s = (t === 'video') ? $('#search-video').val() : $('#search-foto').val(),
                 th = (t === 'video') ? $('#filter-tahun-video').val() : $('#filter-tahun-foto').val(),
-                so = (t === 'video') ? $('#sort-video').val() : $('#sort-foto').val();
+                so = 'newest_post'; // Rating-based sort otomatis
 
             b.text('LOADING...').prop('disabled', true);
             
@@ -8181,7 +8221,8 @@ $('#lx-m-meta').html(metaHtml);
                 type: t,
                 search: s,
                 tahun: th,
-                sort: so
+                sort: so,
+                seed: b.attr('data-seed') || 0
             }, function(res) {
                 if(res.trim() !== "") { 
                     c.append(res); 
@@ -8220,6 +8261,8 @@ jQuery(document).ready(function($) {
         if(!isLoadMore) {
             container.css('opacity', '0.5');
             btnCari.text('⏳...');
+            let newSeed = Math.floor(Math.random() * 999999) + 1;
+            btnLoad.attr('data-seed', newSeed);
         }
 
         btnLoad.prop('disabled', true);
@@ -8231,9 +8274,10 @@ jQuery(document).ready(function($) {
             data: {
                 action: 'load_more_porto_video',
                 search: $('#search-video').val(),
-                sort: $('#sort-video').val(),
+                sort: 'newest_post', // Rating-based sort otomatis
                 offset: offset,
-                category: $('#active-category-slug-video').val()
+                category: $('#active-category-slug-video').val(),
+                seed: btnLoad.attr('data-seed') || 0
             },
 
             success: function(res) {
@@ -8695,11 +8739,46 @@ function lx_handle_update_show_sosmed() {
     wp_die();
 }
 
+add_action('wp_ajax_update_item_rating', 'lx_handle_update_item_rating');
+function lx_handle_update_item_rating() {
+    global $wpdb;
+    $id     = isset($_POST['id']) ? intval($_POST['id']) : 0;
+    $type   = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : '';
+    $rating = (isset($_POST['rating']) && $_POST['rating'] !== '') ? intval($_POST['rating']) : null;
+
+    if (!$id || !in_array($type, ['personel', 'foto', 'video'])) {
+        wp_send_json_error('Invalid parameters.');
+    }
+
+    if ($type === 'personel') {
+        $table = 'wp9y_personel';
+    } elseif ($type === 'foto') {
+        $table = 'wp9y_portofolio';
+    } else {
+        $table = 'wp9y_portofolio_video';
+    }
+
+    $updated = $wpdb->update(
+        $table,
+        array('rating' => $rating),
+        array('id' => $id),
+        array($rating === null ? '%s' : '%d'),
+        array('%d')
+    );
+
+    if ($updated !== false) {
+        wp_send_json_success();
+    } else {
+        wp_send_json_error('Database error.');
+    }
+    wp_die();
+}
+
 // Load CSS & JS di Admin
 add_action('admin_footer', 'lx_rekomendasi_custom_assets');
 function lx_rekomendasi_custom_assets() {
-    // Hanya jalankan jika di halaman personel-admin
-    if (isset($_GET['page']) && $_GET['page'] === 'personel-admin') {
+    // Jalankan di semua submenu personel
+    if (isset($_GET['page']) && strpos($_GET['page'], 'personel') !== false) {
         ?>
         <style>
             .lx-toggle-btn {
@@ -8739,9 +8818,26 @@ function lx_rekomendasi_custom_assets() {
             }
             .lx-toggle-sosmed-btn:hover { opacity: 0.8; }
             .lx-toggle-sosmed-btn:disabled { opacity: 0.5; cursor: wait; }
+
+            /* Styling Dropdown Rating */
+            .lx-rating-select {
+                padding: 4px 8px;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+                background-color: #fff;
+                font-weight: 500;
+                cursor: pointer;
+                transition: border-color 0.3s;
+                outline: none !important;
+            }
+            .lx-rating-select:focus {
+                border-color: #ffd275;
+                box-shadow: 0 0 0 1px #ffd275;
+            }
         </style>
         <script type="text/javascript">
         jQuery(document).ready(function($) {
+            // Handler Toggle Rekomendasi
             $(document).on('click', '.lx-toggle-btn', function(e) {
                 e.preventDefault();
                 var btn = $(this);
@@ -8769,6 +8865,7 @@ function lx_rekomendasi_custom_assets() {
                 });
             });
 
+            // Handler Toggle Show Sosmed
             $(document).on('click', '.lx-toggle-sosmed-btn', function(e) {
                 e.preventDefault();
                 var btn = $(this);
@@ -8798,6 +8895,36 @@ function lx_rekomendasi_custom_assets() {
                     (function(){var d=document.createElement('div');d.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:999999;display:flex;align-items:center;justify-content:center;';d.innerHTML='<div style="background:#1a1a1a;border:1px solid #ff4444;border-radius:8px;padding:30px 40px;max-width:400px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.5);"><div style="font-size:48px;margin-bottom:10px;">❌</div><p style="color:#fff;font-size:16px;margin:10px 0 20px;">Koneksi server bermasalah.</p><button onclick="this.parentNode.parentNode.remove()" style="background:#ff4444;color:#fff;border:none;padding:10px 24px;border-radius:4px;font-weight:bold;cursor:pointer;">OK</button></div>';document.body.appendChild(d);})();
                 }).always(function() {
                     btn.prop('disabled', false);
+                });
+            });
+
+            // Handler Update Rating via AJAX
+            $(document).on('change', '.lx-rating-select', function() {
+                var select = $(this);
+                var id = select.data('id');
+                var type = select.data('type');
+                var rating = select.val();
+
+                select.css('border-color', '#ffb900'); // Orange feedback
+
+                $.post(ajaxurl, {
+                    action: 'update_item_rating',
+                    id: id,
+                    type: type,
+                    rating: rating
+                }, function(response) {
+                    if (response.success) {
+                        select.css('border-color', '#00a32a'); // Green success
+                        setTimeout(function() {
+                            select.css('border-color', '');
+                        }, 1000);
+                    } else {
+                        select.css('border-color', '#d63638'); // Red error
+                        alert('Gagal mengupdate rating.');
+                    }
+                }).fail(function() {
+                    select.css('border-color', '#d63638');
+                    alert('Terjadi kesalahan jaringan.');
                 });
             });
         });
@@ -12226,6 +12353,10 @@ function portfolio_content_ajax_handler() {
     $search   = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
     $sort     = isset($_POST['sort']) ? sanitize_text_field($_POST['sort']) : 'terbaru';
     $category = isset($_POST['category']) ? sanitize_text_field($_POST['category']) : '';
+    $seed     = isset($_POST['seed']) ? intval($_POST['seed']) : 0;
+    if (!$seed) {
+        $seed = rand(1, 999999);
+    }
 
     $join = "";
     $where_cat = "";
@@ -12249,18 +12380,8 @@ function portfolio_content_ajax_handler() {
         $query .= $wpdb->prepare(" AND (t.judul LIKE %s OR t.lokasi LIKE %s OR p.nama_panggilan LIKE %s OR t.tags LIKE %s)", '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%');
     }
 
-    switch ($sort) {
-        case 'terlama': 
-            $query .= " ORDER BY t.id ASC"; 
-            break;
-        case 'populer': 
-            $query .= " ORDER BY t.tanggal_kegiatan DESC"; 
-            break;
-        case 'terbaru':
-        default: 
-            $query .= " ORDER BY t.id DESC"; 
-            break;
-    }
+    // Sorting: Rating DESC, lalu Random per grup (sort dropdown dihapus)
+    $query .= $wpdb->prepare(" ORDER BY CASE WHEN t.rating IS NULL THEN 0 ELSE t.rating END DESC, RAND(%d)", $seed);
 
     $query .= " LIMIT $offset, 12";
     $res = $wpdb->get_results($query);
@@ -12316,13 +12437,7 @@ function render_portfolio_content_shortcode() {
           <input type="text" class="porto-search-input" placeholder="Cari nama, lokasi, atau tags...">
           <button class="porto-search-btn">CARI</button>
         </div>
-        <div class="porto-sort-wrap">
-          <select class="porto-sort-select">
-            <option value="terbaru">Postingan Terbaru</option>
-            <option value="terlama">Postingan Terlama</option>
-            <option value="populer">Terpopuler</option>
-          </select>
-        </div>
+        <!-- Sort dropdown removed -->
       </div>
 
       <!-- Grid -->
