@@ -4,6 +4,7 @@ jQuery(document).ready(function($) {
     let currentSearch = '';
     let currentSort = 'newest_post';
     let currentOffset = 0;
+    let currentSeed = Math.floor(Math.random() * 999999) + 1;
 
     const $grid = $('#portfolio-grid-container');
     const $loadMoreBtn = $('#portfolio-load-more');
@@ -11,6 +12,7 @@ jQuery(document).ready(function($) {
     function fetchPortfolios(isAppend = false) {
         if (!isAppend) {
             currentOffset = 0;
+            currentSeed = Math.floor(Math.random() * 999999) + 1;
             $grid.css('opacity', '0.5');
         }
 
@@ -23,7 +25,8 @@ jQuery(document).ready(function($) {
                 category: currentCategory,
                 search: currentSearch,
                 sort: currentSort,
-                offset: currentOffset
+                offset: currentOffset,
+                seed: currentSeed
             },
             success: function(response) {
                 $grid.css('opacity', '1');
