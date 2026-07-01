@@ -68,10 +68,13 @@ if ( hello_elementor_display_header_footer() ) {
 	</footer>
 
 	<script>
-	  // WA Button Redirect
-	  document.getElementById('wa-btn').addEventListener('click', function() {
-	    window.open('https://wa.me/6285771002233', '_blank');
-	  });
+	  // WA Button Redirect — dynamic from CTA settings
+	  var waBtn = document.getElementById('wa-btn');
+	  if (waBtn) {
+	    waBtn.addEventListener('click', function() {
+	      window.open('<?php echo esc_js(get_wa_url()); ?>', '_blank');
+	    });
+	  }
 	</script>
 	<?php
 }

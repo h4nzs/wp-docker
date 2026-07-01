@@ -6917,7 +6917,7 @@ function render_detail_personel_shortcode() {
                                         <span class="contact-label">WhatsApp / Telepon</span>
                                         <span class="contact-text-value"><?php echo esc_html($p->no_hp); ?></span>
                                     </div>
-                                    <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $p->no_hp); ?>" target="_blank" class="contact-link-action">Hubungi</a>
+                                    <!-- <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $p->no_hp); ?>" target="_blank" class="contact-link-action">Hubungi</a> -->
                                 </div>
                                 <?php endif; ?>
 
@@ -11763,7 +11763,7 @@ function render_landing_content_shortcode() {
   <div class="hero-inner">
     <div class="hero-content">
       <span class="hero-eyebrow">Dipercaya 50+ perusahaan di Indonesia</span>
-      <h1>Solusi Video &amp; <br><span>Event Profesional</span> untuk Brand Anda</h1>
+      <h1>Solusi Multimedia <br> dan  <span>Event Profesional</span></h1>
       <p class="hero-sub">Fotografi, Videografi, pilot drone, hingga produksi event end-to-end — dikerjakan tim kreatif berpengalaman yang tersebar di seluruh Indonesia.</p>
       <div class="hero-actions">
         <a href="#" class="btn-fluid-primary btn-enlarged">
@@ -12077,8 +12077,9 @@ function render_landing_content_shortcode() {
 
   <div class="portfolio-masonry">
     <?php
-    $photos = $wpdb->get_results("SELECT f.*, p.nama_panggilan FROM wp9y_portofolio f JOIN wp9y_personel p ON f.personel_id = p.id WHERE f.status = 'approved' ORDER BY f.id DESC LIMIT 5");
-    $videos = $wpdb->get_results("SELECT v.*, p.nama_panggilan FROM wp9y_portofolio_video v JOIN wp9y_personel p ON v.personel_id = p.id WHERE v.status = 'approved' ORDER BY v.id DESC LIMIT 2");
+    $seed = rand(1, 999999);
+    $photos = $wpdb->get_results($wpdb->prepare("SELECT f.*, p.nama_panggilan FROM wp9y_portofolio f JOIN wp9y_personel p ON f.personel_id = p.id WHERE f.status = 'approved' ORDER BY CASE WHEN f.rating IS NULL THEN 0 ELSE f.rating END DESC, RAND(%d) LIMIT 5"), $seed);
+    $videos = $wpdb->get_results($wpdb->prepare("SELECT v.*, p.nama_panggilan FROM wp9y_portofolio_video v JOIN wp9y_personel p ON v.personel_id = p.id WHERE v.status = 'approved' ORDER BY CASE WHEN v.rating IS NULL THEN 0 ELSE v.rating END DESC, RAND(%d) LIMIT 2"), $seed);
 
     $items = [];
 
@@ -12260,7 +12261,7 @@ function render_landing_content_shortcode() {
   <div class="cta-fluid-card reveal-zoom">
     <h2>Siap Wujudkan Event &amp; Konten Visual Anda?</h2>
     <p>Konsultasikan kebutuhan produksi media atau event Anda — tim kami siap membantu dari konsep hingga eksekusi.</p>
-    <a href="#" class="btn-cta-dark">
+    <a href="<?php echo esc_url(get_wa_url()); ?>" target="_blank" class="btn-cta-dark">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
       </svg>
@@ -14469,3 +14470,150 @@ function render_kebutuhan_event_page_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('kebutuhan_event_page', 'render_kebutuhan_event_page_shortcode');
+
+/**
+ * ========================================
+ * CTA DASHBOARD — Floating WhatsApp & CTA Buttons
+ * ========================================
+ */
+
+// Register admin menu
+add_action('admin_menu', 'cta_admin_menu');
+function cta_admin_menu() {
+    add_menu_page(
+        'Pengaturan CTA',
+        'CTA',
+        'manage_options',
+        'cta-settings',
+        'cta_admin_page',
+        'dashicons-megaphone',
+        75
+    );
+}
+
+// Enqueue media uploader on CTA page
+add_action('admin_enqueue_scripts', 'cta_admin_enqueue');
+function cta_admin_enqueue($hook) {
+    if ($hook !== 'toplevel_page_cta-settings') return;
+    wp_enqueue_media();
+}
+
+// Admin page render & save handler
+function cta_admin_page() {
+    if (isset($_POST['cta_save']) && check_admin_referer('cta_nonce_action', 'cta_nonce_field')) {
+        update_option('cta_wa_number', sanitize_text_field($_POST['cta_wa_number'] ?? ''));
+        update_option('cta_wa_message', sanitize_textarea_field($_POST['cta_wa_message'] ?? ''));
+        echo '<div class="notice notice-success is-dismissible"><p>Pengaturan CTA berhasil disimpan!</p></div>';
+    }
+
+    $wa_number = get_option('cta_wa_number', '6285771002233');
+    $wa_message = get_option('cta_wa_message', 'Halo, saya tertarik dengan layanan Profesional Indonesia. Mohon info lebih lanjut.');
+    ?>
+    <div class="wrap">
+        <h1 style="display:flex;align-items:center;gap:10px;">
+            <span class="dashicons dashicons-megaphone" style="font-size:30px;width:30px;height:30px;color:#d4af37;"></span>
+            Pengaturan CTA
+        </h1>
+        <p style="color:#666;font-size:14px;">Kelola nomor WhatsApp dan pesan untuk floating WhatsApp, banner CTA, dan tombol Hubungi Kami di seluruh halaman.</p>
+        <hr>
+
+        <form method="post" style="max-width:700px;">
+            <?php wp_nonce_field('cta_nonce_action', 'cta_nonce_field'); ?>
+
+            <table class="form-table">
+                <tr>
+                    <th scope="row"><label for="cta_wa_number">Nomor WhatsApp</label></th>
+                    <td>
+                        <input type="text" id="cta_wa_number" name="cta_wa_number" 
+                               value="<?php echo esc_attr($wa_number); ?>" class="regular-text" 
+                               placeholder="6285771002233">
+                        <p class="description">Nomor dengan kode negara, tanpa + dan spasi. Contoh: 6285771002233</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="cta_wa_message">Pesan Awal (Default)</label></th>
+                    <td>
+                        <textarea id="cta_wa_message" name="cta_wa_message" rows="4" class="large-text" 
+                                  placeholder="Halo, saya tertarik dengan layanan Anda..."><?php echo esc_textarea($wa_message); ?></textarea>
+                        <p class="description">Pesan yang otomatis terisi saat pengguna menekan tombol WhatsApp.</p>
+                    </td>
+                </tr>
+            </table>
+
+            <h2 style="margin-top:40px;">Pratinjau Tautan</h2>
+            <p style="background:#f0f0f1;padding:12px 16px;border-radius:6px;word-break:break-all;">
+                <code id="wa-preview">https://wa.me/<?php echo esc_html($wa_number); ?>?text=<?php echo rawurlencode($wa_message); ?></code>
+            </p>
+            <p style="color:#999;font-size:13px;">Tombol CTA akan menggunakan tautan ini secara otomatis.</p>
+
+            <p class="submit">
+                <button type="submit" name="cta_save" class="button button-primary">Simpan Pengaturan</button>
+            </p>
+        </form>
+
+        <script>
+        (function() {
+            const numInput = document.getElementById('cta_wa_number');
+            const msgInput = document.getElementById('cta_wa_message');
+            const preview = document.getElementById('wa-preview');
+            function updatePreview() {
+                const num = numInput.value.replace(/[^0-9]/g, '') || '6285771002233';
+                const msg = encodeURIComponent(msgInput.value || 'Halo');
+                preview.textContent = 'https://wa.me/' + num + '?text=' + msg;
+            }
+            numInput.addEventListener('input', updatePreview);
+            msgInput.addEventListener('input', updatePreview);
+        })();
+        </script>
+    </div>
+    <?php
+}
+
+/**
+ * Get CTA settings array
+ */
+function get_cta_settings() {
+    return [
+        'wa_number' => get_option('cta_wa_number', '6285771002233'),
+        'wa_message' => get_option('cta_wa_message', 'Halo, saya tertarik dengan layanan Profesional Indonesia. Mohon info lebih lanjut.'),
+    ];
+}
+
+/**
+ * Get formatted WhatsApp URL
+ */
+function get_wa_url($custom_message = '') {
+    $settings = get_cta_settings();
+    $number = $settings['wa_number'];
+    $message = !empty($custom_message) ? $custom_message : $settings['wa_message'];
+    return 'https://wa.me/' . $number . '?text=' . rawurlencode($message);
+}
+
+/**
+ * Shortcode: [wa_link] — output WhatsApp URL
+ * Usage: [wa_link] or [wa_link message="Custom pesan"]
+ */
+add_shortcode('wa_link', 'wa_link_shortcode');
+function wa_link_shortcode($atts) {
+    $atts = shortcode_atts(['message' => ''], $atts);
+    return esc_url(get_wa_url($atts['message']));
+}
+
+/**
+ * Shortcode: [wa_button] — render a styled WhatsApp button
+ * Usage: [wa_button text="Hubungi Kami"] or [wa_button text="Konsultasi Gratis" message="Halo..."]
+ */
+add_shortcode('wa_button', 'wa_button_shortcode');
+function wa_button_shortcode($atts) {
+    $atts = shortcode_atts([
+        'text' => 'Hubungi via WhatsApp',
+        'message' => '',
+        'class' => 'btn-cta-dark',
+    ], $atts);
+    $url = get_wa_url($atts['message']);
+    return '<a href="' . esc_url($url) . '" target="_blank" class="' . esc_attr($atts['class']) . '">'
+         . '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">'
+         . '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>'
+         . '</svg> '
+         . esc_html($atts['text']) . '</a>';
+}
