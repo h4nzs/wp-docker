@@ -1553,11 +1553,13 @@ function personel_enqueue_datatables($hook) {
         return;
     }
 
-    // CSS DataTables
+    // CSS DataTables & Select2
     wp_enqueue_style('datatables-css', 'https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css');
+    wp_enqueue_style('select2-css', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css');
     
-    // JS DataTables (Wajib load jQuery dulu)
+    // JS DataTables & Select2 (Wajib load jQuery dulu)
     wp_enqueue_script('datatables-js', 'https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js', array('jquery'), null, true);
+    wp_enqueue_script('select2-js', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'), null, true);
 }
 
 function personel_admin_page() {
@@ -1761,7 +1763,7 @@ $nama_depan = strtok($p->nama_panggilan, ' ');
                         <?php echo ($is_show_sosmed ? 'YA' : 'TIDAK'); ?>
                 </button>
             </td>
-            <td>
+            <td data-order="<?php echo esc_attr($p->rating ? $p->rating : '0'); ?>">
                 <select class="lx-rating-select" data-id="<?php echo $p->id; ?>" data-type="personel" style="margin-right: 10px; max-width: 100%;">
                     <option value="">- No Rating -</option>
                     <?php for($i=1; $i<=5; $i++): ?>
@@ -5335,6 +5337,63 @@ function personel_porto_admin_page() {
     $table_porto = 'wp9y_portofolio';
     $table_personel = 'wp9y_personel';
 
+    // --- ADMIN UPLOAD PORTOFOLIO FOTO ---
+    if (isset($_POST['admin_upload_foto']) && wp_verify_nonce($_POST['admin_foto_nonce'], 'admin_foto_action')) {
+        $selected_personel_id = intval($_POST['admin_personel_id']);
+        
+        if ($selected_personel_id <= 0) {
+            echo '<div class="notice notice-error"><p>❌ Silakan pilih personel terlebih dahulu.</p></div>';
+        } elseif (!empty($_FILES['admin_foto_file']['name'])) {
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+            
+            $allowed_mimes = array(
+                'jpg|jpeg|jpe' => 'image/jpeg',
+                'png'          => 'image/png',
+                'webp'         => 'image/webp'
+            );
+            
+            $overrides = array(
+                'test_form' => false,
+                'mimes'     => $allowed_mimes
+            );
+            
+            $movefile = wp_handle_upload($_FILES['admin_foto_file'], $overrides);
+            
+            if ($movefile && !isset($movefile['error'])) {
+                $insert_data = array(
+                    'personel_id'      => $selected_personel_id,
+                    'judul'            => sanitize_text_field($_POST['admin_foto_judul']),
+                    'foto_url'         => $movefile['url'],
+                    'tanggal_kegiatan' => sanitize_text_field($_POST['admin_foto_tanggal']),
+                    'lokasi'           => sanitize_text_field($_POST['admin_foto_lokasi']),
+                    'tahun'            => sanitize_text_field($_POST['admin_foto_tahun']),
+                    'deskripsi'        => sanitize_textarea_field($_POST['admin_foto_deskripsi']),
+                    'tags'             => sanitize_text_field($_POST['admin_foto_tags']),
+                    'status'           => 'approved'
+                );
+                
+                $wpdb->insert('wp9y_portofolio', $insert_data);
+                $new_id = $wpdb->insert_id;
+                
+                if ($new_id) {
+                    $selected_kategori = isset($_POST['admin_foto_kategori']) ? array_slice(array_map('intval', $_POST['admin_foto_kategori']), 0, 3) : [];
+                    foreach ($selected_kategori as $cat_id) {
+                        $wpdb->insert('wp9y_portofolio_kategori_map', [
+                            'portofolio_id' => $new_id,
+                            'kategori_id'   => $cat_id,
+                        ]);
+                    }
+                    echo '<div class="notice notice-success"><p>✅ Portofolio foto berhasil diupload atas nama personel terpilih!</p></div>';
+                }
+            } else {
+                $err_msg = isset($movefile['error']) ? $movefile['error'] : 'Unknown error';
+                echo '<div class="notice notice-error"><p>❌ Gagal upload: ' . esc_html($err_msg) . '</p></div>';
+            }
+        } else {
+            echo '<div class="notice notice-error"><p>❌ Silakan pilih file foto.</p></div>';
+        }
+    }
+    
     // --- LOGIKA APPROVAL & DELETE ---
     if (isset($_POST['porto_action']) && wp_verify_nonce($_POST['_wpnonce'], 'porto_admin_nonce')) {
         $id = intval($_POST['porto_id']);
@@ -5367,6 +5426,8 @@ function personel_porto_admin_page() {
     <div class="wrap">
         <h1 class="wp-heading-inline">📸 Moderasi Portofolio Foto</h1>
         <hr class="wp-header-end">
+        <a href="/admin-upload-foto/" class="page-title-action" style="background:#2271b1; color:white; padding:6px 16px; border-radius:4px; text-decoration:none; font-weight:600; font-size:13px;">➕ Upload Portofolio (via Front-End)</a>
+
 
         <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 20px;">
             <table id="adminPortoTable" class="wp-list-table widefat fixed striped">
@@ -5416,7 +5477,7 @@ function personel_porto_admin_page() {
                     <?php echo ucfirst($row->status); ?>
                 </span>
             </td>
-            <td>
+            <td data-order="<?php echo esc_attr($row->rating ? $row->rating : '0'); ?>">
                 <select class="lx-rating-select" data-id="<?php echo $row->id; ?>" data-type="foto">
                     <option value="">- No Rating -</option>
                     <?php for($i=1; $i<=5; $i++): ?>
@@ -5476,7 +5537,22 @@ function personel_porto_admin_page() {
                 "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
             }
         });
-    });
+        // Init Select2 for admin personel dropdown
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('.admin-personel-select').select2({
+            placeholder: 'Cari personel...',
+            width: '100%',
+            matcher: function(params, data) {
+                if ($.trim(params.term) === '') return data;
+                if (typeof data.text === 'undefined') return null;
+                var search = params.term.toLowerCase();
+                var text = data.text.toLowerCase();
+                if (text.indexOf(search) > -1) return data;
+                return null;
+            }
+        });
+    }
+});
     </script>
     <?php
 }
@@ -5979,6 +6055,43 @@ function personel_video_admin_page() {
     $table_video = 'wp9y_portofolio_video';
     $table_personel = 'wp9y_personel';
 
+    // --- ADMIN UPLOAD PORTOFOLIO VIDEO ---
+    if (isset($_POST['admin_upload_video']) && wp_verify_nonce($_POST['admin_video_nonce'], 'admin_video_action')) {
+        $selected_personel_id = intval($_POST['admin_video_personel_id']);
+        
+        if ($selected_personel_id <= 0) {
+            echo '<div class="notice notice-error"><p>❌ Silakan pilih personel terlebih dahulu.</p></div>';
+        } elseif (!empty($_POST['admin_video_url'])) {
+            $insert_data = array(
+                'personel_id'      => $selected_personel_id,
+                'judul'            => sanitize_text_field($_POST['admin_video_judul']),
+                'video_url'        => esc_url_raw($_POST['admin_video_url']),
+                'tanggal_kegiatan' => sanitize_text_field($_POST['admin_video_tanggal']),
+                'lokasi'           => sanitize_text_field($_POST['admin_video_lokasi']),
+                'tahun'            => sanitize_text_field($_POST['admin_video_tahun']),
+                'deskripsi'        => sanitize_textarea_field($_POST['admin_video_deskripsi']),
+                'tags'             => sanitize_text_field($_POST['admin_video_tags']),
+                'status'           => 'approved'
+            );
+            
+            $wpdb->insert('wp9y_portofolio_video', $insert_data);
+            $new_id = $wpdb->insert_id;
+            
+            if ($new_id) {
+                $selected_kategori = isset($_POST['admin_video_kategori']) ? array_slice(array_map('intval', $_POST['admin_video_kategori']), 0, 3) : [];
+                foreach ($selected_kategori as $cat_id) {
+                    $wpdb->insert($wpdb->prefix . 'portofolio_video_kategori_map', [
+                        'video_id' => $new_id,
+                        'kategori_id' => $cat_id,
+                    ]);
+                }
+                echo '<div class="notice notice-success"><p>✅ Portofolio video berhasil diupload atas nama personel terpilih!</p></div>';
+            }
+        } else {
+            echo '<div class="notice notice-error"><p>❌ Silakan isi URL video.</p></div>';
+        }
+    }
+    
     // --- LOGIKA APPROVAL & DELETE ---
     if (isset($_POST['video_admin_action']) && wp_verify_nonce($_POST['_wpnonce'], 'video_admin_nonce')) {
         $id = intval($_POST['video_id']);
@@ -6006,8 +6119,10 @@ function personel_video_admin_page() {
     <div class="wrap">
         <h1 class="wp-heading-inline">🎥 Moderasi Portofolio Video</h1>
         <hr class="wp-header-end">
+        <a href="/admin-upload-video/" class="page-title-action" style="background:#2271b1; color:white; padding:6px 16px; border-radius:4px; text-decoration:none; font-weight:600; font-size:13px;">➕ Upload Portofolio (via Front-End)</a>
 
-        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 20px;">
+
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 20px;">
             <table id="adminVideoTable" class="wp-list-table widefat fixed striped">
     <thead>
         <tr>
@@ -6059,7 +6174,7 @@ function personel_video_admin_page() {
                     <?php echo ucfirst($row->status); ?>
                 </span>
             </td>
-            <td>
+            <td data-order="<?php echo esc_attr($row->rating ? $row->rating : '0'); ?>">
                 <select class="lx-rating-select" data-id="<?php echo $row->id; ?>" data-type="video">
                     <option value="">- No Rating -</option>
                     <?php for($i=1; $i<=5; $i++): ?>
@@ -6117,7 +6232,22 @@ function personel_video_admin_page() {
                 "language": { "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json" }
             });
         }
-    });
+        // Init Select2 for admin personel dropdown
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('.admin-personel-select').select2({
+            placeholder: 'Cari personel...',
+            width: '100%',
+            matcher: function(params, data) {
+                if ($.trim(params.term) === '') return data;
+                if (typeof data.text === 'undefined') return null;
+                var search = params.term.toLowerCase();
+                var text = data.text.toLowerCase();
+                if (text.indexOf(search) > -1) return data;
+                return null;
+            }
+        });
+    }
+});
     </script>
     <?php
 }
@@ -12267,16 +12397,16 @@ function render_landing_content_shortcode() {
   <div class="clients-strip-box reveal">
     <div class="clients-strip-inner">
       <span class="clients-label-txt">Trusted By /</span>
-      <div class="clients-track-names">
-        <div>PERTAMINA</div>
-        <div>JASA MARGA</div>
-        <div>HUTAMA KARYA</div>
-        <div>BANK MANDIRI</div>
-        <div>BCA</div>
-        <div>GARUDA INDONESIA</div>
-        <div>PLN</div>
-        <div>WASKITA</div>
-        <div>BYD</div>
+      <div class="clients-logo-grid">
+        <div class="client-logo-item"><i class="fa-solid fa-oil-well" style="font-size:32px; color:#d4af37;"></i><span style="display:block; font-size:10px; margin-top:4px; color:#888;">Pertamina</span></div>
+        <div class="client-logo-item"><i class="fa-solid fa-road" style="font-size:32px; color:#d4af37;"></i><span style="display:block; font-size:10px; margin-top:4px; color:#888;">Jasa Marga</span></div>
+        <div class="client-logo-item"><i class="fa-solid fa-building" style="font-size:32px; color:#d4af37;"></i><span style="display:block; font-size:10px; margin-top:4px; color:#888;">Hutama Karya</span></div>
+        <div class="client-logo-item"><i class="fa-solid fa-building-columns" style="font-size:32px; color:#d4af37;"></i><span style="display:block; font-size:10px; margin-top:4px; color:#888;">Bank Mandiri</span></div>
+        <div class="client-logo-item"><i class="fa-solid fa-building-columns" style="font-size:32px; color:#d4af37;"></i><span style="display:block; font-size:10px; margin-top:4px; color:#888;">BCA</span></div>
+        <div class="client-logo-item"><i class="fa-solid fa-plane" style="font-size:32px; color:#d4af37;"></i><span style="display:block; font-size:10px; margin-top:4px; color:#888;">Garuda Indonesia</span></div>
+        <div class="client-logo-item"><i class="fa-solid fa-bolt" style="font-size:32px; color:#d4af37;"></i><span style="display:block; font-size:10px; margin-top:4px; color:#888;">PLN</span></div>
+        <div class="client-logo-item"><i class="fa-solid fa-helmet-safety" style="font-size:32px; color:#d4af37;"></i><span style="display:block; font-size:10px; margin-top:4px; color:#888;">Waskita</span></div>
+        <div class="client-logo-item"><i class="fa-solid fa-car" style="font-size:32px; color:#d4af37;"></i><span style="display:block; font-size:10px; margin-top:4px; color:#888;">BYD</span></div>
       </div>
     </div>
   </div>
@@ -12305,6 +12435,623 @@ add_shortcode('landing_content', 'render_landing_content_shortcode');
 /**
  * Register and enqueue assets for Portfolio Page
  */
+// ============================================================
+// SHORTCODE: Admin Upload Portofolio Foto (Front-End)
+// ============================================================
+add_shortcode('admin_upload_foto', 'render_admin_upload_foto');
+function render_admin_upload_foto() {
+    if (!current_user_can('manage_options')) {
+        return '<div style="padding:60px 20px; text-align:center; color:#ef4444; font-size:20px;">⛔ Akses ditolak. Halaman ini hanya untuk Administrator.</div>';
+    }
+    
+    global $wpdb;
+    ob_start();
+    
+    // Inline CSS for front-end form styling
+    echo '<style>
+.admin-upload-wrap {
+    --lx-bg: #0b0a0f;
+    --lx-surface: #13111a;
+    --lx-surface2: #1a1825;
+    --lx-gold: #d4af37;
+    --lx-gold-light: #ffd275;
+    --lx-gold-dim: rgba(212,175,55,0.10);
+    --lx-border: rgba(255,255,255,0.07);
+    --lx-border-gold: rgba(212,175,55,0.22);
+    --lx-text: #f0eef6;
+    --lx-text-dim: #9b98a6;
+    --lx-grad: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%);
+    --lx-grad-subtle: linear-gradient(180deg,rgba(212,175,55,0.06) 0%,transparent 100%);
+    color: var(--lx-text);
+    max-width: 880px;
+    margin: 0 auto;
+}
+.admin-upload-wrap .form-edit-container {
+    background: var(--lx-surface2) !important;
+    border: 1px solid var(--lx-border) !important;
+    border-radius: 20px !important;
+    padding: 32px !important;
+}
+.admin-upload-wrap .form-edit-container h2 {
+    font-family: "Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--lx-gold-light) !important;
+    border-bottom: 1px solid var(--lx-border) !important;
+    padding-bottom: 14px;
+    margin: 0 0 24px 0 !important;
+}
+.admin-upload-wrap .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
+.admin-upload-wrap .form-group { flex: 1; display: flex; flex-direction: column; }
+.admin-upload-wrap .form-group.full { width: 100%; }
+.admin-upload-wrap .form-group label {
+    font-family: "Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--lx-text-dim);
+    margin-bottom: 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.admin-upload-wrap .form-group input,
+.admin-upload-wrap .form-group textarea,
+.admin-upload-wrap .form-group select {
+    background: var(--lx-surface) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    color: var(--lx-text) !important;
+    font-family: "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-size: 13.5px;
+    outline: none;
+    transition: all .25s;
+    box-sizing: border-box;
+}
+.admin-upload-wrap .form-group input:focus,
+.admin-upload-wrap .form-group textarea:focus,
+.admin-upload-wrap .form-group select:focus {
+    border-color: var(--lx-gold) !important;
+    box-shadow: 0 0 0 3px var(--lx-gold-dim) !important;
+}
+.admin-upload-wrap .tag-wrapper {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    background: var(--lx-surface) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 12px !important;
+    padding: 8px 12px !important;
+    min-height: 30px;
+}
+.admin-upload-wrap .tag-input {
+    border: none !important; background: transparent !important;
+    color: var(--lx-text) !important; outline: none;
+    font-family: "Inter",sans-serif; font-size: 13px;
+    min-width: 80px; flex: 1; padding: 4px 0 !important;
+}
+.admin-upload-wrap .tag-item {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--lx-gold-dim); color: var(--lx-gold-light);
+    padding: 4px 10px; border-radius: 20px; font-size: 12px;
+    font-weight: 500; border: 1px solid var(--lx-border-gold);
+}
+.admin-upload-wrap .tag-remove {
+    background: none; border: none; color: #ef4444;
+    cursor: pointer; font-size: 14px; line-height: 1; padding: 0;
+    margin-left: 2px; opacity: 0.8;
+}
+.admin-upload-wrap .tag-remove:hover { opacity: 1; }
+.admin-upload-wrap .btn-update {
+    background: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%) !important;
+    color: #000 !important; font-weight: bold; font-size: 16px;
+    border: none !important; border-radius: 8px !important;
+    cursor: pointer; padding: 14px !important;
+    transition: opacity 0.3s;
+}
+.admin-upload-wrap .btn-update:hover { opacity: 0.9; }
+</style>';
+    
+    // Process admin foto upload
+    if (isset($_POST['admin_foto_submit'])) {
+        if (!wp_verify_nonce($_POST['_wpnonce'], 'admin_foto_upload')) {
+            echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">❌ Security check failed.</div>';
+        } else {
+            $selected_personel_id = intval($_POST['admin_personel_id']);
+            if ($selected_personel_id <= 0) {
+                echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">❌ Silakan pilih personel terlebih dahulu.</div>';
+            } elseif (!empty($_FILES['file_foto']['name'])) {
+                require_once(ABSPATH . 'wp-admin/includes/file.php');
+                $allowed_mimes = array('jpg|jpeg|jpe' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp');
+                $overrides = array('test_form' => false, 'mimes' => $allowed_mimes);
+                $movefile = wp_handle_upload($_FILES['file_foto'], $overrides);
+                
+                if ($movefile && !isset($movefile['error'])) {
+                    $insert_data = array(
+                        'personel_id'      => $selected_personel_id,
+                        'judul'            => sanitize_text_field($_POST['judul']),
+                        'foto_url'         => $movefile['url'],
+                        'tanggal_kegiatan' => sanitize_text_field($_POST['tanggal']),
+                        'lokasi'           => sanitize_text_field($_POST['lokasi']),
+                        'tahun'            => sanitize_text_field($_POST['tahun']),
+                        'deskripsi'        => sanitize_textarea_field($_POST['deskripsi']),
+                        'tags'             => sanitize_text_field($_POST['tags']),
+                        'status'           => 'approved'
+                    );
+                    
+                    $wpdb->insert('wp9y_portofolio', $insert_data);
+                    $new_id = $wpdb->insert_id;
+                    
+                    if ($new_id) {
+                        $selected_kategori = isset($_POST['portfolio_kategori']) ? array_slice(array_map('intval', $_POST['portfolio_kategori']), 0, 3) : [];
+                        foreach ($selected_kategori as $cat_id) {
+                            $wpdb->insert('wp9y_portofolio_kategori_map', [
+                                'portofolio_id' => $new_id,
+                                'kategori_id'   => $cat_id,
+                            ]);
+                        }
+                        echo '<div class="notice-success" style="background:#0a2a0a;border:1px solid #22c55e;border-radius:8px;padding:20px;margin-bottom:20px;color:#22c55e;text-align:center;font-size:16px;">✅ Portofolio foto berhasil diupload!</div>';
+                    }
+                } else {
+                    echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">❌ Gagal upload: ' . esc_html($movefile['error']) . '</div>';
+                }
+            } else {
+                echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">❌ Silakan pilih file foto.</div>';
+            }
+        }
+    }
+    
+    // Get personel list
+    $all_personel = $wpdb->get_results("SELECT id, nama_panggilan, kode_nama FROM wp9y_personel ORDER BY nama_panggilan ASC");
+    
+    // ===== UI: EXACT CLONE of render_tab_portofolio_foto() =====
+    ?>
+    <div class="admin-upload-wrap">
+    <div class="form-edit-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="color:var(--gold); margin:0;">📸 Upload Portofolio Baru (Admin)</h2>
+            <a href="/wp-admin/admin.php?page=personel-porto" class="btn-action" style="background:#333; color:white; padding:5px 15px; border-radius:5px; text-decoration:none; font-size:12px;">← Kembali ke Admin</a>
+        </div>
+        
+        <!-- Personel Select -->
+        <div class="form-group full" style="margin-bottom: 20px; padding:15px; background:rgba(212,175,55,0.05); border:1px solid rgba(212,175,55,0.2); border-radius:8px;">
+            <label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold; font-size:14px;">
+                Pilih Personel (Pemilik Portofolio) <span style="color:red;">*</span>
+            </label>
+            <select name="admin_personel_id" id="adminFotoPersonelSelect" required
+                    style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px;">
+                <option value="">— Cari Personel —</option>
+                <?php foreach ($all_personel as $per): ?>
+                    <option value="<?php echo $per->id; ?>"><?php echo esc_html($per->nama_panggilan . ' — ' . $per->kode_nama); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="personel-form">
+            <?php wp_nonce_field('admin_foto_upload', '_wpnonce'); ?>
+            
+            <div class="form-group full" style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold;">
+                    Judul Portofolio <span style="color:red;">*</span>
+                </label>
+                <input type="text" name="judul" required 
+                      placeholder="Judul Portofolio" 
+                      style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px;">
+            </div>
+            
+            <div class="form-group full" style="border: 2px dashed var(--border-gold); padding: 30px; text-align: center; border-radius: 10px; margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 15px; font-size: 16px;">Pilih File Foto (JPG/PNG/WEBP)</label>
+                <input type="file" name="file_foto" accept="image/*" required style="background: transparent; border: none;">
+                <p style="font-size: 11px; opacity: 0.6; margin-top: 10px;">Rekomendasi ukuran: 1920x1080px, Max 3MB.</p>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tanggal Kegiatan</label>
+                    <input type="date" name="tanggal" required>
+                </div>
+                <div class="form-group">
+                    <label>Lokasi (Kota/Venue)</label>
+                    <input type="text" name="lokasi" placeholder="Misal: Jakarta / Hotel Mulia" required>
+                </div>
+            </div>
+            
+            <div class="form-group full">
+                <label>Deskripsi Singkat</label>
+                <textarea name="deskripsi" rows="3" placeholder="Ceritakan sedikit tentang karya ini..."></textarea>
+                <small style="color:var(--text-muted);">*Tidak mencantumkan no WA dan link sosmed</small><br>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tahun</label>
+                    <select name="tahun" required>
+                        <?php 
+                        $year = date('Y');
+                        for($i=0; $i<=15; $i++) {
+                            echo "<option value='".($year-$i)."'>".($year-$i)."</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group full">
+                <label>Kategori</label>
+                <?php render_portfolio_category_selection(0, 'foto'); ?>
+            </div>
+
+            <div class="form-group full">
+                <label>Tags</label>
+                <div class="tag-system-container">
+                    <div id="tagInputWrapper" class="tag-wrapper">
+                        <input type="text" id="tagInput" placeholder="Ketik tag lalu tekan Enter..." class="tag-input" style="background: #1a1a1a; border: 1px solid #333; color: #fff;">
+                    </div>
+                    <input type="hidden" name="tags" id="tagHiddenInput" value="">
+                </div>
+                <small style="color:var(--text-muted);">Tekan Enter setelah mengetik tag. Maks. 10 tag.</small>
+            </div>
+
+            <div class="form-group full">
+                <button type="submit" name="admin_foto_submit" class="btn-update" style="width:100%; padding:14px; background:linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%); color:#000; font-weight:bold; font-size:16px; border:none; border-radius:8px; cursor:pointer;">
+                    🚀 Upload Portofolio
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const wrapper = document.getElementById('tagInputWrapper');
+        const tagInput = document.getElementById('tagInput');
+        const hiddenInput = document.getElementById('tagHiddenInput');
+        if (!tagInput) return;
+        
+        let tags = hiddenInput.value ? hiddenInput.value.split(',').filter(t => t !== "") : [];
+        const maxTags = 10;
+
+        function renderTags() {
+            wrapper.querySelectorAll('.tag-item').forEach(el => el.remove());
+            tags.forEach((tag, index) => {
+                const tagEl = document.createElement('div');
+                tagEl.className = 'tag-item';
+                tagEl.innerHTML = `#${tag} <button type="button" class="tag-remove" data-index="${index}">&times;</button>`;
+                wrapper.insertBefore(tagEl, tagInput);
+            });
+        }
+
+        function updateHidden() {
+            hiddenInput.value = tags.join(',');
+        }
+
+        tagInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                const val = this.value.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '');
+                if (val && !tags.includes(val) && tags.length < maxTags) {
+                    tags.push(val);
+                    updateHidden();
+                    renderTags();
+                }
+                this.value = '';
+            }
+        });
+
+        wrapper.addEventListener('click', function(e) {
+            if (e.target.classList.contains('tag-remove')) {
+                tags.splice(e.target.dataset.index, 1);
+                updateHidden();
+                renderTags();
+            }
+        });
+
+        renderTags();
+    });
+    </script>
+    </div><!-- .admin-upload-wrap -->
+    <?php
+    return ob_get_clean();
+}
+
+add_shortcode('admin_upload_video', 'render_admin_upload_video');
+function render_admin_upload_video() {
+    if (!current_user_can('manage_options')) {
+        return '<div style="padding:60px 20px; text-align:center; color:#ef4444; font-size:20px;">⛔ Akses ditolak. Halaman ini hanya untuk Administrator.</div>';
+    }
+    
+    global $wpdb;
+    ob_start();
+    
+    // Inline CSS
+    echo '<style>
+.admin-upload-wrap {
+    --lx-bg: #0b0a0f;
+    --lx-surface: #13111a;
+    --lx-surface2: #1a1825;
+    --lx-gold: #d4af37;
+    --lx-gold-light: #ffd275;
+    --lx-gold-dim: rgba(212,175,55,0.10);
+    --lx-border: rgba(255,255,255,0.07);
+    --lx-border-gold: rgba(212,175,55,0.22);
+    --lx-text: #f0eef6;
+    --lx-text-dim: #9b98a6;
+    --lx-grad: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%);
+    --lx-grad-subtle: linear-gradient(180deg,rgba(212,175,55,0.06) 0%,transparent 100%);
+    color: var(--lx-text);
+    max-width: 880px;
+    margin: 0 auto;
+}
+.admin-upload-wrap .form-edit-container {
+    background: var(--lx-surface2) !important;
+    border: 1px solid var(--lx-border) !important;
+    border-radius: 20px !important;
+    padding: 32px !important;
+}
+.admin-upload-wrap .form-edit-container h2 {
+    font-family: "Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--lx-gold-light) !important;
+    border-bottom: 1px solid var(--lx-border) !important;
+    padding-bottom: 14px;
+    margin: 0 0 24px 0 !important;
+}
+.admin-upload-wrap .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
+.admin-upload-wrap .form-group { flex: 1; display: flex; flex-direction: column; }
+.admin-upload-wrap .form-group.full { width: 100%; }
+.admin-upload-wrap .form-group label {
+    font-family: "Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--lx-text-dim);
+    margin-bottom: 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.admin-upload-wrap .form-group input,
+.admin-upload-wrap .form-group textarea,
+.admin-upload-wrap .form-group select {
+    background: var(--lx-surface) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    color: var(--lx-text) !important;
+    font-family: "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-size: 13.5px;
+    outline: none;
+    transition: all .25s;
+    box-sizing: border-box;
+}
+.admin-upload-wrap .form-group input:focus,
+.admin-upload-wrap .form-group textarea:focus,
+.admin-upload-wrap .form-group select:focus {
+    border-color: var(--lx-gold) !important;
+    box-shadow: 0 0 0 3px var(--lx-gold-dim) !important;
+}
+.admin-upload-wrap .tag-wrapper {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    background: var(--lx-surface) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 12px !important;
+    padding: 8px 12px !important;
+    min-height: 30px;
+}
+.admin-upload-wrap .tag-input {
+    border: none !important; background: transparent !important;
+    color: var(--lx-text) !important; outline: none;
+    font-family: "Inter",sans-serif; font-size: 13px;
+    min-width: 80px; flex: 1; padding: 4px 0 !important;
+}
+.admin-upload-wrap .tag-item {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--lx-gold-dim); color: var(--lx-gold-light);
+    padding: 4px 10px; border-radius: 20px; font-size: 12px;
+    font-weight: 500; border: 1px solid var(--lx-border-gold);
+}
+.admin-upload-wrap .tag-remove {
+    background: none; border: none; color: #ef4444;
+    cursor: pointer; font-size: 14px; line-height: 1; padding: 0;
+    margin-left: 2px; opacity: 0.8;
+}
+.admin-upload-wrap .tag-remove:hover { opacity: 1; }
+.admin-upload-wrap .btn-update {
+    background: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%) !important;
+    color: #000 !important; font-weight: bold; font-size: 16px;
+    border: none !important; border-radius: 8px !important;
+    cursor: pointer; padding: 14px !important;
+    transition: opacity 0.3s;
+}
+.admin-upload-wrap .btn-update:hover { opacity: 0.9; }
+</style>';
+    
+    // Process admin video upload
+    if (isset($_POST['admin_video_submit'])) {
+        if (!wp_verify_nonce($_POST['_wpnonce'], 'admin_video_upload')) {
+            echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">❌ Security check failed.</div>';
+        } else {
+            $selected_personel_id = intval($_POST['admin_personel_id']);
+            if ($selected_personel_id <= 0) {
+                echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">❌ Silakan pilih personel terlebih dahulu.</div>';
+            } elseif (!empty($_POST['video_url'])) {
+                $insert_data = array(
+                    'personel_id'      => $selected_personel_id,
+                    'judul'            => sanitize_text_field($_POST['judul']),
+                    'video_url'        => esc_url_raw($_POST['video_url']),
+                    'tanggal_kegiatan' => sanitize_text_field($_POST['tanggal']),
+                    'lokasi'           => sanitize_text_field($_POST['lokasi']),
+                    'tahun'            => sanitize_text_field($_POST['tahun']),
+                    'deskripsi'        => sanitize_textarea_field($_POST['deskripsi']),
+                    'tags'             => sanitize_text_field($_POST['tags']),
+                    'status'           => 'approved'
+                );
+                
+                $wpdb->insert('wp9y_portofolio_video', $insert_data);
+                $new_id = $wpdb->insert_id;
+                
+                if ($new_id) {
+                    $selected_kategori = isset($_POST['portfolio_kategori']) ? array_slice(array_map('intval', $_POST['portfolio_kategori']), 0, 3) : [];
+                    foreach ($selected_kategori as $cat_id) {
+                        $wpdb->insert($wpdb->prefix . 'portofolio_video_kategori_map', [
+                            'video_id' => $new_id,
+                            'kategori_id' => $cat_id,
+                        ]);
+                    }
+                    echo '<div class="notice-success" style="background:#0a2a0a;border:1px solid #22c55e;border-radius:8px;padding:20px;margin-bottom:20px;color:#22c55e;text-align:center;font-size:16px;">✅ Portofolio video berhasil diupload!</div>';
+                }
+            } else {
+                echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">❌ Silakan isi URL video.</div>';
+            }
+        }
+    }
+    
+    // Get personel list
+    $all_personel = $wpdb->get_results("SELECT id, nama_panggilan, kode_nama FROM wp9y_personel ORDER BY nama_panggilan ASC");
+    ?>
+    <div class="admin-upload-wrap">
+    <div class="form-edit-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="color:var(--gold);">🎥 Tambah Portofolio Video (Admin)</h2>
+            <a href="/wp-admin/admin.php?page=personel-video" class="btn-action" style="background:#333; color:white; padding:5px 15px; border-radius:5px; text-decoration:none; font-size:12px;">← Kembali ke Admin</a>
+        </div>
+        
+        <!-- Personel Select -->
+        <div class="form-group full" style="margin-bottom: 20px; padding:15px; background:rgba(212,175,55,0.05); border:1px solid rgba(212,175,55,0.2); border-radius:8px;">
+            <label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold; font-size:14px;">
+                Pilih Personel (Pemilik Portofolio) <span style="color:red;">*</span>
+            </label>
+            <select name="admin_personel_id" id="adminVideoPersonelSelect" required
+                    style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px;">
+                <option value="">— Cari Personel —</option>
+                <?php foreach ($all_personel as $per): ?>
+                    <option value="<?php echo $per->id; ?>"><?php echo esc_html($per->nama_panggilan . ' — ' . $per->kode_nama); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <form method="post" class="personel-form">
+            <?php wp_nonce_field('admin_video_upload', '_wpnonce'); ?>
+            
+            <div class="form-group full" style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold;">
+                    Judul Portofolio <span style="color:red;">*</span>
+                </label>
+                <input type="text" name="judul" required 
+                      placeholder="Judul Portofolio" 
+                      style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px;">
+            </div>
+            
+            <div class="form-group full">
+                <label>URL Video (YouTube) <span class="required">*</span></label>
+                <input type="url" name="video_url" placeholder="https://www.youtube.com/watch?v=xxxx" required
+                       style="width:100%; padding:10px; background:#1a1a1a; border:1px solid #333; color:#fff; border-radius:4px;">
+                <small>Pastikan video diset "Public" atau "Unlisted".</small>
+            </div>
+            
+            <div class="form-group full">
+                <label>Deskripsi</label>
+                <textarea name="deskripsi" rows="4" placeholder="Ceritakan sedikit tentang video ini..."></textarea>
+                <small style="color:var(--text-muted);">*Tidak mencantumkan no WA dan link sosmed</small><br>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tanggal</label>
+                    <input type="date" name="tanggal" required>
+                </div>
+                <div class="form-group">
+                    <label>Lokasi</label>
+                    <input type="text" name="lokasi" placeholder="Jakarta / Hotel Mulia" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tahun</label>
+                    <select name="tahun" required>
+                        <?php 
+                        $year = date('Y');
+                        for($i=0; $i<=15; $i++) {
+                            echo "<option value='".($year-$i)."'>".($year-$i)."</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group full">
+                <label>Kategori</label>
+                <?php render_portfolio_category_selection(0, 'video'); ?>
+            </div>
+
+            <div class="form-group full">
+                <label>Tags</label>
+                <div class="tag-system-container">
+                    <div id="tagInputWrapperVideo" class="tag-wrapper">
+                        <input type="text" id="tagInputVideo" placeholder="Ketik tag lalu tekan Enter..." class="tag-input" style="background: #1a1a1a; border: 1px solid #333; color: #fff;">
+                    </div>
+                    <input type="hidden" name="tags" id="tagHiddenInputVideo" value="">
+                </div>
+                <small style="color:var(--text-muted);">Tekan Enter setelah mengetik tag. Maks. 10 tag.</small>
+            </div>
+
+            <div class="form-group full">
+                <button type="submit" name="admin_video_submit" class="btn-update" style="width:100%; padding:14px; background:linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%); color:#000; font-weight:bold; font-size:16px; border:none; border-radius:8px; cursor:pointer;">
+                    🚀 Upload Video
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const wrapper = document.getElementById('tagInputWrapperVideo');
+        const tagInput = document.getElementById('tagInputVideo');
+        const hiddenInput = document.getElementById('tagHiddenInputVideo');
+        if (!tagInput) return;
+        
+        let tags = hiddenInput.value ? hiddenInput.value.split(',').filter(t => t !== "") : [];
+        const maxTags = 10;
+
+        function renderTags() {
+            wrapper.querySelectorAll('.tag-item').forEach(el => el.remove());
+            tags.forEach((tag, index) => {
+                const tagEl = document.createElement('div');
+                tagEl.className = 'tag-item';
+                tagEl.innerHTML = `#${tag} <button type="button" class="tag-remove" data-index="${index}">&times;</button>`;
+                wrapper.insertBefore(tagEl, tagInput);
+            });
+        }
+
+        function updateHidden() {
+            hiddenInput.value = tags.join(',');
+        }
+
+        tagInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                const val = this.value.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '');
+                if (val && !tags.includes(val) && tags.length < maxTags) {
+                    tags.push(val);
+                    updateHidden();
+                    renderTags();
+                }
+                this.value = '';
+            }
+        });
+
+        wrapper.addEventListener('click', function(e) {
+            if (e.target.classList.contains('tag-remove')) {
+                tags.splice(e.target.dataset.index, 1);
+                updateHidden();
+                renderTags();
+            }
+        });
+
+        renderTags();
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+
+
 function enqueue_portfolio_page_assets() {
     $css_version = file_exists( get_stylesheet_directory() . '/assets/css/portfolio.css' ) ? filemtime( get_stylesheet_directory() . '/assets/css/portfolio.css' ) : '1.0.0';
     $js_version  = file_exists( get_stylesheet_directory() . '/assets/js/portfolio.js' ) ? filemtime( get_stylesheet_directory() . '/assets/js/portfolio.js' ) : '1.0.0';
