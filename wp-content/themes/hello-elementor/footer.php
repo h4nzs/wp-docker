@@ -41,24 +41,24 @@ if ( hello_elementor_display_header_footer() ) {
 	    </div>
 	    <div class="footer-col">
 	      <h5>Layanan</h5>
-	      <a href="#">Company Profile</a>
-	      <a href="#">Wedding &amp; Pre-Wedding</a>
-	      <a href="#">Event Production</a>
-	      <a href="#">Video Klip</a>
+	      <a href="<?php echo esc_url( home_url('/jasa-pembuatan-video-company-profile/') ); ?>">Company Profile</a>
+	      <a href="<?php echo esc_url( home_url('/wedding-prawedding/') ); ?>">Wedding &amp; Pre-Wedding</a>
+	      <a href="<?php echo esc_url( home_url('/event-production-event-organizer/') ); ?>">Event Production</a>
+	      <a href="<?php echo esc_url( home_url('/video-klip/') ); ?>">Video Klip</a>
 	    </div>
 	    <div class="footer-col">
 	      <h5>Personel</h5>
-	      <a href="#">Fotografer</a>
-	      <a href="#">Videografer</a>
-	      <a href="#">Pilot Drone</a>
-	      <a href="#">Editor &amp; VFX</a>
+	      <a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=F') ); ?>">Fotografer</a>
+	      <a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=V') ); ?>">Videografer</a>
+	      <a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=D') ); ?>">Pilot Drone</a>
+	      <a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=E') ); ?>">Editor</a>
 	    </div>
 	    <div class="footer-col">
 	      <h5>Kontak</h5>
 	      <a href="#">PT Ono Voda Pro</a>
-	      <a href="#">WA 0857 7100 2233</a>
-	      <a href="#">Artikel</a>
-	      <a href="#">Tentang Kami</a>
+	      <a href="https://wa.me/6285771002233">WA 0857 7100 2233</a>
+	      <a href="<?php echo esc_url( home_url('/artikel/') ); ?>">Artikel</a>
+	      <a href="<?php echo esc_url( home_url('/tentang-kami/') ); ?>">Tentang Kami</a>
 	    </div>
 	  </div>
 	  <div class="footer-bottom">

@@ -11857,10 +11857,10 @@ function render_landing_content_shortcode() {
   </div>
 
   <div class="search-container">
-    <div class="search-box">
-      <input type="text" placeholder="Halo, layanan apa yang Anda butuhkan?">
-      <button class="search-btn">Cari Layanan</button>
-    </div>
+    <form class="search-box" action="<?php echo esc_url(home_url('/')); ?>" method="get" style="display:flex;align-items:center;gap:10px;background:#25232e;border:1px solid rgba(255,255,255,0.07);padding:6px 6px 6px 22px;border-radius:100px;box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+      <input type="text" name="s" placeholder="Halo, layanan apa yang Anda butuhkan?" required style="flex:1;background:none;border:none;outline:none;color:#f0eef6;font-size:14px;padding:10px 0;">
+      <button type="submit" class="search-btn">Cari Layanan</button>
+    </form>
   </div>
 
   <div class="services-flex-grid">
@@ -12077,152 +12077,178 @@ function render_landing_content_shortcode() {
 
   <div class="portfolio-masonry">
     <?php
-    $seed = rand(1, 999999);
-    $photos = $wpdb->get_results($wpdb->prepare("SELECT f.*, p.nama_panggilan FROM wp9y_portofolio f JOIN wp9y_personel p ON f.personel_id = p.id WHERE f.status = 'approved' ORDER BY CASE WHEN f.rating IS NULL THEN 0 ELSE f.rating END DESC, RAND(%d) LIMIT 5"), $seed);
-    $videos = $wpdb->get_results($wpdb->prepare("SELECT v.*, p.nama_panggilan FROM wp9y_portofolio_video v JOIN wp9y_personel p ON v.personel_id = p.id WHERE v.status = 'approved' ORDER BY CASE WHEN v.rating IS NULL THEN 0 ELSE v.rating END DESC, RAND(%d) LIMIT 2"), $seed);
+        $seed = rand(1, 999999);
+        $photos = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT f.*, p.nama_panggilan 
+                 FROM wp9y_portofolio f 
+                 JOIN wp9y_personel p ON f.personel_id = p.id 
+                 WHERE f.status = 'approved' 
+                 ORDER BY CASE WHEN f.rating IS NULL THEN 0 ELSE f.rating END DESC, RAND(%d) 
+                 LIMIT 5",
+                $seed
+            )
+        );
+         
+        $videos = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT v.*, p.nama_panggilan 
+                 FROM wp9y_portofolio_video v 
+                 JOIN wp9y_personel p ON v.personel_id = p.id 
+                 WHERE v.status = 'approved' 
+                 ORDER BY CASE WHEN v.rating IS NULL THEN 0 ELSE v.rating END DESC, RAND(%d) 
+                 LIMIT 2",
+                $seed
+            )
+        );
 
-    $items = [];
+        $items = [];
 
-    // Item 1 (tall wide)
-    if (isset($photos[0])) {
-        $items[1] = [
-            'class' => 'port-card tall wide reveal',
-            'url' => $photos[0]->foto_url,
-            'title' => $photos[0]->judul,
-            'creator' => 'by ' . $photos[0]->nama_panggilan,
-            'video' => false
-        ];
-    } else {
-        $items[1] = [
-            'class' => 'port-card tall wide reveal',
-            'url' => 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&q=80',
-            'title' => 'Leadership Portrait',
-            'creator' => 'by Dani · Videografer',
-            'video' => false
-        ];
-    }
+        // Item 1 (tall wide)
+        // Kita cek apakah objek ada DAN kolom foto_url tidak kosong
+        if (isset($photos[0]) && !empty($photos[0]->foto_url)) {
+            $items[1] = [
+                'class' => 'port-card tall wide reveal',
+                'url' => $photos[0]->foto_url, // Pastikan nama kolom di DB persis 'foto_url'
+                'title' => $photos[0]->judul,
+                'creator' => 'by ' . $photos[0]->nama_panggilan,
+                'video' => false
+            ];
+        } else {
+            $items[1] = [
+                'class' => 'port-card tall wide reveal',
+                'url' => 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&q=80',
+                'title' => isset($photos[0]) ? $photos[0]->judul : 'Leadership Portrait',
+                'creator' => 'by ' . (isset($photos[0]) ? $photos[0]->nama_panggilan : 'Dani · Videografer'),
+                'video' => false
+            ];
+        }
 
-    // Item 2 (standard)
-    if (isset($photos[1])) {
-        $items[2] = [
-            'class' => 'port-card standard reveal',
-            'url' => $photos[1]->foto_url,
-            'title' => $photos[1]->judul,
-            'creator' => 'by ' . $photos[1]->nama_panggilan,
-            'video' => false
-        ];
-    } else {
-        $items[2] = [
-            'class' => 'port-card standard reveal',
-            'url' => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400&q=80',
-            'title' => 'Seminar Corporate',
-            'creator' => 'by Bagus · Fotografer',
-            'video' => false
-        ];
-    }
+        // Item 2 (standard)
+        if (isset($photos[1]) && !empty($photos[1]->foto_url)) {
+            $items[2] = [
+                'class' => 'port-card standard reveal',
+                'url' => $photos[1]->foto_url,
+                'title' => $photos[1]->judul,
+                'creator' => 'by ' . $photos[1]->nama_panggilan,
+                'video' => false
+            ];
+        } else {
+            $items[2] = [
+                'class' => 'port-card standard reveal',
+                'url' => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400&q=80',
+                'title' => isset($photos[1]) ? $photos[1]->judul : 'Seminar Corporate',
+                'creator' => 'by ' . (isset($photos[1]) ? $photos[1]->nama_panggilan : 'Bagus · Fotografer'),
+                'video' => false
+            ];
+        }
 
-    // Item 3 (standard)
-    if (isset($photos[2])) {
-        $items[3] = [
-            'class' => 'port-card standard reveal',
-            'url' => $photos[2]->foto_url,
-            'title' => $photos[2]->judul,
-            'creator' => 'by ' . $photos[2]->nama_panggilan,
-            'video' => false
-        ];
-    } else {
-        $items[3] = [
-            'class' => 'port-card standard reveal',
-            'url' => 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&q=80',
-            'title' => 'Foto Sports Event',
-            'creator' => 'by Crew · Fotografer',
-            'video' => false
-        ];
-    }
+        // Item 3 (standard)
+        if (isset($photos[2]) && !empty($photos[2]->foto_url)) {
+            $items[3] = [
+                'class' => 'port-card standard reveal',
+                'url' => $photos[2]->foto_url,
+                'title' => $photos[2]->judul,
+                'creator' => 'by ' . $photos[2]->nama_panggilan,
+                'video' => false
+            ];
+        } else {
+            $items[3] = [
+                'class' => 'port-card standard reveal',
+                'url' => 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&q=80',
+                'title' => isset($photos[2]) ? $photos[2]->judul : 'Foto Sports Event',
+                'creator' => 'by ' . (isset($photos[2]) ? $photos[2]->nama_panggilan : 'Crew · Fotografer'),
+                'video' => false
+            ];
+        }
 
-    // Item 4 (tall, video 1)
-    if (isset($videos[0])) {
-        preg_match('/(v=|be\/)([a-zA-Z0-9_-]+)/', $videos[0]->video_url, $m);
-        $yt_id = $m[2] ?? '';
-        $thumb = "https://img.youtube.com/vi/" . esc_attr($yt_id) . "/mqdefault.jpg";
-        $items[4] = [
-            'class' => 'port-card tall reveal',
-            'url' => $thumb,
-            'title' => $videos[0]->judul,
-            'creator' => 'by ' . $videos[0]->nama_panggilan,
-            'video' => true
-        ];
-    } else {
-        $items[4] = [
-            'class' => 'port-card tall reveal',
-            'url' => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&q=80',
-            'title' => 'Video Highlight',
-            'creator' => 'by Crew · Editor',
-            'video' => true
-        ];
-    }
+        // Item 4 (tall, video 1)
+        if (isset($videos[0]) && !empty($videos[0]->video_url)) {
+            preg_match('/(v=|be\/)([a-zA-Z0-9_-]+)/', $videos[0]->video_url, $m);
+            $yt_id = $m[2] ?? '';
+            $thumb = !empty($yt_id) ? "https://img.youtube.com/vi/" . esc_attr($yt_id) . "/mqdefault.jpg" : 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&q=80';
+            
+            $items[4] = [
+                'class' => 'port-card tall reveal',
+                'url' => $thumb,
+                'title' => $videos[0]->judul,
+                'creator' => 'by ' . $videos[0]->nama_panggilan,
+                'video' => true
+            ];
+        } else {
+            $items[4] = [
+                'class' => 'port-card tall reveal',
+                'url' => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&q=80',
+                'title' => isset($videos[0]) ? $videos[0]->judul : 'Video Highlight',
+                'creator' => 'by ' . (isset($videos[0]) ? $videos[0]->nama_panggilan : 'Crew · Editor'),
+                'video' => true
+            ];
+        }
 
-    // Item 5 (standard)
-    if (isset($photos[3])) {
-        $items[5] = [
-            'class' => 'port-card standard reveal',
-            'url' => $photos[3]->foto_url,
-            'title' => $photos[3]->judul,
-            'creator' => 'by ' . $photos[3]->nama_panggilan,
-            'video' => false
-        ];
-    } else {
-        $items[5] = [
-            'class' => 'port-card standard reveal',
-            'url' => 'https://images.unsplash.com/photo-1556125574-d7f27ec36a06?w=400&q=80',
-            'title' => 'Birthday Party',
-            'creator' => 'by Oelin · Fotografer',
-            'video' => false
-        ];
-    }
+        // Item 5 (standard)
+        if (isset($photos[3]) && !empty($photos[3]->foto_url)) {
+            $items[5] = [
+                'class' => 'port-card standard reveal',
+                'url' => $photos[3]->foto_url,
+                'title' => $photos[3]->judul,
+                'creator' => 'by ' . $photos[3]->nama_panggilan,
+                'video' => false
+            ];
+        } else {
+            $items[5] = [
+                'class' => 'port-card standard reveal',
+                'url' => 'https://images.unsplash.com/photo-1556125574-d7f27ec36a06?w=400&q=80',
+                'title' => isset($photos[3]) ? $photos[3]->judul : 'Birthday Party',
+                'creator' => 'by ' . (isset($photos[3]) ? $photos[3]->nama_panggilan : 'Oelin · Fotografer'),
+                'video' => false
+            ];
+        }
 
-    // Item 7 (standard, to fill the Row 3 Col 3 grid hole)
-    if (isset($photos[4])) {
-        $items[7] = [
-            'class' => 'port-card standard reveal',
-            'url' => $photos[4]->foto_url,
-            'title' => $photos[4]->judul,
-            'creator' => 'by ' . $photos[4]->nama_panggilan,
-            'video' => false
-        ];
-    } else {
-        $items[7] = [
-            'class' => 'port-card standard reveal',
-            'url' => 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=80',
-            'title' => 'Behind the Scenes',
-            'creator' => 'by Crew · Fotografer',
-            'video' => false
-        ];
-    }
+        // Item 6 (wide, video 2)
+        if (isset($videos[1]) && !empty($videos[1]->video_url)) {
+            preg_match('/(v=|be\/)([a-zA-Z0-9_-]+)/', $videos[1]->video_url, $m);
+            $yt_id = $m[2] ?? '';
+            $thumb = !empty($yt_id) ? "https://img.youtube.com/vi/" . esc_attr($yt_id) . "/mqdefault.jpg" : 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800&q=80';
+            
+            $items[6] = [
+                'class' => 'port-card wide reveal',
+                'url' => $thumb,
+                'title' => $videos[1]->judul,
+                'creator' => 'by ' . $videos[1]->nama_panggilan,
+                'video' => true
+            ];
+        } else {
+            $items[6] = [
+                'class' => 'port-card wide reveal',
+                'url' => 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800&q=80',
+                'title' => isset($videos[1]) ? $videos[1]->judul : 'Employee Gathering',
+                'creator' => 'by ' . (isset($videos[1]) ? $videos[1]->nama_panggilan : 'Oelin · Fotografer'),
+                'video' => true
+            ];
+        }
 
-    // Item 6 (wide, video 2)
-    if (isset($videos[1])) {
-        preg_match('/(v=|be\/)([a-zA-Z0-9_-]+)/', $videos[1]->video_url, $m);
-        $yt_id = $m[2] ?? '';
-        $thumb = "https://img.youtube.com/vi/" . esc_attr($yt_id) . "/mqdefault.jpg";
-        $items[6] = [
-            'class' => 'port-card wide reveal',
-            'url' => $thumb,
-            'title' => $videos[1]->judul,
-            'creator' => 'by ' . $videos[1]->nama_panggilan,
-            'video' => true
-        ];
-    } else {
-        $items[6] = [
-            'class' => 'port-card wide reveal',
-            'url' => 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800&q=80',
-            'title' => 'Employee Gathering',
-            'creator' => 'by Oelin · Fotografer',
-            'video' => true
-        ];
-    }
+        // Item 7 (standard, diletakkan berurutan)
+        if (isset($photos[4]) && !empty($photos[4]->foto_url)) {
+            $items[7] = [
+                'class' => 'port-card standard reveal',
+                'url' => $photos[4]->foto_url,
+                'title' => $photos[4]->judul,
+                'creator' => 'by ' . $photos[4]->nama_panggilan,
+                'video' => false
+            ];
+        } else {
+            $items[7] = [
+                'class' => 'port-card standard reveal',
+                'url' => 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=80',
+                'title' => isset($photos[4]) ? $photos[4]->judul : 'Behind the Scenes',
+                'creator' => 'by ' . (isset($photos[4]) ? $photos[4]->nama_panggilan : 'Crew · Fotografer'),
+                'video' => false
+            ];
+        }
 
-    foreach ($items as $item) :
+        ksort($items);
+
+        foreach ($items as $item) :
     ?>
     <div class="<?php echo esc_attr($item['class']); ?>">
       <img src="<?php echo esc_url($item['url']); ?>" alt="<?php echo esc_attr($item['title']); ?>">
