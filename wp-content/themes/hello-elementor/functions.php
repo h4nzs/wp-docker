@@ -12610,21 +12610,20 @@ function render_admin_upload_foto() {
             <a href="/wp-admin/admin.php?page=personel-porto" class="btn-action" style="background:#333; color:white; padding:5px 15px; border-radius:5px; text-decoration:none; font-size:12px;">← Kembali ke Admin</a>
         </div>
         
-        <!-- Personel Select -->
-        <div class="form-group full" style="margin-bottom: 20px; padding:15px; background:rgba(212,175,55,0.05); border:1px solid rgba(212,175,55,0.2); border-radius:8px;">
-            <label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold; font-size:14px;">
-                Pilih Personel (Pemilik Portofolio) <span style="color:red;">*</span>
-            </label>
-            <select name="admin_personel_id" id="adminFotoPersonelSelect" required
-                    style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px;">
-                <option value="">— Cari Personel —</option>
-                <?php foreach ($all_personel as $per): ?>
-                    <option value="<?php echo $per->id; ?>"><?php echo esc_html($per->nama_panggilan . ' — ' . $per->kode_nama); ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-
         <form method="post" enctype="multipart/form-data" class="personel-form">
+            <!-- Personel Select -->
+            <div class="form-group full" style="margin-bottom: 20px; padding:15px; background:rgba(212,175,55,0.05); border:1px solid rgba(212,175,55,0.2); border-radius:8px;">
+                <label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold; font-size:14px;">
+                    Pilih Personel (Pemilik Portofolio) <span style="color:red;">*</span>
+                </label>
+                <select name="admin_personel_id" id="adminFotoPersonelSelect" required
+                        style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px;">
+                    <option value="">— Cari Personel —</option>
+                    <?php foreach ($all_personel as $per): ?>
+                        <option value="<?php echo $per->id; ?>"><?php echo esc_html($per->nama_panggilan . ' — ' . $per->kode_nama); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
             <?php wp_nonce_field('admin_foto_upload', '_wpnonce'); ?>
             
             <div class="form-group full" style="margin-bottom: 15px;">
@@ -12746,6 +12745,15 @@ function render_admin_upload_foto() {
     });
     </script>
     </div><!-- .admin-upload-wrap -->
+    <?php
+    echo '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>';
+    ?>
+    <script>
+    jQuery(document).ready(function($) {
+        $('#adminFotoPersonelSelect').select2({placeholder:'Cari personel...',width:'100%',allowClear:true});
+    });
+    </script>
     <?php
     return ob_get_clean();
 }
@@ -12911,21 +12919,20 @@ function render_admin_upload_video() {
             <a href="/wp-admin/admin.php?page=personel-video" class="btn-action" style="background:#333; color:white; padding:5px 15px; border-radius:5px; text-decoration:none; font-size:12px;">← Kembali ke Admin</a>
         </div>
         
-        <!-- Personel Select -->
-        <div class="form-group full" style="margin-bottom: 20px; padding:15px; background:rgba(212,175,55,0.05); border:1px solid rgba(212,175,55,0.2); border-radius:8px;">
-            <label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold; font-size:14px;">
-                Pilih Personel (Pemilik Portofolio) <span style="color:red;">*</span>
-            </label>
-            <select name="admin_personel_id" id="adminVideoPersonelSelect" required
-                    style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px;">
-                <option value="">— Cari Personel —</option>
-                <?php foreach ($all_personel as $per): ?>
-                    <option value="<?php echo $per->id; ?>"><?php echo esc_html($per->nama_panggilan . ' — ' . $per->kode_nama); ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-
         <form method="post" class="personel-form">
+            <!-- Personel Select -->
+            <div class="form-group full" style="margin-bottom: 20px; padding:15px; background:rgba(212,175,55,0.05); border:1px solid rgba(212,175,55,0.2); border-radius:8px;">
+                <label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold; font-size:14px;">
+                    Pilih Personel (Pemilik Portofolio) <span style="color:red;">*</span>
+                </label>
+                <select name="admin_personel_id" id="adminVideoPersonelSelect" required
+                        style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px;">
+                    <option value="">— Cari Personel —</option>
+                    <?php foreach ($all_personel as $per): ?>
+                        <option value="<?php echo $per->id; ?>"><?php echo esc_html($per->nama_panggilan . ' — ' . $per->kode_nama); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
             <?php wp_nonce_field('admin_video_upload', '_wpnonce'); ?>
             
             <div class="form-group full" style="margin-bottom: 15px;">
@@ -13045,6 +13052,15 @@ function render_admin_upload_video() {
         });
 
         renderTags();
+    });
+    </script>
+    <?php
+    echo '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>';
+    ?>
+    <script>
+    jQuery(document).ready(function($) {
+        $('#adminVideoPersonelSelect').select2({placeholder:'Cari personel...',width:'100%',allowClear:true});
     });
     </script>
     <?php
