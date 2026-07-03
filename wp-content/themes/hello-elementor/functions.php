@@ -4183,7 +4183,7 @@ function render_tab_edit_portofolio($personel, $porto_id) {
 function render_list_portofolio_foto($personel) {
     global $wpdb;
     $fotos = $wpdb->get_results($wpdb->prepare(
-        "SELECT * FROM wp9y_portofolio WHERE personel_id = %d ORDER BY created_at DESC", 
+        "SELECT * FROM wp9y_portofolio WHERE personel_id = %d AND (uploaded_by IS NULL OR uploaded_by != 'admin') ORDER BY created_at DESC", 
         $personel->id
     ));
     ?>
@@ -5818,7 +5818,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function render_list_portofolio_video($personel) {
     global $wpdb;
     $videos = $wpdb->get_results($wpdb->prepare(
-        "SELECT * FROM wp9y_portofolio_video WHERE personel_id = %d ORDER BY created_at DESC", 
+        "SELECT * FROM wp9y_portofolio_video WHERE personel_id = %d AND (uploaded_by IS NULL OR uploaded_by != 'admin') ORDER BY created_at DESC", 
         $personel->id
     ));
     ?>
@@ -6269,8 +6269,8 @@ function render_list_personel_publik() {
 
     // 2. Build Query
    $query = "SELECT p.*, 
-          (SELECT COUNT(*) FROM wp9y_portofolio WHERE personel_id = p.id AND status = 'approved') as total_foto,
-          (SELECT COUNT(*) FROM wp9y_portofolio_video WHERE personel_id = p.id AND status = 'approved') as total_video
+          (SELECT COUNT(*) FROM wp9y_portofolio WHERE personel_id = p.id AND status = 'approved' AND uploaded_by != 'admin') as total_foto,
+          (SELECT COUNT(*) FROM wp9y_portofolio_video WHERE personel_id = p.id AND status = 'approved' AND uploaded_by != 'admin') as total_video
           FROM wp9y_personel p 
           WHERE p.status = 'approved'";
 
@@ -6890,8 +6890,8 @@ function handle_load_more_personel() {
     $kota = isset($_POST['kota']) ? sanitize_text_field($_POST['kota']) : '';
 
     $query = "SELECT p.*, 
-          (SELECT COUNT(*) FROM wp9y_portofolio WHERE personel_id = p.id AND status = 'approved') as total_foto,
-          (SELECT COUNT(*) FROM wp9y_portofolio_video WHERE personel_id = p.id AND status = 'approved') as total_video
+          (SELECT COUNT(*) FROM wp9y_portofolio WHERE personel_id = p.id AND status = 'approved' AND uploaded_by != 'admin') as total_foto,
+          (SELECT COUNT(*) FROM wp9y_portofolio_video WHERE personel_id = p.id AND status = 'approved' AND uploaded_by != 'admin') as total_video
           FROM wp9y_personel p 
           WHERE p.status = 'approved'";
 
@@ -7013,8 +7013,8 @@ function render_detail_personel_shortcode() {
     $p = $wpdb->get_row($wpdb->prepare("SELECT * FROM wp9y_personel WHERE kode_nama = %s AND status = 'approved'", $kode));
     if (!$p) return "<p style='color:white; text-align:center;'>Personel tidak ditemukan.</p>";
 
-    $fotos = $wpdb->get_results($wpdb->prepare("SELECT * FROM wp9y_portofolio WHERE personel_id = %d AND status = 'approved' ORDER BY id DESC", $p->id));
-    $videos = $wpdb->get_results($wpdb->prepare("SELECT * FROM wp9y_portofolio_video WHERE personel_id = %d AND status = 'approved' ORDER BY id DESC", $p->id));
+    $fotos = $wpdb->get_results($wpdb->prepare("SELECT * FROM wp9y_portofolio WHERE personel_id = %d AND status = 'approved' AND uploaded_by != 'admin' ORDER BY id DESC", $p->id));
+    $videos = $wpdb->get_results($wpdb->prepare("SELECT * FROM wp9y_portofolio_video WHERE personel_id = %d AND status = 'approved' AND uploaded_by != 'admin' ORDER BY id DESC", $p->id));
 
     ob_start(); 
     ?>
@@ -7179,7 +7179,8 @@ function render_detail_personel_shortcode() {
                              data-author="<?php echo esc_attr($p->nama_panggilan . '-' . $p->kode_nama); ?>"
                              data-tahun="<?php echo $v->tahun; ?>"
                              data-lokasi="<?php echo $v->lokasi; ?>"
-                             data-tanggal="<?php echo date('d M Y', strtotime($v->tanggal_kegiatan)); ?>">
+                             data-tanggal="<?php echo date('d M Y', strtotime($v->tanggal_kegiatan)); ?>"
+                             data-uploaded-by="<?php echo esc_attr($v->uploaded_by ?? 'personel'); ?>">
                             
                             <div class="thumb-container">
                                 <img src="https://img.youtube.com/vi/<?php echo $m[2] ?? ''; ?>/mqdefault.jpg" alt="<?php echo esc_attr($v->judul); ?>" class="thumb-img">
@@ -7213,7 +7214,8 @@ function render_detail_personel_shortcode() {
                              data-tahun="<?php echo $f->tahun; ?>"
                              data-lokasi="<?php echo $f->lokasi; ?>" 
                              data-author="<?php echo esc_attr($p->nama_panggilan . '-' . $p->kode_nama); ?>"
-                             data-tanggal="<?php echo date('d M Y', strtotime($f->tanggal_kegiatan)); ?>">
+                             data-tanggal="<?php echo date('d M Y', strtotime($f->tanggal_kegiatan)); ?>"
+                             data-uploaded-by="<?php echo esc_attr($f->uploaded_by ?? 'personel'); ?>">
                             
                             <div class="thumb-container">
                                 <img src="<?php echo esc_url($f->foto_url); ?>" alt="<?php echo esc_attr($f->judul); ?>" class="thumb-img">
@@ -7731,7 +7733,7 @@ function render_detail_personel_shortcode() {
             $('#modalTitle').text(data.title);
             $('#modalDesc').text(data.desc || "Tidak ada deskripsi.");
             $('#modalMeta').html(`
-				👤 <a href="/detail-personel/?kode=${data.kode_nama}" target="_blank" style="text-decoration:none; color:#007bff;"><b>${data.author}</b></a> &nbsp; | &nbsp;
+				👤 <a href="/detail-personel/?kode=${data.kode_nama}" target="_blank" style="text-decoration:none; color:#007bff;"><b>${data.author}</b></a>${data.uploadedBy === 'admin' ? ' <span style="background:#d4af37;color:#000;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:bold;margin-left:6px;">📎 by Admin</span>' : ''} &nbsp; | &nbsp;
 				📍 ${data.lokasi} &nbsp; | &nbsp; 
 				🗓️ ${data.tahun} &nbsp; | &nbsp; 
 				📅 ${data.tanggal}
@@ -8791,7 +8793,7 @@ function get_status_kuota_personel($personel_id, $type = 'foto') {
     $limit = ($type == 'video') ? 8 : 20;
     
     $count = $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM $table WHERE personel_id = %d", 
+        "SELECT COUNT(*) FROM $table WHERE personel_id = %d AND (uploaded_by IS NULL OR uploaded_by != 'admin')", 
         $personel_id
     ));
 
@@ -12566,6 +12568,7 @@ function render_admin_upload_foto() {
                 if ($movefile && !isset($movefile['error'])) {
                     $insert_data = array(
                         'personel_id'      => $selected_personel_id,
+                        'uploaded_by'      => 'admin',
                         'judul'            => sanitize_text_field($_POST['judul']),
                         'foto_url'         => $movefile['url'],
                         'tanggal_kegiatan' => sanitize_text_field($_POST['tanggal']),
@@ -12880,6 +12883,7 @@ function render_admin_upload_video() {
             } elseif (!empty($_POST['video_url'])) {
                 $insert_data = array(
                     'personel_id'      => $selected_personel_id,
+                    'uploaded_by'      => 'admin',
                     'judul'            => sanitize_text_field($_POST['judul']),
                     'video_url'        => esc_url_raw($_POST['video_url']),
                     'tanggal_kegiatan' => sanitize_text_field($_POST['tanggal']),
