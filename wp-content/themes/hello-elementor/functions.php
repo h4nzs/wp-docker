@@ -1553,11 +1553,13 @@ function personel_enqueue_datatables($hook) {
         return;
     }
 
-    // CSS DataTables
+    // CSS DataTables & Select2
     wp_enqueue_style('datatables-css', 'https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css');
+    wp_enqueue_style('select2-css', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css');
     
-    // JS DataTables (Wajib load jQuery dulu)
+    // JS DataTables & Select2 (Wajib load jQuery dulu)
     wp_enqueue_script('datatables-js', 'https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js', array('jquery'), null, true);
+    wp_enqueue_script('select2-js', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'), null, true);
 }
 
 function personel_admin_page() {
@@ -1761,7 +1763,7 @@ $nama_depan = strtok($p->nama_panggilan, ' ');
                         <?php echo ($is_show_sosmed ? 'YA' : 'TIDAK'); ?>
                 </button>
             </td>
-            <td>
+            <td data-order="<?php echo esc_attr($p->rating ? $p->rating : '0'); ?>">
                 <select class="lx-rating-select" data-id="<?php echo $p->id; ?>" data-type="personel" style="margin-right: 10px; max-width: 100%;">
                     <option value="">- No Rating -</option>
                     <?php for($i=1; $i<=5; $i++): ?>
@@ -4181,7 +4183,7 @@ function render_tab_edit_portofolio($personel, $porto_id) {
 function render_list_portofolio_foto($personel) {
     global $wpdb;
     $fotos = $wpdb->get_results($wpdb->prepare(
-        "SELECT * FROM wp9y_portofolio WHERE personel_id = %d ORDER BY created_at DESC", 
+        "SELECT * FROM wp9y_portofolio WHERE personel_id = %d AND (uploaded_by IS NULL OR uploaded_by != 'admin') ORDER BY created_at DESC", 
         $personel->id
     ));
     ?>
@@ -5335,6 +5337,63 @@ function personel_porto_admin_page() {
     $table_porto = 'wp9y_portofolio';
     $table_personel = 'wp9y_personel';
 
+    // --- ADMIN UPLOAD PORTOFOLIO FOTO ---
+    if (isset($_POST['admin_upload_foto']) && wp_verify_nonce($_POST['admin_foto_nonce'], 'admin_foto_action')) {
+        $selected_personel_id = intval($_POST['admin_personel_id']);
+        
+        if ($selected_personel_id <= 0) {
+            echo '<div class="notice notice-error"><p>❌ Silakan pilih personel terlebih dahulu.</p></div>';
+        } elseif (!empty($_FILES['admin_foto_file']['name'])) {
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+            
+            $allowed_mimes = array(
+                'jpg|jpeg|jpe' => 'image/jpeg',
+                'png'          => 'image/png',
+                'webp'         => 'image/webp'
+            );
+            
+            $overrides = array(
+                'test_form' => false,
+                'mimes'     => $allowed_mimes
+            );
+            
+            $movefile = wp_handle_upload($_FILES['admin_foto_file'], $overrides);
+            
+            if ($movefile && !isset($movefile['error'])) {
+                $insert_data = array(
+                    'personel_id'      => $selected_personel_id,
+                    'judul'            => sanitize_text_field($_POST['admin_foto_judul']),
+                    'foto_url'         => $movefile['url'],
+                    'tanggal_kegiatan' => sanitize_text_field($_POST['admin_foto_tanggal']),
+                    'lokasi'           => sanitize_text_field($_POST['admin_foto_lokasi']),
+                    'tahun'            => sanitize_text_field($_POST['admin_foto_tahun']),
+                    'deskripsi'        => sanitize_textarea_field($_POST['admin_foto_deskripsi']),
+                    'tags'             => sanitize_text_field($_POST['admin_foto_tags']),
+                    'status'           => 'approved'
+                );
+                
+                $wpdb->insert('wp9y_portofolio', $insert_data);
+                $new_id = $wpdb->insert_id;
+                
+                if ($new_id) {
+                    $selected_kategori = isset($_POST['admin_foto_kategori']) ? array_slice(array_map('intval', $_POST['admin_foto_kategori']), 0, 3) : [];
+                    foreach ($selected_kategori as $cat_id) {
+                        $wpdb->insert('wp9y_portofolio_kategori_map', [
+                            'portofolio_id' => $new_id,
+                            'kategori_id'   => $cat_id,
+                        ]);
+                    }
+                    echo '<div class="notice notice-success"><p>✅ Portofolio foto berhasil diupload atas nama personel terpilih!</p></div>';
+                }
+            } else {
+                $err_msg = isset($movefile['error']) ? $movefile['error'] : 'Unknown error';
+                echo '<div class="notice notice-error"><p>❌ Gagal upload: ' . esc_html($err_msg) . '</p></div>';
+            }
+        } else {
+            echo '<div class="notice notice-error"><p>❌ Silakan pilih file foto.</p></div>';
+        }
+    }
+    
     // --- LOGIKA APPROVAL & DELETE ---
     if (isset($_POST['porto_action']) && wp_verify_nonce($_POST['_wpnonce'], 'porto_admin_nonce')) {
         $id = intval($_POST['porto_id']);
@@ -5367,6 +5426,8 @@ function personel_porto_admin_page() {
     <div class="wrap">
         <h1 class="wp-heading-inline">📸 Moderasi Portofolio Foto</h1>
         <hr class="wp-header-end">
+        <a href="/admin-upload-foto/" class="page-title-action" style="background:#2271b1; color:white; padding:6px 16px; border-radius:4px; text-decoration:none; font-weight:600; font-size:13px;">➕ Upload Portofolio</a>
+
 
         <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 20px;">
             <table id="adminPortoTable" class="wp-list-table widefat fixed striped">
@@ -5416,7 +5477,7 @@ function personel_porto_admin_page() {
                     <?php echo ucfirst($row->status); ?>
                 </span>
             </td>
-            <td>
+            <td data-order="<?php echo esc_attr($row->rating ? $row->rating : '0'); ?>">
                 <select class="lx-rating-select" data-id="<?php echo $row->id; ?>" data-type="foto">
                     <option value="">- No Rating -</option>
                     <?php for($i=1; $i<=5; $i++): ?>
@@ -5476,7 +5537,22 @@ function personel_porto_admin_page() {
                 "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
             }
         });
-    });
+        // Init Select2 for admin personel dropdown
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('.admin-personel-select').select2({
+            placeholder: 'Cari personel...',
+            width: '100%',
+            matcher: function(params, data) {
+                if ($.trim(params.term) === '') return data;
+                if (typeof data.text === 'undefined') return null;
+                var search = params.term.toLowerCase();
+                var text = data.text.toLowerCase();
+                if (text.indexOf(search) > -1) return data;
+                return null;
+            }
+        });
+    }
+});
     </script>
     <?php
 }
@@ -5742,7 +5818,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function render_list_portofolio_video($personel) {
     global $wpdb;
     $videos = $wpdb->get_results($wpdb->prepare(
-        "SELECT * FROM wp9y_portofolio_video WHERE personel_id = %d ORDER BY created_at DESC", 
+        "SELECT * FROM wp9y_portofolio_video WHERE personel_id = %d AND (uploaded_by IS NULL OR uploaded_by != 'admin') ORDER BY created_at DESC", 
         $personel->id
     ));
     ?>
@@ -5979,6 +6055,43 @@ function personel_video_admin_page() {
     $table_video = 'wp9y_portofolio_video';
     $table_personel = 'wp9y_personel';
 
+    // --- ADMIN UPLOAD PORTOFOLIO VIDEO ---
+    if (isset($_POST['admin_upload_video']) && wp_verify_nonce($_POST['admin_video_nonce'], 'admin_video_action')) {
+        $selected_personel_id = intval($_POST['admin_video_personel_id']);
+        
+        if ($selected_personel_id <= 0) {
+            echo '<div class="notice notice-error"><p>❌ Silakan pilih personel terlebih dahulu.</p></div>';
+        } elseif (!empty($_POST['admin_video_url'])) {
+            $insert_data = array(
+                'personel_id'      => $selected_personel_id,
+                'judul'            => sanitize_text_field($_POST['admin_video_judul']),
+                'video_url'        => esc_url_raw($_POST['admin_video_url']),
+                'tanggal_kegiatan' => sanitize_text_field($_POST['admin_video_tanggal']),
+                'lokasi'           => sanitize_text_field($_POST['admin_video_lokasi']),
+                'tahun'            => sanitize_text_field($_POST['admin_video_tahun']),
+                'deskripsi'        => sanitize_textarea_field($_POST['admin_video_deskripsi']),
+                'tags'             => sanitize_text_field($_POST['admin_video_tags']),
+                'status'           => 'approved'
+            );
+            
+            $wpdb->insert('wp9y_portofolio_video', $insert_data);
+            $new_id = $wpdb->insert_id;
+            
+            if ($new_id) {
+                $selected_kategori = isset($_POST['admin_video_kategori']) ? array_slice(array_map('intval', $_POST['admin_video_kategori']), 0, 3) : [];
+                foreach ($selected_kategori as $cat_id) {
+                    $wpdb->insert($wpdb->prefix . 'portofolio_video_kategori_map', [
+                        'video_id' => $new_id,
+                        'kategori_id' => $cat_id,
+                    ]);
+                }
+                echo '<div class="notice notice-success"><p>✅ Portofolio video berhasil diupload atas nama personel terpilih!</p></div>';
+            }
+        } else {
+            echo '<div class="notice notice-error"><p>❌ Silakan isi URL video.</p></div>';
+        }
+    }
+    
     // --- LOGIKA APPROVAL & DELETE ---
     if (isset($_POST['video_admin_action']) && wp_verify_nonce($_POST['_wpnonce'], 'video_admin_nonce')) {
         $id = intval($_POST['video_id']);
@@ -6006,8 +6119,10 @@ function personel_video_admin_page() {
     <div class="wrap">
         <h1 class="wp-heading-inline">🎥 Moderasi Portofolio Video</h1>
         <hr class="wp-header-end">
+        <a href="/admin-upload-video/" class="page-title-action" style="background:#2271b1; color:white; padding:6px 16px; border-radius:4px; text-decoration:none; font-weight:600; font-size:13px;">➕ Upload Portofolio</a>
 
-        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 20px;">
+
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 20px;">
             <table id="adminVideoTable" class="wp-list-table widefat fixed striped">
     <thead>
         <tr>
@@ -6059,7 +6174,7 @@ function personel_video_admin_page() {
                     <?php echo ucfirst($row->status); ?>
                 </span>
             </td>
-            <td>
+            <td data-order="<?php echo esc_attr($row->rating ? $row->rating : '0'); ?>">
                 <select class="lx-rating-select" data-id="<?php echo $row->id; ?>" data-type="video">
                     <option value="">- No Rating -</option>
                     <?php for($i=1; $i<=5; $i++): ?>
@@ -6117,7 +6232,22 @@ function personel_video_admin_page() {
                 "language": { "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json" }
             });
         }
-    });
+        // Init Select2 for admin personel dropdown
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('.admin-personel-select').select2({
+            placeholder: 'Cari personel...',
+            width: '100%',
+            matcher: function(params, data) {
+                if ($.trim(params.term) === '') return data;
+                if (typeof data.text === 'undefined') return null;
+                var search = params.term.toLowerCase();
+                var text = data.text.toLowerCase();
+                if (text.indexOf(search) > -1) return data;
+                return null;
+            }
+        });
+    }
+});
     </script>
     <?php
 }
@@ -6139,8 +6269,8 @@ function render_list_personel_publik() {
 
     // 2. Build Query
    $query = "SELECT p.*, 
-          (SELECT COUNT(*) FROM wp9y_portofolio WHERE personel_id = p.id AND status = 'approved') as total_foto,
-          (SELECT COUNT(*) FROM wp9y_portofolio_video WHERE personel_id = p.id AND status = 'approved') as total_video
+          (SELECT COUNT(*) FROM wp9y_portofolio WHERE personel_id = p.id AND status = 'approved' AND uploaded_by != 'admin') as total_foto,
+          (SELECT COUNT(*) FROM wp9y_portofolio_video WHERE personel_id = p.id AND status = 'approved' AND uploaded_by != 'admin') as total_video
           FROM wp9y_personel p 
           WHERE p.status = 'approved'";
 
@@ -6760,8 +6890,8 @@ function handle_load_more_personel() {
     $kota = isset($_POST['kota']) ? sanitize_text_field($_POST['kota']) : '';
 
     $query = "SELECT p.*, 
-          (SELECT COUNT(*) FROM wp9y_portofolio WHERE personel_id = p.id AND status = 'approved') as total_foto,
-          (SELECT COUNT(*) FROM wp9y_portofolio_video WHERE personel_id = p.id AND status = 'approved') as total_video
+          (SELECT COUNT(*) FROM wp9y_portofolio WHERE personel_id = p.id AND status = 'approved' AND uploaded_by != 'admin') as total_foto,
+          (SELECT COUNT(*) FROM wp9y_portofolio_video WHERE personel_id = p.id AND status = 'approved' AND uploaded_by != 'admin') as total_video
           FROM wp9y_personel p 
           WHERE p.status = 'approved'";
 
@@ -6883,8 +7013,8 @@ function render_detail_personel_shortcode() {
     $p = $wpdb->get_row($wpdb->prepare("SELECT * FROM wp9y_personel WHERE kode_nama = %s AND status = 'approved'", $kode));
     if (!$p) return "<p style='color:white; text-align:center;'>Personel tidak ditemukan.</p>";
 
-    $fotos = $wpdb->get_results($wpdb->prepare("SELECT * FROM wp9y_portofolio WHERE personel_id = %d AND status = 'approved' ORDER BY id DESC", $p->id));
-    $videos = $wpdb->get_results($wpdb->prepare("SELECT * FROM wp9y_portofolio_video WHERE personel_id = %d AND status = 'approved' ORDER BY id DESC", $p->id));
+    $fotos = $wpdb->get_results($wpdb->prepare("SELECT * FROM wp9y_portofolio WHERE personel_id = %d AND status = 'approved' AND uploaded_by != 'admin' ORDER BY id DESC", $p->id));
+    $videos = $wpdb->get_results($wpdb->prepare("SELECT * FROM wp9y_portofolio_video WHERE personel_id = %d AND status = 'approved' AND uploaded_by != 'admin' ORDER BY id DESC", $p->id));
 
     ob_start(); 
     ?>
@@ -7049,7 +7179,8 @@ function render_detail_personel_shortcode() {
                              data-author="<?php echo esc_attr($p->nama_panggilan . '-' . $p->kode_nama); ?>"
                              data-tahun="<?php echo $v->tahun; ?>"
                              data-lokasi="<?php echo $v->lokasi; ?>"
-                             data-tanggal="<?php echo date('d M Y', strtotime($v->tanggal_kegiatan)); ?>">
+                             data-tanggal="<?php echo date('d M Y', strtotime($v->tanggal_kegiatan)); ?>"
+                             data-uploaded-by="<?php echo esc_attr($v->uploaded_by ?? 'personel'); ?>">
                             
                             <div class="thumb-container">
                                 <img src="https://img.youtube.com/vi/<?php echo $m[2] ?? ''; ?>/mqdefault.jpg" alt="<?php echo esc_attr($v->judul); ?>" class="thumb-img">
@@ -7083,7 +7214,8 @@ function render_detail_personel_shortcode() {
                              data-tahun="<?php echo $f->tahun; ?>"
                              data-lokasi="<?php echo $f->lokasi; ?>" 
                              data-author="<?php echo esc_attr($p->nama_panggilan . '-' . $p->kode_nama); ?>"
-                             data-tanggal="<?php echo date('d M Y', strtotime($f->tanggal_kegiatan)); ?>">
+                             data-tanggal="<?php echo date('d M Y', strtotime($f->tanggal_kegiatan)); ?>"
+                             data-uploaded-by="<?php echo esc_attr($f->uploaded_by ?? 'personel'); ?>">
                             
                             <div class="thumb-container">
                                 <img src="<?php echo esc_url($f->foto_url); ?>" alt="<?php echo esc_attr($f->judul); ?>" class="thumb-img">
@@ -7601,7 +7733,7 @@ function render_detail_personel_shortcode() {
             $('#modalTitle').text(data.title);
             $('#modalDesc').text(data.desc || "Tidak ada deskripsi.");
             $('#modalMeta').html(`
-				👤 <a href="/detail-personel/?kode=${data.kode_nama}" target="_blank" style="text-decoration:none; color:#007bff;"><b>${data.author}</b></a> &nbsp; | &nbsp;
+				👤 <a href="/detail-personel/?kode=${data.kode_nama}" target="_blank" style="text-decoration:none; color:#007bff;"><b>${data.author}</b></a>${data.uploadedBy === 'admin' ? ' <span style="background:#d4af37;color:#000;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:bold;margin-left:6px;">📎 by Admin</span>' : ''} &nbsp; | &nbsp;
 				📍 ${data.lokasi} &nbsp; | &nbsp; 
 				🗓️ ${data.tahun} &nbsp; | &nbsp; 
 				📅 ${data.tanggal}
@@ -7919,8 +8051,8 @@ jQuery(document).ready(function($) {
 });
 
     // Modal
-    $(document).on('click', '.porto-clickable', function() {
-
+    $(document).on('click', '.porto-clickable', function(e) {
+        e.preventDefault();
         let d = $(this).data();
 
         $('#lx-m-title').text(d.title);
@@ -7943,7 +8075,11 @@ jQuery(document).ready(function($) {
 
         $('#lx-m-desc').text(d.desc || "Tidak ada deskripsi.");
 
-        $('#lx-m-media').html('<img src="' + d.url + '">');
+        if(d.type === 'video') {
+            $('#lx-m-media').html('<iframe src="' + d.url + '" frameborder="0" allowfullscreen style="width:100%; aspect-ratio:16/9;"></iframe>');
+        } else {
+            $('#lx-m-media').html('<img src="' + d.url + '" style="width:100%;">');
+        }
 
         $('#lx-modal').fadeIn(200);
     });
@@ -8661,7 +8797,7 @@ function get_status_kuota_personel($personel_id, $type = 'foto') {
     $limit = ($type == 'video') ? 8 : 20;
     
     $count = $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM $table WHERE personel_id = %d", 
+        "SELECT COUNT(*) FROM $table WHERE personel_id = %d AND (uploaded_by IS NULL OR uploaded_by != 'admin')", 
         $personel_id
     ));
 
@@ -11870,37 +12006,37 @@ function render_landing_content_shortcode() {
             'num' => '01 — UNGGULAN',
             'title' => 'Event Production',
             'desc' => 'Multicam live streaming, videotron, sound system, MC, panggung, backdrop, lighting, dan kebutuhan event lainnya — lengkap dalam satu tim.',
-            'img' => 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=700&q=80'
+            'img' => 'https://profesional-indonesia.com/wp-content/uploads/2026/04/WhatsApp-Image-2026-04-25-at-08.59.52-1.jpeg'
         ],
         'jasa-pembuatan-video-company-profile' => [
             'num' => '02',
             'title' => 'Company Profile',
             'desc' => 'Video company profile, foto corporate, &amp; profile cetak yang merepresentasikan brand Anda secara profesional, meningkatkan kredibilitas di mata klien.',
-            'img' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=700&q=80'
+            'img' => 'https://profesional-indonesia.com/wp-content/uploads/elementor/thumbs/Jasa-Desain-Company-Profile-768x576-1-rmluc5yugkhq7db0otue7li451zuia6uto9bytcra2.png'
         ],
         'wedding-prawedding' => [
             'num' => '03',
             'title' => 'Wedding &amp; Pre-Wedding',
             'desc' => 'Dokumentasi momen pernikahan dan pre-wedding dengan sentuhan sinematik profesional, menangkap setiap emosi dan hasil yang elegan abadi.',
-            'img' => 'https://images.unsplash.com/photo-1519741497674-611481863552?w=700&q=80'
+            'img' => 'https://profesional-indonesia.com/wp-content/uploads/2026/04/PreweddingLigthing-1-light-Godox-TT685-Capture-with-sony-A7rii-sony-28mm-f2________Book-or-.webp'
         ],
         'dokumentasi-event' => [
             'num' => '04',
             'title' => 'Dokumentasi Event',
             'desc' => 'Video highlight &amp; foto liputan event lengkap, live streaming multicam untuk gathering, konser musik, seminar nasional, hingga outbound corporate.',
-            'img' => 'https://images.unsplash.com/photo-1506157786151-b8491531f063?w=700&q=80'
+            'img' => 'https://profesional-indonesia.com/wp-content/uploads/2026/04/054869a0-415d-4438-af44-3fd8b9e7d20b.jpg'
         ],
         'video-produk-branding-iklan' => [
             'num' => '05',
             'title' => 'Video &amp; Foto Produk',
             'desc' => 'Visual produk komersial berkualitas tinggi untuk iklan, e-commerce, dan katalog, dirancang agar brand Anda tampil premium dan menarik pembeli.',
-            'img' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=700&q=80'
+            'img' => 'https://profesional-indonesia.com/wp-content/uploads/2026/04/e959d554-f233-4a91-8b08-7c41be2dcee6.jpg'
         ],
         'video-klip' => [
             'num' => '06',
             'title' => 'Video Klip',
             'desc' => 'Produksi video musik/klip sinematik untuk musisi, band, atau kebutuhan promosi kreatif dengan konsep visual yang kuat dan memukau.',
-            'img' => 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=700&q=80'
+            'img' => 'https://profesional-indonesia.com/wp-content/uploads/2026/04/2j268em4i7ysu14.jpeg'
         ]
     ];
 
@@ -11949,7 +12085,7 @@ function render_landing_content_shortcode() {
         <img src="<?php echo esc_url($img); ?>" alt="<?php echo esc_attr($title); ?>">
       </div>
       <div class="svc-details">
-        <span class="svc-num"><?php echo esc_html($fallback['num']); ?></span>
+        <!-- <span class="svc-num"><?php echo esc_html($fallback['num']); ?></span> -->
         <h3><?php echo esc_html($title); ?></h3>
         <p><?php echo esc_html($desc); ?></p>
         <a href="<?php echo esc_url($link); ?>" class="svc-link">Lihat detail</a>
@@ -11971,42 +12107,42 @@ function render_landing_content_shortcode() {
     <!-- Bubble 1 -->
     <div class="bubble-card reveal">
       <div class="bubble-avatar-frame">
-        <img src="https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=100&q=80" alt="fotografer"></div><div class="bubble-info"><h4>Fotografer</h4><p>Model · Produk · Event · Corporate</p><span class="bubble-badge"><?php echo $count_foto; ?> Tersedia</span>
+        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/3780.jpg" alt="fotografer"></div><div class="bubble-info"><h4>Fotografer</h4><p>Model · Produk · Event · Corporate</p><span class="bubble-badge"><?php echo $count_foto; ?> Tersedia</span>
       </div>
     </div>
 
     <!-- Bubble 2 -->
     <div class="bubble-card reveal">
       <div class="bubble-avatar-frame">
-        <img src="https://images.unsplash.com/photo-1551817958-20204d6ab212?w=100&q=80" alt="videografer"></div><div class="bubble-info"><h4>Videografer</h4><p>Live event · Dokumentasi · Sinematik</p><span class="bubble-badge"><?php echo $count_video; ?> Tersedia</span>
+        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/Jasa-dokumentasi-0857-7100-2233Event-wedding-prawed-profil-testi-promosi-iklan.jpg" alt="videografer"></div><div class="bubble-info"><h4>Videografer</h4><p>Live event · Dokumentasi · Sinematik</p><span class="bubble-badge"><?php echo $count_video; ?> Tersedia</span>
       </div>
     </div>
 
     <!-- Bubble 3 -->
     <div class="bubble-card reveal">
       <div class="bubble-avatar-frame">
-        <img src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=100&q=80" alt="drone"></div><div class="bubble-info"><h4>Pilot Drone</h4><p>Aerial · FPV · Mapping · Enterprise</p><span class="bubble-badge"><?php echo $count_drone; ?> Tersedia</span>
+        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/Spesifikasi-DJI-Matrice-4-Series-8.webp" alt="drone"></div><div class="bubble-info"><h4>Pilot Drone</h4><p>Aerial · FPV · Mapping · Enterprise</p><span class="bubble-badge"><?php echo $count_drone; ?> Tersedia</span>
       </div>
     </div>
 
     <!-- Bubble 4 -->
     <div class="bubble-card reveal">
       <div class="bubble-avatar-frame">
-        <img src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=100&q=80" alt="editor"></div><div class="bubble-info"><h4>Editor</h4><p>Color grading · Motion · Sound design</p><span class="bubble-badge"><?php echo $count_editor; ?> Tersedia</span>
+        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/editor.jpg" alt="editor"></div><div class="bubble-info"><h4>Editor</h4><p>Color grading · Motion · Sound design</p><span class="bubble-badge"><?php echo $count_editor; ?> Tersedia</span>
       </div>
     </div>
 
     <!-- Bubble 5 -->
     <div class="bubble-card reveal">
       <div class="bubble-avatar-frame">
-        <img src="https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=100&q=80" alt="vfx"></div><div class="bubble-info"><h4>VFX Artist</h4><p>Compositing · CGI · Animasi efek</p><span class="bubble-badge"><?php echo $count_vfx; ?> Tersedia</span>
+        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/vfx.jpg" alt="vfx"></div><div class="bubble-info"><h4>VFX Artist</h4><p>Compositing · CGI · Animasi efek</p><span class="bubble-badge"><?php echo $count_vfx; ?> Tersedia</span>
       </div>
     </div>
 
     <!-- Bubble 6 -->
     <div class="bubble-card reveal">
       <div class="bubble-avatar-frame">
-        <img src="https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=100&q=80" alt="animator"></div><div class="bubble-info"><h4>Animator</h4><p>2D/3D · Blender · Cinema 4D</p><span class="bubble-badge"><?php echo $count_animator; ?> Tersedia</span>
+        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/animator.jpg" alt="animator"></div><div class="bubble-info"><h4>Animator</h4><p>2D/3D · Blender · Cinema 4D</p><span class="bubble-badge"><?php echo $count_animator; ?> Tersedia</span>
       </div>
     </div>
   </div>
@@ -12080,7 +12216,7 @@ function render_landing_content_shortcode() {
         $seed = rand(1, 999999);
         $photos = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT f.*, p.nama_panggilan 
+                "SELECT f.*, p.nama_panggilan, p.kode_nama 
                  FROM wp9y_portofolio f 
                  JOIN wp9y_personel p ON f.personel_id = p.id 
                  WHERE f.status = 'approved' 
@@ -12092,7 +12228,7 @@ function render_landing_content_shortcode() {
          
         $videos = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT v.*, p.nama_panggilan 
+                "SELECT v.*, p.nama_panggilan, p.kode_nama 
                  FROM wp9y_portofolio_video v 
                  JOIN wp9y_personel p ON v.personel_id = p.id 
                  WHERE v.status = 'approved' 
@@ -12112,6 +12248,12 @@ function render_landing_content_shortcode() {
                 'url' => $photos[0]->foto_url, // Pastikan nama kolom di DB persis 'foto_url'
                 'title' => $photos[0]->judul,
                 'creator' => 'by ' . $photos[0]->nama_panggilan,
+                'desc' => $photos[0]->deskripsi ?? '',
+                'tahun' => $photos[0]->tahun ?? '',
+                'tanggal' => isset($photos[0]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[0]->tanggal_kegiatan)) : '',
+                'lokasi' => $photos[0]->lokasi ?? '',
+                'uploaded_by' => $photos[0]->uploaded_by ?? 'personel',
+                'kode_nama' => $photos[0]->kode_nama ?? '',
                 'video' => false
             ];
         } else {
@@ -12120,6 +12262,12 @@ function render_landing_content_shortcode() {
                 'url' => 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&q=80',
                 'title' => isset($photos[0]) ? $photos[0]->judul : 'Leadership Portrait',
                 'creator' => 'by ' . (isset($photos[0]) ? $photos[0]->nama_panggilan : 'Dani · Videografer'),
+                'desc' => isset($photos[0]) ? ($photos[0]->deskripsi ?? '') : '',
+                'tahun' => isset($photos[0]) ? ($photos[0]->tahun ?? '') : '',
+                'tanggal' => isset($photos[0]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[0]->tanggal_kegiatan)) : '',
+                'lokasi' => isset($photos[0]) ? ($photos[0]->lokasi ?? '') : '',
+                'uploaded_by' => isset($photos[0]) ? ($photos[0]->uploaded_by ?? 'personel') : 'personel',
+                'kode_nama' => isset($photos[0]) ? ($photos[0]->kode_nama ?? '') : '',
                 'video' => false
             ];
         }
@@ -12131,6 +12279,12 @@ function render_landing_content_shortcode() {
                 'url' => $photos[1]->foto_url,
                 'title' => $photos[1]->judul,
                 'creator' => 'by ' . $photos[1]->nama_panggilan,
+                'desc' => $photos[1]->deskripsi ?? '',
+                'tahun' => $photos[1]->tahun ?? '',
+                'tanggal' => isset($photos[1]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[1]->tanggal_kegiatan)) : '',
+                'lokasi' => $photos[1]->lokasi ?? '',
+                'uploaded_by' => $photos[1]->uploaded_by ?? 'personel',
+                'kode_nama' => $photos[1]->kode_nama ?? '',
                 'video' => false
             ];
         } else {
@@ -12139,6 +12293,12 @@ function render_landing_content_shortcode() {
                 'url' => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400&q=80',
                 'title' => isset($photos[1]) ? $photos[1]->judul : 'Seminar Corporate',
                 'creator' => 'by ' . (isset($photos[1]) ? $photos[1]->nama_panggilan : 'Bagus · Fotografer'),
+                'desc' => isset($photos[1]) ? ($photos[1]->deskripsi ?? '') : '',
+                'tahun' => isset($photos[1]) ? ($photos[1]->tahun ?? '') : '',
+                'tanggal' => isset($photos[1]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[1]->tanggal_kegiatan)) : '',
+                'lokasi' => isset($photos[1]) ? ($photos[1]->lokasi ?? '') : '',
+                'uploaded_by' => isset($photos[1]) ? ($photos[1]->uploaded_by ?? 'personel') : 'personel',
+                'kode_nama' => isset($photos[1]) ? ($photos[1]->kode_nama ?? '') : '',
                 'video' => false
             ];
         }
@@ -12150,6 +12310,12 @@ function render_landing_content_shortcode() {
                 'url' => $photos[2]->foto_url,
                 'title' => $photos[2]->judul,
                 'creator' => 'by ' . $photos[2]->nama_panggilan,
+                'desc' => $photos[2]->deskripsi ?? '',
+                'tahun' => $photos[2]->tahun ?? '',
+                'tanggal' => isset($photos[2]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[2]->tanggal_kegiatan)) : '',
+                'lokasi' => $photos[2]->lokasi ?? '',
+                'uploaded_by' => $photos[2]->uploaded_by ?? 'personel',
+                'kode_nama' => $photos[2]->kode_nama ?? '',
                 'video' => false
             ];
         } else {
@@ -12158,6 +12324,12 @@ function render_landing_content_shortcode() {
                 'url' => 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&q=80',
                 'title' => isset($photos[2]) ? $photos[2]->judul : 'Foto Sports Event',
                 'creator' => 'by ' . (isset($photos[2]) ? $photos[2]->nama_panggilan : 'Crew · Fotografer'),
+                'desc' => isset($photos[2]) ? ($photos[2]->deskripsi ?? '') : '',
+                'tahun' => isset($photos[2]) ? ($photos[2]->tahun ?? '') : '',
+                'tanggal' => isset($photos[2]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[2]->tanggal_kegiatan)) : '',
+                'lokasi' => isset($photos[2]) ? ($photos[2]->lokasi ?? '') : '',
+                'uploaded_by' => isset($photos[2]) ? ($photos[2]->uploaded_by ?? 'personel') : 'personel',
+                'kode_nama' => isset($photos[2]) ? ($photos[2]->kode_nama ?? '') : '',
                 'video' => false
             ];
         }
@@ -12173,6 +12345,13 @@ function render_landing_content_shortcode() {
                 'url' => $thumb,
                 'title' => $videos[0]->judul,
                 'creator' => 'by ' . $videos[0]->nama_panggilan,
+                'desc' => $videos[0]->deskripsi ?? '',
+                'tahun' => $videos[0]->tahun ?? '',
+                'tanggal' => isset($videos[0]->tanggal_kegiatan) ? date('d M Y', strtotime($videos[0]->tanggal_kegiatan)) : '',
+                'lokasi' => $videos[0]->lokasi ?? '',
+                'uploaded_by' => $videos[0]->uploaded_by ?? 'personel',
+                'kode_nama' => $videos[0]->kode_nama ?? '',
+                'embed_url' => get_video_embed_url($videos[0]->video_url),
                 'video' => true
             ];
         } else {
@@ -12181,6 +12360,12 @@ function render_landing_content_shortcode() {
                 'url' => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&q=80',
                 'title' => isset($videos[0]) ? $videos[0]->judul : 'Video Highlight',
                 'creator' => 'by ' . (isset($videos[0]) ? $videos[0]->nama_panggilan : 'Crew · Editor'),
+                'desc' => isset($videos[0]) ? ($videos[0]->deskripsi ?? '') : '',
+                'tahun' => isset($videos[0]) ? ($videos[0]->tahun ?? '') : '',
+                'tanggal' => isset($videos[0]->tanggal_kegiatan) ? date('d M Y', strtotime($videos[0]->tanggal_kegiatan)) : '',
+                'lokasi' => isset($videos[0]) ? ($videos[0]->lokasi ?? '') : '',
+                'uploaded_by' => isset($videos[0]) ? ($videos[0]->uploaded_by ?? 'personel') : 'personel',
+                'kode_nama' => isset($videos[0]) ? ($videos[0]->kode_nama ?? '') : '',
                 'video' => true
             ];
         }
@@ -12192,6 +12377,12 @@ function render_landing_content_shortcode() {
                 'url' => $photos[3]->foto_url,
                 'title' => $photos[3]->judul,
                 'creator' => 'by ' . $photos[3]->nama_panggilan,
+                'desc' => $photos[3]->deskripsi ?? '',
+                'tahun' => $photos[3]->tahun ?? '',
+                'tanggal' => isset($photos[3]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[3]->tanggal_kegiatan)) : '',
+                'lokasi' => $photos[3]->lokasi ?? '',
+                'uploaded_by' => $photos[3]->uploaded_by ?? 'personel',
+                'kode_nama' => $photos[3]->kode_nama ?? '',
                 'video' => false
             ];
         } else {
@@ -12200,6 +12391,12 @@ function render_landing_content_shortcode() {
                 'url' => 'https://images.unsplash.com/photo-1556125574-d7f27ec36a06?w=400&q=80',
                 'title' => isset($photos[3]) ? $photos[3]->judul : 'Birthday Party',
                 'creator' => 'by ' . (isset($photos[3]) ? $photos[3]->nama_panggilan : 'Oelin · Fotografer'),
+                'desc' => isset($photos[3]) ? ($photos[3]->deskripsi ?? '') : '',
+                'tahun' => isset($photos[3]) ? ($photos[3]->tahun ?? '') : '',
+                'tanggal' => isset($photos[3]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[3]->tanggal_kegiatan)) : '',
+                'lokasi' => isset($photos[3]) ? ($photos[3]->lokasi ?? '') : '',
+                'uploaded_by' => isset($photos[3]) ? ($photos[3]->uploaded_by ?? 'personel') : 'personel',
+                'kode_nama' => isset($photos[3]) ? ($photos[3]->kode_nama ?? '') : '',
                 'video' => false
             ];
         }
@@ -12215,6 +12412,13 @@ function render_landing_content_shortcode() {
                 'url' => $thumb,
                 'title' => $videos[1]->judul,
                 'creator' => 'by ' . $videos[1]->nama_panggilan,
+                'desc' => $videos[1]->deskripsi ?? '',
+                'tahun' => $videos[1]->tahun ?? '',
+                'tanggal' => isset($videos[1]->tanggal_kegiatan) ? date('d M Y', strtotime($videos[1]->tanggal_kegiatan)) : '',
+                'lokasi' => $videos[1]->lokasi ?? '',
+                'uploaded_by' => $videos[1]->uploaded_by ?? 'personel',
+                'kode_nama' => $videos[1]->kode_nama ?? '',
+                'embed_url' => get_video_embed_url($videos[1]->video_url),
                 'video' => true
             ];
         } else {
@@ -12223,6 +12427,12 @@ function render_landing_content_shortcode() {
                 'url' => 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800&q=80',
                 'title' => isset($videos[1]) ? $videos[1]->judul : 'Employee Gathering',
                 'creator' => 'by ' . (isset($videos[1]) ? $videos[1]->nama_panggilan : 'Oelin · Fotografer'),
+                'desc' => isset($videos[1]) ? ($videos[1]->deskripsi ?? '') : '',
+                'tahun' => isset($videos[1]) ? ($videos[1]->tahun ?? '') : '',
+                'tanggal' => isset($videos[1]->tanggal_kegiatan) ? date('d M Y', strtotime($videos[1]->tanggal_kegiatan)) : '',
+                'lokasi' => isset($videos[1]) ? ($videos[1]->lokasi ?? '') : '',
+                'uploaded_by' => isset($videos[1]) ? ($videos[1]->uploaded_by ?? 'personel') : 'personel',
+                'kode_nama' => isset($videos[1]) ? ($videos[1]->kode_nama ?? '') : '',
                 'video' => true
             ];
         }
@@ -12234,6 +12444,12 @@ function render_landing_content_shortcode() {
                 'url' => $photos[4]->foto_url,
                 'title' => $photos[4]->judul,
                 'creator' => 'by ' . $photos[4]->nama_panggilan,
+                'desc' => $photos[4]->deskripsi ?? '',
+                'tahun' => $photos[4]->tahun ?? '',
+                'tanggal' => isset($photos[4]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[4]->tanggal_kegiatan)) : '',
+                'lokasi' => $photos[4]->lokasi ?? '',
+                'uploaded_by' => $photos[4]->uploaded_by ?? 'personel',
+                'kode_nama' => $photos[4]->kode_nama ?? '',
                 'video' => false
             ];
         } else {
@@ -12242,6 +12458,12 @@ function render_landing_content_shortcode() {
                 'url' => 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=80',
                 'title' => isset($photos[4]) ? $photos[4]->judul : 'Behind the Scenes',
                 'creator' => 'by ' . (isset($photos[4]) ? $photos[4]->nama_panggilan : 'Crew · Fotografer'),
+                'desc' => isset($photos[4]) ? ($photos[4]->deskripsi ?? '') : '',
+                'tahun' => isset($photos[4]) ? ($photos[4]->tahun ?? '') : '',
+                'tanggal' => isset($photos[4]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[4]->tanggal_kegiatan)) : '',
+                'lokasi' => isset($photos[4]) ? ($photos[4]->lokasi ?? '') : '',
+                'uploaded_by' => isset($photos[4]) ? ($photos[4]->uploaded_by ?? 'personel') : 'personel',
+                'kode_nama' => isset($photos[4]) ? ($photos[4]->kode_nama ?? '') : '',
                 'video' => false
             ];
         }
@@ -12250,7 +12472,17 @@ function render_landing_content_shortcode() {
 
         foreach ($items as $item) :
     ?>
-    <div class="<?php echo esc_attr($item['class']); ?>">
+    <div class="<?php echo esc_attr($item['class']); ?> porto-clickable"
+             data-type="<?php echo $item['video'] ? 'video' : 'image'; ?>"
+             data-url="<?php echo esc_url($item['video'] && !empty($item['embed_url']) ? $item['embed_url'] : $item['url']); ?>"
+             data-title="<?php echo esc_attr($item['title']); ?>"
+             data-author="<?php echo esc_attr(str_replace('by ', '', $item['creator'])); ?>"
+             data-desc="<?php echo esc_attr($item['desc']); ?>"
+             data-tahun="<?php echo esc_attr($item['tahun']); ?>"
+             data-tanggal="<?php echo esc_attr($item['tanggal']); ?>"
+             data-lokasi="<?php echo esc_attr($item['lokasi']); ?>"
+             data-uploaded-by="<?php echo esc_attr($item['uploaded_by']); ?>"
+             data-kodenama="<?php echo esc_attr($item['kode_nama'] ?? ''); ?>">
       <img src="<?php echo esc_url($item['url']); ?>" alt="<?php echo esc_attr($item['title']); ?>">
       <?php if ($item['video']) : ?>
         <div class="port-play-indicator">
@@ -12266,20 +12498,101 @@ function render_landing_content_shortcode() {
   </div>
   <div class="clients-strip-box reveal">
     <div class="clients-strip-inner">
-      <span class="clients-label-txt">Trusted By /</span>
-      <div class="clients-track-names">
-        <div>PERTAMINA</div>
-        <div>JASA MARGA</div>
-        <div>HUTAMA KARYA</div>
-        <div>BANK MANDIRI</div>
-        <div>BCA</div>
-        <div>GARUDA INDONESIA</div>
-        <div>PLN</div>
-        <div>WASKITA</div>
-        <div>BYD</div>
-      </div>
+        <span class="clients-label-txt">Trusted By /</span>
+        <div class="clients-logo-grid">
+            
+            <!-- Pertamina -->
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/logo-pertamina.png" alt="Pertamina">
+            </div>
+            
+            <!-- Jasa Marga -->
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/logo-jasa-marga.png" alt="Jasa Marga">
+            </div>
+            
+            <!-- Hutama Karya -->
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/logo-hutama-karya.png" alt="Hutama Karya">
+            </div>
+            
+            <!-- Bank Mandiri -->
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/logo-bank-mandiri.png" alt="Bank Mandiri">
+            </div>
+            
+            <!-- BCA -->
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/lg-BCA-1.png" alt="BCA">
+            </div>
+            
+            <!-- Garuda Indonesia -->
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/Garuda-Logo-Vertical-dalam.jpg" alt="Garuda Indonesia">
+            </div>
+            
+            <!-- PLN -->
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/download-1.png" alt="PLN">
+            </div>
+            
+            <!-- Waskita -->
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/logo-wk.png" alt="Waskita">
+            </div>
+            
+            <!-- BYD -->
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/byd-atualizada-2024-logo-png_seeklogo-528892.png" alt="BYD">
+            </div>
+            
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/logo-adhi.png" alt="Adhi">
+            </div>
+            
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/download.png" alt="Kementerian ESDM">
+            </div>
+            
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/icon.webp" alt="Adhi">
+            </div>
+
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/images.png" alt="Adhi">
+            </div>
+
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/6-1.jpg" alt="Adhi">
+            </div>
+
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/kementerian-kesehatan-l-min.jpg" alt="Adhi">
+            </div>
+
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/Orientasi-Pelaksanaan-Pelayanan-Kesehatan-Lingkungan-di-Puskesmas-scaled.png" alt="Adhi">
+            </div>
+
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/Sejarah-Bank-Indonesia.jpg" alt="Adhi">
+            </div>
+
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/supreme_energy_muara_laboh_logo.jpg" alt="Adhi">
+            </div>
+
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/images.jpg" alt="Adhi">
+            </div>
+
+            <div class="client-logo-item">
+                <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/channels4_profile-1.jpg" alt="Adhi">
+            </div>
+
+        </div>
     </div>
-  </div>
+</div>
 </section>
 
 <!-- CTA BANNER -->
@@ -12305,6 +12618,675 @@ add_shortcode('landing_content', 'render_landing_content_shortcode');
 /**
  * Register and enqueue assets for Portfolio Page
  */
+// ============================================================
+// SHORTCODE: Admin Upload Portofolio Foto (Front-End)
+// ============================================================
+add_shortcode('admin_upload_foto', 'render_admin_upload_foto');
+function render_admin_upload_foto() {
+    if (!current_user_can('manage_options')) {
+        return '<div style="padding:60px 20px; text-align:center; color:#ef4444; font-size:20px;">⛔ Akses ditolak. Halaman ini hanya untuk Administrator.</div>';
+    }
+    
+    global $wpdb;
+    ob_start();
+    
+    // Inline CSS for front-end form styling
+    echo '<style>
+.admin-upload-wrap {
+    --lx-bg: #0b0a0f;
+    --lx-surface: #13111a;
+    --lx-surface2: #1a1825;
+    --lx-gold: #d4af37;
+    --lx-gold-light: #ffd275;
+    --lx-gold-dim: rgba(212,175,55,0.10);
+    --lx-border: rgba(255,255,255,0.07);
+    --lx-border-gold: rgba(212,175,55,0.22);
+    --lx-text: #f0eef6;
+    --lx-text-dim: #9b98a6;
+    --lx-grad: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%);
+    --lx-grad-subtle: linear-gradient(180deg,rgba(212,175,55,0.06) 0%,transparent 100%);
+    color: var(--lx-text);
+    max-width: 880px;
+    margin: 0 auto;
+}
+.admin-upload-wrap .form-edit-container {
+    background: var(--lx-surface2) !important;
+    border: 1px solid var(--lx-border) !important;
+    border-radius: 20px !important;
+    padding: 32px !important;
+}
+.admin-upload-wrap .form-edit-container h2 {
+    font-family: "Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--lx-gold-light) !important;
+    border-bottom: 1px solid var(--lx-border) !important;
+    padding-bottom: 14px;
+    margin: 0 0 24px 0 !important;
+}
+.admin-upload-wrap .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
+.admin-upload-wrap .form-group { flex: 1; display: flex; flex-direction: column; }
+.admin-upload-wrap .form-group.full { width: 100%; }
+.admin-upload-wrap .form-group label {
+    font-family: "Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--lx-text-dim);
+    margin-bottom: 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.admin-upload-wrap .form-group input,
+.admin-upload-wrap .form-group textarea,
+.admin-upload-wrap .form-group select {
+    background: var(--lx-surface) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    color: var(--lx-text) !important;
+    font-family: "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-size: 13.5px;
+    outline: none;
+    transition: all .25s;
+    box-sizing: border-box;
+}
+.admin-upload-wrap .form-group input:focus,
+.admin-upload-wrap .form-group textarea:focus,
+.admin-upload-wrap .form-group select:focus {
+    border-color: var(--lx-gold) !important;
+    box-shadow: 0 0 0 3px var(--lx-gold-dim) !important;
+}
+.admin-upload-wrap .tag-wrapper {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    background: var(--lx-surface) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 12px !important;
+    padding: 8px 12px !important;
+    min-height: 30px;
+}
+.admin-upload-wrap .tag-input {
+    border: none !important; background: transparent !important;
+    color: var(--lx-text) !important; outline: none;
+    font-family: "Inter",sans-serif; font-size: 13px;
+    min-width: 80px; flex: 1; padding: 4px 0 !important;
+}
+.admin-upload-wrap .tag-item {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--lx-gold-dim); color: var(--lx-gold-light);
+    padding: 4px 10px; border-radius: 20px; font-size: 12px;
+    font-weight: 500; border: 1px solid var(--lx-border-gold);
+}
+.admin-upload-wrap .tag-remove {
+    background: none; border: none; color: #ef4444;
+    cursor: pointer; font-size: 14px; line-height: 1; padding: 0;
+    margin-left: 2px; opacity: 0.8;
+}
+.admin-upload-wrap .tag-remove:hover { opacity: 1; }
+.admin-upload-wrap .btn-update {
+    background: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%) !important;
+    color: #000 !important; font-weight: bold; font-size: 16px;
+    border: none !important; border-radius: 8px !important;
+    cursor: pointer; padding: 14px !important;
+    transition: opacity 0.3s;
+}
+.admin-upload-wrap .btn-update:hover { opacity: 0.9; }
+
+.admin-upload-wrap .select2-container--default .select2-results__option {
+    background-color: #fff !important;
+    color: #000 !important;
+}
+.admin-upload-wrap .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #d4af37 !important;
+    color: #000 !important;
+}
+.admin-upload-wrap .select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: #f0e6c0 !important;
+    color: #000 !important;
+}
+.admin-upload-wrap .select2-dropdown {
+    background-color: #fff !important;
+}
+</style>';
+    
+    // Process admin foto upload
+    if (isset($_POST['admin_foto_submit'])) {
+        if (!wp_verify_nonce($_POST['_wpnonce'], 'admin_foto_upload')) {
+            echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">❌ Security check failed.</div>';
+        } else {
+            $selected_personel_id = intval($_POST['admin_personel_id']);
+            if ($selected_personel_id <= 0) {
+                echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">❌ Silakan pilih personel terlebih dahulu.</div>';
+            } elseif (!empty($_FILES['file_foto']['name'])) {
+                require_once(ABSPATH . 'wp-admin/includes/file.php');
+                $allowed_mimes = array('jpg|jpeg|jpe' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp');
+                $overrides = array('test_form' => false, 'mimes' => $allowed_mimes);
+                $movefile = wp_handle_upload($_FILES['file_foto'], $overrides);
+                
+                if ($movefile && !isset($movefile['error'])) {
+                    $insert_data = array(
+                        'personel_id'      => $selected_personel_id,
+                        'uploaded_by'      => 'admin',
+                        'judul'            => sanitize_text_field($_POST['judul']),
+                        'foto_url'         => $movefile['url'],
+                        'tanggal_kegiatan' => sanitize_text_field($_POST['tanggal']),
+                        'lokasi'           => sanitize_text_field($_POST['lokasi']),
+                        'tahun'            => sanitize_text_field($_POST['tahun']),
+                        'deskripsi'        => sanitize_textarea_field($_POST['deskripsi']),
+                        'tags'             => sanitize_text_field($_POST['tags']),
+                        'status'           => 'approved'
+                    );
+                    
+                    $wpdb->insert('wp9y_portofolio', $insert_data);
+                    $new_id = $wpdb->insert_id;
+                    
+                    if ($new_id) {
+                        $selected_kategori = isset($_POST['portfolio_kategori']) ? array_slice(array_map('intval', $_POST['portfolio_kategori']), 0, 3) : [];
+                        foreach ($selected_kategori as $cat_id) {
+                            $wpdb->insert('wp9y_portofolio_kategori_map', [
+                                'portofolio_id' => $new_id,
+                                'kategori_id'   => $cat_id,
+                            ]);
+                        }
+                        echo '<div class="notice-success" style="background:#0a2a0a;border:1px solid #22c55e;border-radius:8px;padding:20px;margin-bottom:20px;color:#22c55e;text-align:center;font-size:16px;">Portofolio foto berhasil diupload!</div>';
+                    }
+                } else {
+                    echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">Gagal upload: ' . esc_html($movefile['error']) . '</div>';
+                }
+            } else {
+                echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">Silakan pilih file foto.</div>';
+            }
+        }
+    }
+    
+    // Get personel list
+    $all_personel = $wpdb->get_results("SELECT id, nama_panggilan, kode_nama FROM wp9y_personel ORDER BY nama_panggilan ASC");
+    
+    // ===== UI: EXACT CLONE of render_tab_portofolio_foto() =====
+    ?>
+    <div class="admin-upload-wrap">
+    <div class="form-edit-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="color:var(--gold); margin:0;">📸 Upload Portofolio Baru (Admin)</h2>
+            <a href="/wp-admin/admin.php?page=personel-porto" class="btn-action" style="background:#333; color:white; padding:5px 15px; border-radius:5px; text-decoration:none; font-size:12px;">← Kembali ke Admin</a>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="personel-form">
+            <!-- Personel Select -->
+            <div class="form-group full" style="margin-bottom: 20px; padding:15px; background:rgba(212,175,55,0.05); border:1px solid rgba(212,175,55,0.2); border-radius:8px;">
+                <label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold; font-size:14px;">
+                    Pilih Personel (Pemilik Portofolio) <span style="color:red;">*</span>
+                </label>
+                <select name="admin_personel_id" id="adminFotoPersonelSelect" required
+                        style="width: 100%; padding: 10px; background: #fff; border: 1px solid #ccc; color: #000; border-radius: 4px;">
+                    <option value="" style="background: #fff; color: #000;">— Cari Personel —</option>
+                    <?php foreach ($all_personel as $per): ?>
+                        <option value="<?php echo $per->id; ?>" style="background: #fff; color: #000;">
+                            <?php echo esc_html($per->nama_panggilan . ' — ' . $per->kode_nama); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <?php wp_nonce_field('admin_foto_upload', '_wpnonce'); ?>
+            
+            <div class="form-group full" style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold;">
+                    Judul Portofolio <span style="color:red;">*</span>
+                </label>
+                <input type="text" name="judul" required 
+                      placeholder="Judul Portofolio" 
+                      style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px;">
+            </div>
+            
+            <div class="form-group full" style="border: 2px dashed var(--border-gold); padding: 30px; text-align: center; border-radius: 10px; margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 15px; font-size: 16px;">Pilih File Foto (JPG/PNG/WEBP)</label>
+                <input type="file" name="file_foto" accept="image/*" required style="background: transparent; border: none;">
+                <p style="font-size: 11px; opacity: 0.6; margin-top: 10px;">Rekomendasi ukuran: 1920x1080px, Max 3MB.</p>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tanggal Kegiatan</label>
+                    <input type="date" name="tanggal" required>
+                </div>
+                <div class="form-group">
+                    <label>Lokasi (Kota/Venue)</label>
+                    <input type="text" name="lokasi" placeholder="Misal: Jakarta / Hotel Mulia" required>
+                </div>
+            </div>
+            
+            <div class="form-group full">
+                <label>Deskripsi Singkat</label>
+                <textarea name="deskripsi" rows="3" placeholder="Ceritakan sedikit tentang karya ini..."></textarea>
+                <small style="color:var(--text-muted);">*Tidak mencantumkan no WA dan link sosmed</small><br>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tahun</label>
+                    <select name="tahun" required>
+                        <?php 
+                        $year = date('Y');
+                        for($i=0; $i<=15; $i++) {
+                            echo "<option value='".($year-$i)."'>".($year-$i)."</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group full">
+                <label>Kategori</label>
+                <?php render_portfolio_category_selection(0, 'foto'); ?>
+            </div>
+
+            <div class="form-group full">
+                <label>Tags</label>
+                <div class="tag-system-container">
+                    <div id="tagInputWrapper" class="tag-wrapper">
+                        <input type="text" id="tagInput" placeholder="Ketik tag lalu tekan Enter..." class="tag-input" style="background: #1a1a1a; border: 1px solid #333; color: #fff;">
+                    </div>
+                    <input type="hidden" name="tags" id="tagHiddenInput" value="">
+                </div>
+                <small style="color:var(--text-muted);">Tekan Enter setelah mengetik tag. Maks. 10 tag.</small>
+            </div>
+
+            <div class="form-group full">
+                <button type="submit" name="admin_foto_submit" class="btn-update" style="width:100%; padding:14px; background:linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%); color:#000; font-weight:bold; font-size:16px; border:none; border-radius:8px; cursor:pointer;">
+                    🚀 Upload Portofolio
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const wrapper = document.getElementById('tagInputWrapper');
+        const tagInput = document.getElementById('tagInput');
+        const hiddenInput = document.getElementById('tagHiddenInput');
+        if (!tagInput) return;
+        
+        let tags = hiddenInput.value ? hiddenInput.value.split(',').filter(t => t !== "") : [];
+        const maxTags = 10;
+
+        function renderTags() {
+            wrapper.querySelectorAll('.tag-item').forEach(el => el.remove());
+            tags.forEach((tag, index) => {
+                const tagEl = document.createElement('div');
+                tagEl.className = 'tag-item';
+                tagEl.innerHTML = `#${tag} <button type="button" class="tag-remove" data-index="${index}">&times;</button>`;
+                wrapper.insertBefore(tagEl, tagInput);
+            });
+        }
+
+        function updateHidden() {
+            hiddenInput.value = tags.join(',');
+        }
+
+        tagInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                const val = this.value.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '');
+                if (val && !tags.includes(val) && tags.length < maxTags) {
+                    tags.push(val);
+                    updateHidden();
+                    renderTags();
+                }
+                this.value = '';
+            }
+        });
+
+        wrapper.addEventListener('click', function(e) {
+            if (e.target.classList.contains('tag-remove')) {
+                tags.splice(e.target.dataset.index, 1);
+                updateHidden();
+                renderTags();
+            }
+        });
+
+        renderTags();
+    });
+    </script>
+    </div><!-- .admin-upload-wrap -->
+    <?php
+    echo '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>';
+    ?>
+    <script>
+    jQuery(document).ready(function($) {
+        $('#adminFotoPersonelSelect').select2({placeholder:'Cari personel...',width:'100%',allowClear:true});
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+
+add_shortcode('admin_upload_video', 'render_admin_upload_video');
+function render_admin_upload_video() {
+    if (!current_user_can('manage_options')) {
+        return '<div style="padding:60px 20px; text-align:center; color:#ef4444; font-size:20px;">⛔ Akses ditolak. Halaman ini hanya untuk Administrator.</div>';
+    }
+    
+    global $wpdb;
+    ob_start();
+    
+    // Inline CSS
+    echo '<style>
+.admin-upload-wrap {
+    --lx-bg: #0b0a0f;
+    --lx-surface: #13111a;
+    --lx-surface2: #1a1825;
+    --lx-gold: #d4af37;
+    --lx-gold-light: #ffd275;
+    --lx-gold-dim: rgba(212,175,55,0.10);
+    --lx-border: rgba(255,255,255,0.07);
+    --lx-border-gold: rgba(212,175,55,0.22);
+    --lx-text: #f0eef6;
+    --lx-text-dim: #9b98a6;
+    --lx-grad: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%);
+    --lx-grad-subtle: linear-gradient(180deg,rgba(212,175,55,0.06) 0%,transparent 100%);
+    color: var(--lx-text);
+    max-width: 880px;
+    margin: 0 auto;
+}
+.admin-upload-wrap .form-edit-container {
+    background: var(--lx-surface2) !important;
+    border: 1px solid var(--lx-border) !important;
+    border-radius: 20px !important;
+    padding: 32px !important;
+}
+.admin-upload-wrap .form-edit-container h2 {
+    font-family: "Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--lx-gold-light) !important;
+    border-bottom: 1px solid var(--lx-border) !important;
+    padding-bottom: 14px;
+    margin: 0 0 24px 0 !important;
+}
+.admin-upload-wrap .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
+.admin-upload-wrap .form-group { flex: 1; display: flex; flex-direction: column; }
+.admin-upload-wrap .form-group.full { width: 100%; }
+.admin-upload-wrap .form-group label {
+    font-family: "Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--lx-text-dim);
+    margin-bottom: 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.admin-upload-wrap .form-group input,
+.admin-upload-wrap .form-group textarea,
+.admin-upload-wrap .form-group select {
+    background: var(--lx-surface) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    color: var(--lx-text) !important;
+    font-family: "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-size: 13.5px;
+    outline: none;
+    transition: all .25s;
+    box-sizing: border-box;
+}
+.admin-upload-wrap .form-group input:focus,
+.admin-upload-wrap .form-group textarea:focus,
+.admin-upload-wrap .form-group select:focus {
+    border-color: var(--lx-gold) !important;
+    box-shadow: 0 0 0 3px var(--lx-gold-dim) !important;
+}
+.admin-upload-wrap .tag-wrapper {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    background: var(--lx-surface) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 12px !important;
+    padding: 8px 12px !important;
+    min-height: 30px;
+}
+.admin-upload-wrap .tag-input {
+    border: none !important; background: transparent !important;
+    color: var(--lx-text) !important; outline: none;
+    font-family: "Inter",sans-serif; font-size: 13px;
+    min-width: 80px; flex: 1; padding: 4px 0 !important;
+}
+.admin-upload-wrap .tag-item {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--lx-gold-dim); color: var(--lx-gold-light);
+    padding: 4px 10px; border-radius: 20px; font-size: 12px;
+    font-weight: 500; border: 1px solid var(--lx-border-gold);
+}
+.admin-upload-wrap .tag-remove {
+    background: none; border: none; color: #ef4444;
+    cursor: pointer; font-size: 14px; line-height: 1; padding: 0;
+    margin-left: 2px; opacity: 0.8;
+}
+.admin-upload-wrap .tag-remove:hover { opacity: 1; }
+.admin-upload-wrap .btn-update {
+    background: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%) !important;
+    color: #000 !important; font-weight: bold; font-size: 16px;
+    border: none !important; border-radius: 8px !important;
+    cursor: pointer; padding: 14px !important;
+    transition: opacity 0.3s;
+}
+.admin-upload-wrap .btn-update:hover { opacity: 0.9; }
+
+.admin-upload-wrap .select2-container--default .select2-results__option {
+    background-color: #fff !important;
+    color: #000 !important;
+}
+.admin-upload-wrap .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #d4af37 !important;
+    color: #000 !important;
+}
+.admin-upload-wrap .select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: #f0e6c0 !important;
+    color: #000 !important;
+}
+.admin-upload-wrap .select2-dropdown {
+    background-color: #fff !important;
+}
+</style>';
+    
+    // Process admin video upload
+    if (isset($_POST['admin_video_submit'])) {
+        if (!wp_verify_nonce($_POST['_wpnonce'], 'admin_video_upload')) {
+            echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">❌ Security check failed.</div>';
+        } else {
+            $selected_personel_id = intval($_POST['admin_personel_id']);
+            if ($selected_personel_id <= 0) {
+                echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">❌ Silakan pilih personel terlebih dahulu.</div>';
+            } elseif (!empty($_POST['video_url'])) {
+                $insert_data = array(
+                    'personel_id'      => $selected_personel_id,
+                    'uploaded_by'      => 'admin',
+                    'judul'            => sanitize_text_field($_POST['judul']),
+                    'video_url'        => esc_url_raw($_POST['video_url']),
+                    'tanggal_kegiatan' => sanitize_text_field($_POST['tanggal']),
+                    'lokasi'           => sanitize_text_field($_POST['lokasi']),
+                    'tahun'            => sanitize_text_field($_POST['tahun']),
+                    'deskripsi'        => sanitize_textarea_field($_POST['deskripsi']),
+                    'tags'             => sanitize_text_field($_POST['tags']),
+                    'status'           => 'approved'
+                );
+                
+                $wpdb->insert('wp9y_portofolio_video', $insert_data);
+                $new_id = $wpdb->insert_id;
+                
+                if ($new_id) {
+                    $selected_kategori = isset($_POST['portfolio_kategori']) ? array_slice(array_map('intval', $_POST['portfolio_kategori']), 0, 3) : [];
+                    foreach ($selected_kategori as $cat_id) {
+                        $wpdb->insert($wpdb->prefix . 'portofolio_video_kategori_map', [
+                            'video_id' => $new_id,
+                            'kategori_id' => $cat_id,
+                        ]);
+                    }
+                    echo '<div class="notice-success" style="background:#0a2a0a;border:1px solid #22c55e;border-radius:8px;padding:20px;margin-bottom:20px;color:#22c55e;text-align:center;font-size:16px;">Portofolio video berhasil diupload!</div>';
+                }
+            } else {
+                echo '<div class="notice-error" style="background:#331111;border:1px solid #ef4444;border-radius:8px;padding:20px;margin-bottom:20px;color:#ef4444;text-align:center;">Silakan isi URL video.</div>';
+            }
+        }
+    }
+    
+    // Get personel list
+    $all_personel = $wpdb->get_results("SELECT id, nama_panggilan, kode_nama FROM wp9y_personel ORDER BY nama_panggilan ASC");
+    ?>
+    <div class="admin-upload-wrap">
+    <div class="form-edit-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="color:var(--gold);">🎥 Tambah Portofolio Video (Admin)</h2>
+            <a href="/wp-admin/admin.php?page=personel-video" class="btn-action" style="background:#333; color:white; padding:5px 15px; border-radius:5px; text-decoration:none; font-size:12px;">← Kembali ke Admin</a>
+        </div>
+        
+        <form method="post" class="personel-form">
+            <!-- Personel Select -->
+            <div class="form-group full" style="margin-bottom: 20px; padding:15px; background:rgba(212,175,55,0.05); border:1px solid rgba(212,175,55,0.2); border-radius:8px;">
+                <label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold; font-size:14px;">
+                    Pilih Personel (Pemilik Portofolio) <span style="color:red;">*</span>
+                </label>
+                <select name="admin_personel_id" id="adminVideoPersonelSelect" required
+                        style="width: 100%; padding: 10px; background: #fff; border: 1px solid #ccc; color: #000; border-radius: 4px;">
+                    <option value="" style="background: #fff; color: #000;">— Cari Personel —</option>
+                    <?php foreach ($all_personel as $per): ?>
+                        <option value="<?php echo $per->id; ?>" style="background: #fff; color: #000;"><?php echo esc_html($per->nama_panggilan . ' — ' . $per->kode_nama); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <?php wp_nonce_field('admin_video_upload', '_wpnonce'); ?>
+            
+            <div class="form-group full" style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold;">
+                    Judul Portofolio <span style="color:red;">*</span>
+                </label>
+                <input type="text" name="judul" required 
+                      placeholder="Judul Portofolio" 
+                      style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px;">
+            </div>
+            
+            <div class="form-group full">
+                <label>URL Video (YouTube) <span class="required">*</span></label>
+                <input type="url" name="video_url" placeholder="https://www.youtube.com/watch?v=xxxx" required
+                       style="width:100%; padding:10px; background:#1a1a1a; border:1px solid #333; color:#fff; border-radius:4px;">
+                <small>Pastikan video diset "Public" atau "Unlisted".</small>
+            </div>
+            
+            <div class="form-group full">
+                <label>Deskripsi</label>
+                <textarea name="deskripsi" rows="4" placeholder="Ceritakan sedikit tentang video ini..."></textarea>
+                <small style="color:var(--text-muted);">*Tidak mencantumkan no WA dan link sosmed</small><br>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tanggal</label>
+                    <input type="date" name="tanggal" required>
+                </div>
+                <div class="form-group">
+                    <label>Lokasi</label>
+                    <input type="text" name="lokasi" placeholder="Jakarta / Hotel Mulia" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tahun</label>
+                    <select name="tahun" required>
+                        <?php 
+                        $year = date('Y');
+                        for($i=0; $i<=15; $i++) {
+                            echo "<option value='".($year-$i)."'>".($year-$i)."</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group full">
+                <label>Kategori</label>
+                <?php render_portfolio_category_selection(0, 'video'); ?>
+            </div>
+
+            <div class="form-group full">
+                <label>Tags</label>
+                <div class="tag-system-container">
+                    <div id="tagInputWrapperVideo" class="tag-wrapper">
+                        <input type="text" id="tagInputVideo" placeholder="Ketik tag lalu tekan Enter..." class="tag-input" style="background: #1a1a1a; border: 1px solid #333; color: #fff;">
+                    </div>
+                    <input type="hidden" name="tags" id="tagHiddenInputVideo" value="">
+                </div>
+                <small style="color:var(--text-muted);">Tekan Enter setelah mengetik tag. Maks. 10 tag.</small>
+            </div>
+
+            <div class="form-group full">
+                <button type="submit" name="admin_video_submit" class="btn-update" style="width:100%; padding:14px; background:linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%); color:#000; font-weight:bold; font-size:16px; border:none; border-radius:8px; cursor:pointer;">
+                    🚀 Upload Video
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const wrapper = document.getElementById('tagInputWrapperVideo');
+        const tagInput = document.getElementById('tagInputVideo');
+        const hiddenInput = document.getElementById('tagHiddenInputVideo');
+        if (!tagInput) return;
+        
+        let tags = hiddenInput.value ? hiddenInput.value.split(',').filter(t => t !== "") : [];
+        const maxTags = 10;
+
+        function renderTags() {
+            wrapper.querySelectorAll('.tag-item').forEach(el => el.remove());
+            tags.forEach((tag, index) => {
+                const tagEl = document.createElement('div');
+                tagEl.className = 'tag-item';
+                tagEl.innerHTML = `#${tag} <button type="button" class="tag-remove" data-index="${index}">&times;</button>`;
+                wrapper.insertBefore(tagEl, tagInput);
+            });
+        }
+
+        function updateHidden() {
+            hiddenInput.value = tags.join(',');
+        }
+
+        tagInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                const val = this.value.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '');
+                if (val && !tags.includes(val) && tags.length < maxTags) {
+                    tags.push(val);
+                    updateHidden();
+                    renderTags();
+                }
+                this.value = '';
+            }
+        });
+
+        wrapper.addEventListener('click', function(e) {
+            if (e.target.classList.contains('tag-remove')) {
+                tags.splice(e.target.dataset.index, 1);
+                updateHidden();
+                renderTags();
+            }
+        });
+
+        renderTags();
+    });
+    </script>
+    <?php
+    echo '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>';
+    ?>
+    <script>
+    jQuery(document).ready(function($) {
+        $('#adminVideoPersonelSelect').select2({placeholder:'Cari personel...',width:'100%',allowClear:true});
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+
+
 function enqueue_portfolio_page_assets() {
     $css_version = file_exists( get_stylesheet_directory() . '/assets/css/portfolio.css' ) ? filemtime( get_stylesheet_directory() . '/assets/css/portfolio.css' ) : '1.0.0';
     $js_version  = file_exists( get_stylesheet_directory() . '/assets/js/portfolio.js' ) ? filemtime( get_stylesheet_directory() . '/assets/js/portfolio.js' ) : '1.0.0';

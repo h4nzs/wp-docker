@@ -102,6 +102,23 @@ body {
   color: var(--gold) !important;
 }
 
+.select2-container--default .select2-results__option {
+  color: #333333 !important; /* Mengubah warna teks menjadi abu-abu gelap/hitam */
+  background-color: #ffffff !important; /* Memastikan background-nya tetap putih */
+}
+
+/* Menargetkan teks saat pilihan disorot (hover) atau dipilih */
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background-color: #3897f0 !important; /* Warna biru saat di-hover (bisa disesuaikan) */
+  color: #ffffff !important; /* Warna teks saat di-hover tetap putih agar kontras */
+}
+
+/* Jika kotak pencarian di bagian atas teksnya juga putih, gunakan ini: */
+.select2-container--default .select2-search--dropdown .select2-search__field {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
 /* Mobile dropdown overrides */
 @media (max-width: 900px) {
   .menu-item-has-children {
