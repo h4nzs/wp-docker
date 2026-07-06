@@ -1047,3 +1047,105 @@
       font-size: 13.5px;
     }
   }
+
+
+/* Container Utama */
+.clients-strip-box {
+  width: 100% !important;
+  padding: 80px 0 !important; /* Naikin padding vertikal biar makin premium */
+  background-color: #111113 !important; 
+  border-top: 1px solid #1a1a1e !important;
+  border-bottom: 1px solid #1a1a1e !important;
+}
+
+.clients-strip-inner {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 40px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 45px !important; 
+  align-items: center !important;
+}
+
+/* Teks TRUSTED BY / */
+.clients-label-txt {
+  font-size: 13px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 4px !important;
+  font-weight: 700 !important;
+  color: #55555c !important;
+}
+
+/* Grid Logo - Kita batasi maksimal 5 kolom per baris biar gambarnya GEDE */
+.clients-logo-grid {
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr) !important; /* Maksimal 5 per baris */
+  align-items: center !important;
+  justify-items: center !important;
+  gap: 50px 60px !important; /* Jarak vertikal 50px, horizontal 60px */
+  width: 100% !important;
+  max-width: 1000px !important;
+}
+
+/* Kotak Tiap Logo */
+.client-logo-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 70px !important; /* Kita bom ke 70px biar puas gedenya */
+}
+
+/* Gambar Logo */
+.client-logo-item img {
+  display: block !important;
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 65px !important; /* Paksa tinggi gambar naik drastis */
+  object-fit: contain !important;
+  
+  /* Trik hilangkan background kotak putih */
+  mix-blend-mode: screen !important; 
+  
+  /* Naikin kontras & kecerahan di dark mode */
+  filter: brightness(1.2) contrast(1.1) !important;
+  opacity: 0.9 !important;
+  transition: all 0.25s ease-in-out !important;
+}
+
+/* Hover Efek */
+.client-logo-item img:hover {
+  transform: scale(1.08) !important;
+  filter: brightness(1.4) contrast(1.2) !important;
+  opacity: 1 !important;
+}
+
+/* Mode Tablet */
+@media (max-width: 992px) {
+  .clients-logo-grid {
+      grid-template-columns: repeat(3, 1fr) !important; /* Jadi 3 baris di tablet */
+      gap: 40px !important;
+  }
+  .client-logo-item {
+      height: 55px !important;
+  }
+  .client-logo-item img {
+      max-height: 50px !important;
+  }
+}
+
+/* Mode HP */
+@media (max-width: 600px) {
+  .clients-logo-grid {
+      grid-template-columns: repeat(2, 1fr) !important; /* Jadi 2 baris di HP biar tetep kelihatan */
+      gap: 35px !important;
+  }
+  .client-logo-item {
+      height: 45px !important;
+  }
+  .client-logo-item img {
+      max-height: 40px !important;
+  }
+}
