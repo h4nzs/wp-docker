@@ -287,6 +287,16 @@ require HELLO_THEME_PATH . '/theme.php';
 HelloTheme\Theme::instance();
 
 function personel_register_form() {
+    // AJAX handler for nama_panggilan check
+    if (isset($_POST['nama_panggilan_ajax'])) {
+        global $wpdb;
+        $username = sanitize_text_field($_POST['nama_panggilan_ajax']);
+        $exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM wp9y_personel WHERE nama_panggilan = %s", $username
+        ));
+        wp_send_json(array('available' => $exists == 0));
+    }
+
     if (is_personel_logged_in()) {
         return '<div style="max-width: 500px; margin: 50px auto; background: #13111a; border: 1px solid rgba(255,255,255,0.07); border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); font-family: \'Inter\', sans-serif;">
                     <p style="color:white; margin-bottom: 20px;">Anda sudah login sebagai <strong>'.$_SESSION['personel_nama'].'</strong></p>
@@ -776,6 +786,7 @@ function personel_register_form() {
                             <label><input type="checkbox" name="posisi[]" value="X"> 🔮 VFX</label>
                             <label><input type="checkbox" name="posisi[]" value="A"> 🎭 Animator</label>
                             <label><input type="checkbox" name="posisi[]" value="P"> 🤖 AI Artist - Prompt Engineer</label>
+                            <label><input type="checkbox" name="posisi[]" value="M"> 🎤 MC</label>
                         </div>
                         <small id="selected-posisi">Belum ada posisi dipilih</small>
                     </div>
@@ -2504,7 +2515,7 @@ function personel_view_detail($id) {
 }
 
 function personel_posisi_label($code) {
-  $labels = ['F'=>'Fotografer', 'V'=>'Videografer', 'D'=>'Drone', 'E'=>'Editor', 'X'=>'VFX', 'A'=>'Animator', 'P'=>'AI Artist - Prompt Engineer'];
+  $labels = ['F'=>'Fotografer', 'V'=>'Videografer', 'D'=>'Drone', 'E'=>'Editor', 'X'=>'VFX', 'A'=>'Animator', 'P'=>'AI Artist - Prompt Engineer', 'M'=>'MC'];
     return $labels[$code] ?? $code;
 }
 
@@ -4811,7 +4822,8 @@ function render_personel_edit_profil($personel, $message = '') {
 						'E' => '✂️ Editor',
 						'X' => '🔮 VFX',
 						'A' => '🎭 Animator',
-						'P' => '🤖 AI Artist - Prompt Engineer'
+						'P' => '🤖 AI Artist - Prompt Engineer',
+						'M' => '🎤 MC'
 					];
                     foreach($list_posisi as $key => $label): ?>
                         <label style="color:white; cursor:pointer;">
@@ -6329,6 +6341,7 @@ $query .= " LIMIT 9";
 					<option value="X" <?php selected($filter_posisi, 'X'); ?>>VFX</option>
 					<option value="A" <?php selected($filter_posisi, 'A'); ?>>Animator</option>
 					<option value="P" <?php selected($filter_posisi, 'P'); ?>>AI Artist - Prompt Engineer</option>
+                    <option value="M" <?php selected($filter_posisi, 'M'); ?>>MC</option>
 				</select>
 
                 <select name="p_price">
@@ -6449,7 +6462,8 @@ jQuery(document).ready(function($) {
 					'E' => 'Editor',
 					'X' => 'VFX',
 					'A' => 'Animator',
-					'P' => 'AI Artist - Prompt Engineer'
+					'P' => 'AI Artist - Prompt Engineer',
+					'M' => 'MC'
 				];
             ?>
                 <?php $detail_url = home_url('/detail-personel/?kode=' . $p->kode_nama); ?>
@@ -6930,7 +6944,8 @@ function handle_load_more_personel() {
             'E' => 'Editor',
             'X' => 'VFX',
             'A' => 'Animator',
-            'P' => 'AI Artist - Prompt Engineer'
+            'P' => 'AI Artist - Prompt Engineer',
+            'M' => 'MC'
         ];
         foreach ($results as $p) {
             $total_karya = $p->total_foto + $p->total_video;
@@ -7093,7 +7108,7 @@ function render_detail_personel_shortcode() {
                         </div>
                         <div class="badge-container">
                             <?php 
-                                $map = ['F'=>'Fotografer', 'V'=>'Videografer', 'D'=>'Drone', 'E'=>'Editor', 'X'=>'VFX', 'A'=>'Animator', 'P'=>'AI Artist - Prompt Engineer'];
+                                $map = ['F'=>'Fotografer', 'V'=>'Videografer', 'D'=>'Drone', 'E'=>'Editor', 'X'=>'VFX', 'A'=>'Animator', 'P'=>'AI Artist - Prompt Engineer', 'M'=>'MC'];
                                 foreach(explode(',', $p->posisi) as $c) { 
                                     if(isset($map[trim($c)])) {
                                         echo '<span class="badge-tag">'.$map[trim($c)].'</span>'; 
@@ -11700,6 +11715,7 @@ function render_personel_directory_shortcode() {
                 <option value="Drone">Drone</option>
                 <option value="Editor">Editor</option>
                 <option value="Animator">Animator</option>
+                <option value="MC">MC</option>
               </select>
               <select class="filter-select" id="filter-gender">
                 <option value="">Semua Gender</option>
@@ -11839,6 +11855,8 @@ function render_landing_content_shortcode() {
     $count_editor = $wpdb->get_var("SELECT COUNT(*) FROM wp9y_personel WHERE status = 'approved' AND posisi LIKE '%E%'");
     $count_vfx = $wpdb->get_var("SELECT COUNT(*) FROM wp9y_personel WHERE status = 'approved' AND posisi LIKE '%X%'");
     $count_animator = $wpdb->get_var("SELECT COUNT(*) FROM wp9y_personel WHERE status = 'approved' AND posisi LIKE '%A%'");
+    $count_mc = $wpdb->get_var("SELECT COUNT(*) FROM wp9y_personel WHERE status = 'approved' AND posisi LIKE '%M%'");
+    $count_ai = $wpdb->get_var("SELECT COUNT(*) FROM wp9y_personel WHERE status = 'approved' AND posisi LIKE '%P%'");
 
     ob_start();
     ?>
@@ -12143,6 +12161,20 @@ function render_landing_content_shortcode() {
     <div class="bubble-card reveal">
       <div class="bubble-avatar-frame">
         <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/animator.jpg" alt="animator"></div><div class="bubble-info"><h4>Animator</h4><p>2D/3D · Blender · Cinema 4D</p><span class="bubble-badge"><?php echo $count_animator; ?> Tersedia</span>
+      </div>
+    </div>
+
+    <!-- Bubble 7 -->
+    <div class="bubble-card reveal">
+      <div class="bubble-avatar-frame">
+        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/animator.jpg" alt="mc"></div><div class="bubble-info"><h4>MC</h4><p>Event · Corporate · Wedding · TV</p><span class="bubble-badge"><?php echo $count_mc; ?> Tersedia</span>
+      </div>
+    </div>
+
+    <!-- Bubble 8 -->
+    <div class="bubble-card reveal">
+      <div class="bubble-avatar-frame">
+        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/animator.jpg" alt="ai"></div><div class="bubble-info"><h4>AI Artist</h4><p>Prompt Engineering · Generative AI · Visual AI</p><span class="bubble-badge"><?php echo $count_ai; ?> Tersedia</span>
       </div>
     </div>
   </div>
