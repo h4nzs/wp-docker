@@ -61,6 +61,7 @@ if ( hello_elementor_display_header_footer() ) {
 	          <li><a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=X') ); ?>">VFX</a></li>
 	          <li><a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=A') ); ?>">Animator</a></li>
 	          <li><a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=P') ); ?>">AI Artist</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=M') ); ?>">MC</a></li>
 	        </ul>
 	      </li>
 	      <li><a href="<?php echo esc_url( home_url('/kebutuhan-event/') ); ?>" class="<?php echo is_page('kebutuhan-event') ? 'active' : ''; ?>">Kebutuhan Event</a></li>
