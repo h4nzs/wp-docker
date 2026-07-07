@@ -16220,6 +16220,48 @@ function render_kebutuhan_event_page_shortcode() {
             font-size: 32px;
         }
     }
+
+        /* ===== KEBUTUHAN SEARCH ===== */
+        .kebutuhan-search {
+            margin-bottom: 40px;
+        }
+        .kebutuhan-search-input {
+            width: 100%;
+            padding: 16px 24px;
+            border-radius: 100px;
+            border: 1px solid rgba(255,255,255,0.07);
+            background: #1e1c26;
+            color: #f0eef6;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        .kebutuhan-search-input:focus {
+            border-color: rgba(212,175,55,0.35);
+            background: #25232e;
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.06);
+        }
+        .kebutuhan-search-input::placeholder {
+            color: #646271;
+        }
+        .kebutuhan-no-results {
+            display: none;
+            text-align: center;
+            padding: 50px 20px;
+            color: #9b98a6;
+            font-size: 15px;
+            grid-column: 1 / -1;
+            background: rgba(255,255,255,0.02);
+            border-radius: 20px;
+            border: 1px dashed rgba(255,255,255,0.08);
+        }
+        .kebutuhan-no-results.visible {
+            display: block;
+        }
+        /* ===== END KEBUTUHAN SEARCH ===== */
+
     </style>
 
     <div class="kebutuhan-page-container">
@@ -16227,6 +16269,34 @@ function render_kebutuhan_event_page_shortcode() {
             <h1>Sewa Kebutuhan <span>Event</span></h1>
             <p>Temukan solusi sewa logistik event, panggung, sound, LED, videotron, dan berbagai kebutuhan teknis untuk menyukseskan acara Anda.</p>
         </div>
+
+        <div class="kebutuhan-search">
+            <input type="text" class="kebutuhan-search-input" id="kebutuhanSearch" placeholder="Cari kebutuhan event..." autocomplete="off">
+            <div class="kebutuhan-no-results" id="kebutuhanNoResults">Tidak ditemukan kebutuhan event untuk kata kunci tersebut.</div>
+        </div>
+
+        <script>
+        jQuery(document).ready(function($) {
+            $('#kebutuhanSearch').on('keyup', function() {
+                var q = this.value.toLowerCase().trim();
+                var $cards = $('.kebutuhan-card');
+                var visible = 0;
+                $cards.each(function() {
+                    var txt = $(this).text().toLowerCase();
+                    if (txt.indexOf(q) > -1) {
+                        $(this).show();
+                        visible++;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+                $('#kebutuhanNoResults').toggleClass('visible', visible === 0 && q.length > 0);
+                if (q.length === 0) {
+                    $('#kebutuhanNoResults').removeClass('visible');
+                }
+            });
+        });
+        </script>
 
         <div class="kebutuhan-grid">
             <?php 
