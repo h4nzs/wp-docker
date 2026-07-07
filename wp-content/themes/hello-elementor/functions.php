@@ -11939,7 +11939,7 @@ function render_landing_content_shortcode() {
           <span>Project Selesai</span>
         </div>
         <div class="stat-bubble">
-          <h3>20+</h3>
+          <h3>100+</h3>
           <span>Klien Korporat</span>
         </div>
       </div>
@@ -11947,7 +11947,7 @@ function render_landing_content_shortcode() {
     
     <div class="hero-visual-area">
       <div class="fluid-blob">
-        <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=600&q=80" alt="videographer at event">
+        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/WhatsApp-Image-2026-04-25-at-08.59.52-3.jpeg" alt="fotografer">
       </div>
       <div class="floating-blob-label">
         <h4>Live Event Production</h4>
@@ -12123,60 +12123,60 @@ function render_landing_content_shortcode() {
 
   <div class="bubble-roster-layout">
     <!-- Bubble 1 -->
-    <div class="bubble-card reveal">
+    <a href="<?php echo esc_url(home_url('/list-personel/?p_posisi=F')); ?>" class="bubble-card reveal">
       <div class="bubble-avatar-frame">
         <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/3780.jpg" alt="fotografer"></div><div class="bubble-info"><h4>Fotografer</h4><p>Model · Produk · Event · Corporate</p><span class="bubble-badge"><?php echo $count_foto; ?> Tersedia</span>
       </div>
-    </div>
+    </a>
 
     <!-- Bubble 2 -->
-    <div class="bubble-card reveal">
+    <a href="<?php echo esc_url(home_url('/list-personel/?p_posisi=V')); ?>" class="bubble-card reveal">
       <div class="bubble-avatar-frame">
         <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/Jasa-dokumentasi-0857-7100-2233Event-wedding-prawed-profil-testi-promosi-iklan.jpg" alt="videografer"></div><div class="bubble-info"><h4>Videografer</h4><p>Live event · Dokumentasi · Sinematik</p><span class="bubble-badge"><?php echo $count_video; ?> Tersedia</span>
       </div>
-    </div>
+    </a>
 
     <!-- Bubble 3 -->
-    <div class="bubble-card reveal">
+    <a href="<?php echo esc_url(home_url('/list-personel/?p_posisi=D')); ?>" class="bubble-card reveal">
       <div class="bubble-avatar-frame">
         <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/Spesifikasi-DJI-Matrice-4-Series-8.webp" alt="drone"></div><div class="bubble-info"><h4>Pilot Drone</h4><p>Aerial · FPV · Mapping · Enterprise</p><span class="bubble-badge"><?php echo $count_drone; ?> Tersedia</span>
       </div>
-    </div>
+    </a>
 
     <!-- Bubble 4 -->
-    <div class="bubble-card reveal">
+    <a href="<?php echo esc_url(home_url('/list-personel/?p_posisi=E')); ?>" class="bubble-card reveal">
       <div class="bubble-avatar-frame">
         <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/editor.jpg" alt="editor"></div><div class="bubble-info"><h4>Editor</h4><p>Color grading · Motion · Sound design</p><span class="bubble-badge"><?php echo $count_editor; ?> Tersedia</span>
       </div>
-    </div>
+    </a>
 
     <!-- Bubble 5 -->
-    <div class="bubble-card reveal">
+    <a href="<?php echo esc_url(home_url('/list-personel/?p_posisi=X')); ?>" class="bubble-card reveal">
       <div class="bubble-avatar-frame">
         <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/vfx.jpg" alt="vfx"></div><div class="bubble-info"><h4>VFX Artist</h4><p>Compositing · CGI · Animasi efek</p><span class="bubble-badge"><?php echo $count_vfx; ?> Tersedia</span>
       </div>
-    </div>
+    </a>
 
     <!-- Bubble 6 -->
-    <div class="bubble-card reveal">
+    <a href="<?php echo esc_url(home_url('/list-personel/?p_posisi=A')); ?>" class="bubble-card reveal">
       <div class="bubble-avatar-frame">
         <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/animator.jpg" alt="animator"></div><div class="bubble-info"><h4>Animator</h4><p>2D/3D · Blender · Cinema 4D</p><span class="bubble-badge"><?php echo $count_animator; ?> Tersedia</span>
       </div>
-    </div>
+    </a>
 
     <!-- Bubble 7 -->
-    <div class="bubble-card reveal">
+    <a href="<?php echo esc_url(home_url('/list-personel/?p_posisi=M')); ?>" class="bubble-card reveal">
       <div class="bubble-avatar-frame">
-        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/animator.jpg" alt="mc"></div><div class="bubble-info"><h4>MC</h4><p>Event · Corporate · Wedding · TV</p><span class="bubble-badge"><?php echo $count_mc; ?> Tersedia</span>
+        <img src="https://imgs.search.brave.com/K2mkNVs3dv_oLICoOq4a5S9hBvzNe3eRfrZ4A_6y788/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzA3LzI5Lzc3Lzgw/LzM2MF9GXzcyOTc3/ODAyNV9qQTNvOVIw/ckNUTTFWa3dGWk1j/ZTF2Z3RPTVRhMTYz/YS5qcGc" alt="mc"></div><div class="bubble-info"><h4>MC</h4><p>Event · Corporate · Wedding · TV</p><span class="bubble-badge"><?php echo $count_mc; ?> Tersedia</span>
       </div>
-    </div>
+    </a>
 
     <!-- Bubble 8 -->
-    <div class="bubble-card reveal">
+    <a href="<?php echo esc_url(home_url('/list-personel/?p_posisi=P')); ?>" class="bubble-card reveal">
       <div class="bubble-avatar-frame">
-        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/animator.jpg" alt="ai"></div><div class="bubble-info"><h4>AI Artist</h4><p>Prompt Engineering · Generative AI · Visual AI</p><span class="bubble-badge"><?php echo $count_ai; ?> Tersedia</span>
+        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/ai-engineer.webp" alt="ai"></div><div class="bubble-info"><h4>AI Artist</h4><p>Prompt Engineering · Generative AI · Visual AI</p><span class="bubble-badge"><?php echo $count_ai; ?> Tersedia</span>
       </div>
-    </div>
+    </a>
   </div>
 </section>
 
@@ -14080,12 +14080,36 @@ function render_tentang_kami_shortcode() {
       </div>
       <div class="tk-services-grid">
         <ul class="tk-service-list">
-          <li><span class="tk-icon">★</span> Company Profile</li>
-          <li><span class="tk-icon">★</span> Wedding &amp; Prawedding</li>
-          <li><span class="tk-icon">★</span> Event Production &amp; Event Organizer</li>
-          <li><span class="tk-icon">★</span> Video Produk — Branding Iklan</li>
-          <li><span class="tk-icon">★</span> Dokumentasi Event</li>
-          <li><span class="tk-icon">★</span> Video Klip</li>
+            <li>
+                <a href="<?php echo esc_url( home_url('/jasa-pembuatan-video-company-profile/') ); ?>">
+                <span class="tk-icon">★</span> Company Profile
+                </a>
+            </li>
+            <li>
+                <a href="<?php echo esc_url( home_url('/wedding-prawedding/') ); ?>">
+                <span class="tk-icon">★</span> Wedding &amp; Prawedding
+                </a>
+            </li>
+            <li>
+                <a href="<?php echo esc_url( home_url('/event-production-event-organizer/') ); ?>">
+                <span class="tk-icon">★</span> Event Production &amp; Event Organizer
+                </a>
+            </li>
+            <li>
+                <a href="<?php echo esc_url( home_url('/video-produk-branding-iklan/') ); ?>">
+                <span class="tk-icon">★</span> Video Produk - Branding Iklan
+                </a>
+            </li>
+            <li>
+                <a href="<?php echo esc_url( home_url('/dokumentasi-event/') ); ?>">
+                <span class="tk-icon">★</span> Dokumentasi Event
+                </a>
+            </li>
+            <li>
+                <a href="<?php echo esc_url( home_url('/video-klip/') ); ?>">
+                <span class="tk-icon">★</span> Video Klip
+                </a>
+            </li>
         </ul>
         <div class="tk-services-image">
           <img src="<?php echo esc_url(home_url('/wp-content/uploads/2026/04/multicam.jpg')); ?>" alt="Multicam production" loading="lazy">
@@ -14111,12 +14135,48 @@ function render_tentang_kami_shortcode() {
         </div>
         <div>
           <p class="tk-team-text">Berpengalaman sejak 2016, terbiasa menangani berbagai kebutuhan dari personal hingga corporate.</p>
-          <ul class="tk-check-list">
-            <li><span class="tk-check">✓</span> Fotografer &amp; Videografer</li>
-            <li><span class="tk-check">✓</span> Pilot Drone</li>
-            <li><span class="tk-check">✓</span> VFX</li>
-            <li><span class="tk-check">✓</span> Editor &amp; Animator</li>
-          </ul>
+            <ul class="tk-check-list">
+                <li>
+                    <a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=F') ); ?>">
+                    <span class="tk-check">✓</span> Fotografer
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=V') ); ?>">
+                    <span class="tk-check">✓</span> Videografer
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=D') ); ?>">
+                    <span class="tk-check">✓</span> Pilot Drone
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=X') ); ?>">
+                    <span class="tk-check">✓</span> VFX
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=E') ); ?>">
+                    <span class="tk-check">✓</span> Editor
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=A') ); ?>">
+                    <span class="tk-check">✓</span> Animator
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=P') ); ?>">
+                    <span class="tk-check">✓</span> AI Artist
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo esc_url( home_url('/list-personel/?p_posisi=M') ); ?>">
+                    <span class="tk-check">✓</span> MC
+                    </a>
+                </li>
+            </ul>
           <a href="https://wa.me/6285771002233" class="tk-btn tk-btn--primary" target="_blank">Hubungi Kami Sekarang</a>
         </div>
       </div>
@@ -15996,7 +16056,7 @@ function render_kebutuhan_event_page_shortcode() {
 
     <div class="kebutuhan-page-container">
         <div class="kebutuhan-header">
-            <h1>Kebutuhan <span>Event & Logistik</span></h1>
+            <h1>Sewa Kebutuhan <span>Event</span></h1>
             <p>Temukan solusi sewa logistik event, panggung, sound, LED, videotron, dan berbagai kebutuhan teknis untuk menyukseskan acara Anda.</p>
         </div>
 
@@ -16017,7 +16077,7 @@ function render_kebutuhan_event_page_shortcode() {
                 <div class="kebutuhan-card">
                     <div class="kebutuhan-image-wrapper">
                         <img src="<?php echo esc_url($thumb); ?>" alt="<?php the_title_attribute(); ?>">
-                        <span class="kebutuhan-badge">Logistik</span>
+                        <!-- <span class="kebutuhan-badge">Logistik</span> -->
                     </div>
                     <div class="kebutuhan-content">
                         <h3><?php the_title(); ?></h3>
