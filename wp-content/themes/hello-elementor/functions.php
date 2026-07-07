@@ -11904,6 +11904,139 @@ function render_landing_content_shortcode() {
           padding: 0 !important;
           margin: 0 !important;
       }
+    
+        /* ===== SEARCH RESULTS CARDS ===== */
+        .search-results-container { animation: fadeUp 0.3s ease; width: 100vw; max-width: 100vw; margin-top: 30px; margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); padding: 0 24px; box-sizing: border-box; }
+        .search-results-container .search-grid { max-width: 1200px; margin: 0 auto; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .search-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .search-card {
+            background: #13111a;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            text-decoration: none;
+            color: inherit;
+        }
+        .search-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(212,175,55,0.3);
+            box-shadow: 0 15px 40px rgba(212,175,55,0.08), 0 20px 50px rgba(0,0,0,0.45);
+        }
+        .search-card-img {
+            position: relative;
+            height: 190px;
+            overflow: hidden;
+            background: #0b0a0f;
+        }
+        .search-card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .search-card:hover .search-card-img img {
+            transform: scale(1.05);
+        }
+        .search-card-badge {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            background: rgba(18, 16, 23, 0.88);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(212,175,55,0.25);
+            color: #ffd275;
+            font-family: 'Outfit', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            pointer-events: none;
+        }
+        .search-card-body {
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .search-card-body h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 17px;
+            color: #fff;
+            margin: 0 0 8px 0;
+            line-height: 1.3;
+            transition: color 0.3s;
+        }
+        .search-card:hover .search-card-body h3 {
+            color: #ffd275;
+        }
+        .search-card-desc {
+            font-size: 12.5px;
+            color: #9b98a6;
+            line-height: 1.6;
+            margin-bottom: 18px;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .search-card-footer {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.07);
+            padding-top: 16px;
+            margin-top: auto;
+        }
+        .search-card-link {
+            font-family: 'Outfit', sans-serif;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #ffd275;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.2s;
+        }
+        .search-card-link i {
+            font-size: 10px;
+            transition: transform 0.2s;
+        }
+        .search-card:hover .search-card-link i {
+            transform: translateX(3px);
+        }
+        .search-no-results {
+            text-align: center;
+            padding: 50px 20px;
+            color: #9b98a6;
+            font-size: 15px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 20px;
+            border: 1px dashed rgba(255,255,255,0.08);
+        }
+        
+        @media (max-width: 991px) {
+            .search-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .search-grid { grid-template-columns: 1fr; }
+        }
+        /* ===== END SEARCH RESULTS CARDS ===== 
     </style>
     <!-- Background glowing fluid blobs -->
 <div class="fluid-glow glow-left"></div>
@@ -12011,11 +12144,46 @@ function render_landing_content_shortcode() {
   </div>
 
   <div class="search-container">
-    <form class="search-box" action="<?php echo esc_url(home_url('/')); ?>" method="get" style="display:flex;align-items:center;gap:10px;background:#25232e;border:1px solid rgba(255,255,255,0.07);padding:6px 6px 6px 22px;border-radius:100px;box-shadow:0 10px 30px rgba(0,0,0,0.2);">
-      <input type="text" name="s" placeholder="Halo, layanan apa yang Anda butuhkan?" required style="flex:1;background:none;border:none;outline:none;color:#f0eef6;font-size:14px;padding:10px 0;">
+    <form class="search-box ajax-search-form" method="post" style="display:flex;align-items:center;gap:10px;background:#25232e;border:1px solid rgba(255,255,255,0.07);padding:6px 6px 6px 22px;border-radius:100px;box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+      <input type="text" class="ajax-search-input" name="q" placeholder="Halo, layanan apa yang Anda butuhkan?" required style="flex:1;background:none;border:none;outline:none;color:#f0eef6;font-size:14px;padding:10px 0;">
       <button type="submit" class="search-btn">Cari Layanan</button>
     </form>
   </div>
+  <div class="search-results-container" id="searchResults" style="display:none;"></div>
+
+  <script>
+  jQuery(document).ready(function($) {
+    $('.ajax-search-form').on('submit', function(e) {
+      e.preventDefault();
+      var q = $('.ajax-search-input').val().trim();
+      if(q.length < 2) return;
+      
+      var $btn = $(this).find('.search-btn');
+      var $res = $('#searchResults');
+      
+      $btn.prop('disabled', true).text('Mencari...');
+      $res.slideUp().html('<div style="text-align:center;padding:40px;color:#9b98a6;"><span class="spinner" style="display:inline-block;width:20px;height:20px;border:2px solid #ffd275;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;"></span><br><br>Mencari hasil untuk "<strong>' + q + '</strong>"...</div>').slideDown();
+      
+      $.post('/wp-admin/admin-ajax.php', {
+        action: 'ajax_search_layanan',
+        q: q
+      }, function(html) {
+        $btn.prop('disabled', false).text('Cari Layanan');
+        $res.html(html);
+      }).fail(function() {
+        $btn.prop('disabled', false).text('Cari Layanan');
+        $res.html('<div style="text-align:center;padding:40px;color:#eb5e5e;">Terjadi kesalahan, coba lagi.</div>');
+      });
+    });
+
+    // Allow search on Enter key
+    $('.ajax-search-input').on('keypress', function(e) {
+      if(e.which == 13) {
+        $(this).closest('form').submit();
+      }
+    });
+  });
+  </script>
 
   <div class="services-flex-grid">
     <?php
@@ -16248,3 +16416,158 @@ function wa_button_shortcode($atts) {
          . '</svg> '
          . esc_html($atts['text']) . '</a>';
 }
+
+/**
+ * AJAX Search — Landing page all-in-one search
+ */
+add_action('wp_ajax_ajax_search_layanan', 'handle_ajax_search_layanan');
+add_action('wp_ajax_nopriv_ajax_search_layanan', 'handle_ajax_search_layanan');
+function handle_ajax_search_layanan() {
+    global $wpdb;
+    
+    $q = isset($_POST['q']) ? sanitize_text_field($_POST['q']) : '';
+    if (strlen($q) < 2) {
+        wp_die('<div class="search-no-results">Minimal 2 karakter untuk mencari.</div>');
+    }
+    
+    $like = '%' . $wpdb->esc_like($q) . '%';
+    $results = array();
+    
+    // 1. SEARCH PERSONEL (wp9y_personel)
+    $personel = $wpdb->get_results($wpdb->prepare(
+        "SELECT id, nama_panggilan, kode_nama, tentang, foto_profil, posisi 
+         FROM wp9y_personel 
+         WHERE status = 'approved' 
+         AND (nama_panggilan LIKE %s OR kode_nama LIKE %s OR tentang LIKE %s OR posisi LIKE %s)
+         LIMIT 6",
+        $like, $like, $like, $like
+    ));
+    foreach ($personel as $p) {
+        $nama = $p->nama_panggilan . '-' . $p->kode_nama;
+        $img = $p->foto_profil ?: 'https://placehold.co/600x400/1a1825/ffd275?text=Personel';
+        $posisi = $p->posisi ?: 'Kreatif';
+        $desc = $p->tentang ? wp_trim_words($p->tentang, 12) : 'Personel kreatif dengan spesialisasi ' . $posisi;
+        $results[] = array(
+            'type' => 'personel',
+            'badge' => '👤 Personel',
+            'title' => $nama,
+            'desc'  => $desc,
+            'img'   => $img,
+            'url'   => home_url('/detail-personel/?kode=' . $p->kode_nama),
+        );
+    }
+    
+    // 2. SEARCH PORTOFOLIO FOTO
+    $fotos = $wpdb->get_results($wpdb->prepare(
+        "SELECT p.judul, p.deskripsi, p.foto_url, p.tags, pe.nama_panggilan, pe.kode_nama
+         FROM wp9y_portofolio p
+         JOIN wp9y_personel pe ON p.personel_id = pe.id
+         WHERE p.status = 'approved' AND pe.status = 'approved'
+         AND (p.judul LIKE %s OR p.deskripsi LIKE %s OR p.tags LIKE %s)
+         ORDER BY p.id DESC
+         LIMIT 6",
+        $like, $like, $like
+    ));
+    foreach ($fotos as $f) {
+        $img = $f->foto_url ?: 'https://placehold.co/600x400/1a1825/ffd275?text=Foto';
+        $desc = $f->deskripsi ? wp_trim_words($f->deskripsi, 12) : 'Karya foto oleh ' . $f->nama_panggilan;
+        $results[] = array(
+            'type' => 'foto',
+            'badge' => '📸 Portofolio',
+            'title' => $f->judul,
+            'desc'  => $desc,
+            'img'   => $img,
+            'url'   => home_url('/detail-personel/?kode=' . $f->kode_nama),
+        );
+    }
+    
+    // 3. SEARCH PORTOFOLIO VIDEO
+    $videos = $wpdb->get_results($wpdb->prepare(
+        "SELECT v.judul, v.deskripsi, v.video_url, v.tags, pe.nama_panggilan, pe.kode_nama
+         FROM wp9y_portofolio_video v
+         JOIN wp9y_personel pe ON v.personel_id = pe.id
+         WHERE v.status = 'approved' AND pe.status = 'approved'
+         AND (v.judul LIKE %s OR v.deskripsi LIKE %s OR v.tags LIKE %s)
+         ORDER BY v.id DESC
+         LIMIT 6",
+        $like, $like, $like
+    ));
+    foreach ($videos as $v) {
+        $yt_id = '';
+        if (preg_match('/(?:youtube\.com\/(?:embed\/|watch\?v=)|youtu\.be\/)([a-zA-Z0-9_-]+)/', $v->video_url, $m)) {
+            $yt_id = $m[1];
+        }
+        $img = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : 'https://placehold.co/600x400/1a1825/ffd275?text=Video';
+        $desc = $v->deskripsi ? wp_trim_words($v->deskripsi, 12) : 'Video oleh ' . $v->nama_panggilan;
+        $results[] = array(
+            'type' => 'video',
+            'badge' => '🎥 Video',
+            'title' => $v->judul,
+            'desc'  => $desc,
+            'img'   => $img,
+            'url'   => home_url('/detail-personel/?kode=' . $v->kode_nama),
+        );
+    }
+    
+    // 4. SEARCH SERVICE PAGES (WP Pages with specific slugs)
+    $service_slugs = array(
+        'event-production-event-organizer',
+        'jasa-pembuatan-video-company-profile',
+        'wedding-prawedding',
+        'dokumentasi-event',
+        'video-produk-branding-iklan',
+        'video-klip',
+    );
+    $service_pages = get_posts(array(
+        'post_type'      => 'page',
+        'post_name__in'  => $service_slugs,
+        'posts_per_page' => -1,
+        's'              => $q,
+    ));
+    foreach ($service_pages as $page) {
+        $img = get_the_post_thumbnail_url($page->ID, 'large') ?: 'https://placehold.co/600x400/1a1825/ffd275?text=Layanan';
+        $desc = $page->post_excerpt ?: wp_trim_words(strip_tags($page->post_content), 15);
+        $results[] = array(
+            'type' => 'layanan',
+            'badge' => '⚡ Layanan',
+            'title' => get_the_title($page),
+            'desc'  => $desc,
+            'img'   => $img,
+            'url'   => get_permalink($page),
+        );
+    }
+    
+    // Shuffle results for variety
+    shuffle($results);
+    
+    ob_start();
+    if (empty($results)) {
+        echo '<div class="search-no-results">Tidak ditemukan hasil untuk "<strong>' . esc_html($q) . '</strong>". Coba kata kunci lain.</div>';
+    } else {
+        echo '<div class="search-grid">';
+        foreach ($results as $r) {
+            ?>
+            <a href="<?php echo esc_url($r['url']); ?>" class="search-card" target="_blank">
+                <div class="search-card-img">
+                    <img src="<?php echo esc_url($r['img']); ?>" alt="<?php echo esc_attr($r['title']); ?>" loading="lazy">
+                    <span class="search-card-badge"><?php echo $r['badge']; ?></span>
+                </div>
+                <div class="search-card-body">
+                    <h3><?php echo esc_html($r['title']); ?></h3>
+                    <div class="search-card-desc"><?php echo esc_html($r['desc']); ?></div>
+                    <div class="search-card-footer">
+                        <span class="search-card-link">Lihat Detail <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+                </div>
+            </a>
+            <?php
+        }
+        echo '</div>';
+    }
+    $output = ob_get_clean();
+    wp_die($output);
+}
+
+/**
+ * AJAX Search — Landing page all-in-one search
+ */
