@@ -43,7 +43,7 @@ if ( hello_elementor_display_header_footer() ) {
 	      <li class="menu-item-has-children">
 	        <a href="<?php echo esc_url( home_url('/#layanan') ); ?>">Layanan <span class="dropdown-arrow">&#9662;</span></a>
 	        <ul class="sub-menu">
-	          <li><a href="<?php echo esc_url( home_url('/jasa-pembuatan-video-company-profile/') ); ?>">Company Profile</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/company-profile/') ); ?>">Company Profile</a></li>
 	          <li><a href="<?php echo esc_url( home_url('/wedding-prawedding/') ); ?>">Wedding &amp; Pre-Wedding</a></li>
 	          <li><a href="<?php echo esc_url( home_url('/event-production-event-organizer/') ); ?>">Event Production &amp; Event Organizer</a></li>
 	          <li><a href="<?php echo esc_url( home_url('/video-produk-branding-iklan/') ); ?>">Video Produk &amp; Branding Iklan</a></li>
