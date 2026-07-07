@@ -61,7 +61,7 @@ if ( hello_elementor_display_header_footer() ) {
 	    </div>
 	    <div class="footer-col">
 	      <h5>Layanan</h5>
-	      <a href="<?php echo esc_url( home_url('/jasa-pembuatan-video-company-profile/') ); ?>">Company Profile</a>
+	      <a href="<?php echo esc_url( home_url('/company-profile/') ); ?>">Company Profile</a>
 	      <a href="<?php echo esc_url( home_url('/wedding-prawedding/') ); ?>">Wedding &amp; Pre-Wedding</a>
 	      <a href="<?php echo esc_url( home_url('/event-production-event-organizer/') ); ?>">Event Production</a>
 	      <a href="<?php echo esc_url( home_url('/video-klip/') ); ?>">Video Klip</a>

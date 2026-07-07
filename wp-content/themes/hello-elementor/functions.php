@@ -8256,7 +8256,7 @@ function lx_universal_porto_assets() { ?>
 
     <style>
         .lx-m { display: none; position: fixed; z-index: 99999; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(8px); padding: 40px 20px; overflow-y: auto; }
-        body.modal-open, html.modal-open { overflow: hidden !important; height: 100vh !important; }
+        body.modal-open { overflow: hidden !important; }
         .lx-m-content { display: flex; flex-direction: row; max-width: 1080px; margin: 40px auto; background: #121017; border-radius: 20px; position: relative; overflow: hidden; border: 1px solid rgba(212, 134, 34, 0.15); box-shadow: 0 25px 60px rgba(0,0,0,0.9); }
         .lx-close { position: absolute; right: 16px; top: 16px; width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; cursor: pointer; z-index: 100; transition: all 0.25s ease; line-height: 1; }
         .lx-close:hover { color: #ffd275; background: rgba(0,0,0,0.85); border-color: #ffd275; transform: scale(1.05) rotate(90deg); }
@@ -8333,7 +8333,7 @@ $('#lx-m-meta').html(metaHtml);
 
             // 4. Tampilkan Modal
             $('#lx-modal').fadeIn(300);
-            $('body, html').addClass('modal-open');
+            $('body').addClass('modal-open');
         });
 
         // FUNGSI TUTUP MODAL
@@ -8342,7 +8342,7 @@ $('#lx-m-meta').html(metaHtml);
                 $('#lx-modal').fadeOut(200, function() {
                     $('#lx-m-media').empty(); // STOP VIDEO SAAT TUTUP
                 });
-                $('body, html').removeClass('modal-open');
+                $('body').removeClass('modal-open');
             }
         });
 
@@ -8350,7 +8350,7 @@ $('#lx-m-meta').html(metaHtml);
         $(document).on('keydown', function(ev) {
             if(ev.key === 'Escape' && $('#lx-modal').is(':visible')) {
                 $('#lx-modal').fadeOut(200, function() { $('#lx-m-media').empty(); });
-                $('body, html').removeClass('modal-open');
+                $('body').removeClass('modal-open');
             }
         });
 
@@ -12279,7 +12279,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card tall wide reveal',
                 'url' => $photos[0]->foto_url, // Pastikan nama kolom di DB persis 'foto_url'
                 'title' => $photos[0]->judul,
-                'creator' => 'by ' . $photos[0]->nama_panggilan,
+                'creator' => 'by ' . strtok($photos[0]->nama_panggilan, ' ') . '-' . $photos[0]->kode_nama,
                 'desc' => $photos[0]->deskripsi ?? '',
                 'tahun' => $photos[0]->tahun ?? '',
                 'tanggal' => isset($photos[0]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[0]->tanggal_kegiatan)) : '',
@@ -12293,7 +12293,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card tall wide reveal',
                 'url' => 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&q=80',
                 'title' => isset($photos[0]) ? $photos[0]->judul : 'Leadership Portrait',
-                'creator' => 'by ' . (isset($photos[0]) ? $photos[0]->nama_panggilan : 'Dani · Videografer'),
+                'creator' => 'by ' . (isset($photos[0]) ? strtok($photos[0]->nama_panggilan, ' ') . '-' . $photos[0]->kode_nama : 'Dani · Videografer'),
                 'desc' => isset($photos[0]) ? ($photos[0]->deskripsi ?? '') : '',
                 'tahun' => isset($photos[0]) ? ($photos[0]->tahun ?? '') : '',
                 'tanggal' => isset($photos[0]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[0]->tanggal_kegiatan)) : '',
@@ -12310,7 +12310,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card standard reveal',
                 'url' => $photos[1]->foto_url,
                 'title' => $photos[1]->judul,
-                'creator' => 'by ' . $photos[1]->nama_panggilan,
+                'creator' => 'by ' . strtok($photos[1]->nama_panggilan, ' ') . '-' . $photos[1]->kode_nama,
                 'desc' => $photos[1]->deskripsi ?? '',
                 'tahun' => $photos[1]->tahun ?? '',
                 'tanggal' => isset($photos[1]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[1]->tanggal_kegiatan)) : '',
@@ -12324,7 +12324,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card standard reveal',
                 'url' => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400&q=80',
                 'title' => isset($photos[1]) ? $photos[1]->judul : 'Seminar Corporate',
-                'creator' => 'by ' . (isset($photos[1]) ? $photos[1]->nama_panggilan : 'Bagus · Fotografer'),
+                'creator' => 'by ' . (isset($photos[1]) ? strtok($photos[1]->nama_panggilan, ' ') . '-' . $photos[1]->kode_nama : 'Bagus · Fotografer'),
                 'desc' => isset($photos[1]) ? ($photos[1]->deskripsi ?? '') : '',
                 'tahun' => isset($photos[1]) ? ($photos[1]->tahun ?? '') : '',
                 'tanggal' => isset($photos[1]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[1]->tanggal_kegiatan)) : '',
@@ -12341,7 +12341,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card standard reveal',
                 'url' => $photos[2]->foto_url,
                 'title' => $photos[2]->judul,
-                'creator' => 'by ' . $photos[2]->nama_panggilan,
+                'creator' => 'by ' . strtok($photos[2]->nama_panggilan, ' ') . '-' . $photos[2]->kode_nama,
                 'desc' => $photos[2]->deskripsi ?? '',
                 'tahun' => $photos[2]->tahun ?? '',
                 'tanggal' => isset($photos[2]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[2]->tanggal_kegiatan)) : '',
@@ -12355,7 +12355,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card standard reveal',
                 'url' => 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&q=80',
                 'title' => isset($photos[2]) ? $photos[2]->judul : 'Foto Sports Event',
-                'creator' => 'by ' . (isset($photos[2]) ? $photos[2]->nama_panggilan : 'Crew · Fotografer'),
+                'creator' => 'by ' . (isset($photos[2]) ? strtok($photos[2]->nama_panggilan, ' ') . '-' . $photos[2]->kode_nama : 'Crew · Fotografer'),
                 'desc' => isset($photos[2]) ? ($photos[2]->deskripsi ?? '') : '',
                 'tahun' => isset($photos[2]) ? ($photos[2]->tahun ?? '') : '',
                 'tanggal' => isset($photos[2]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[2]->tanggal_kegiatan)) : '',
@@ -12376,7 +12376,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card tall reveal',
                 'url' => $thumb,
                 'title' => $videos[0]->judul,
-                'creator' => 'by ' . $videos[0]->nama_panggilan,
+                'creator' => 'by ' . strtok($videos[0]->nama_panggilan, ' ') . '-' . $videos[0]->kode_nama,
                 'desc' => $videos[0]->deskripsi ?? '',
                 'tahun' => $videos[0]->tahun ?? '',
                 'tanggal' => isset($videos[0]->tanggal_kegiatan) ? date('d M Y', strtotime($videos[0]->tanggal_kegiatan)) : '',
@@ -12391,7 +12391,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card tall reveal',
                 'url' => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&q=80',
                 'title' => isset($videos[0]) ? $videos[0]->judul : 'Video Highlight',
-                'creator' => 'by ' . (isset($videos[0]) ? $videos[0]->nama_panggilan : 'Crew · Editor'),
+                'creator' => 'by ' . (isset($videos[0]) ? strtok($videos[0]->nama_panggilan, ' ') . '-' . $videos[0]->kode_nama : 'Crew · Editor'),
                 'desc' => isset($videos[0]) ? ($videos[0]->deskripsi ?? '') : '',
                 'tahun' => isset($videos[0]) ? ($videos[0]->tahun ?? '') : '',
                 'tanggal' => isset($videos[0]->tanggal_kegiatan) ? date('d M Y', strtotime($videos[0]->tanggal_kegiatan)) : '',
@@ -12408,7 +12408,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card standard reveal',
                 'url' => $photos[3]->foto_url,
                 'title' => $photos[3]->judul,
-                'creator' => 'by ' . $photos[3]->nama_panggilan,
+                'creator' => 'by ' . strtok($photos[3]->nama_panggilan, ' ') . '-' . $photos[3]->kode_nama,
                 'desc' => $photos[3]->deskripsi ?? '',
                 'tahun' => $photos[3]->tahun ?? '',
                 'tanggal' => isset($photos[3]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[3]->tanggal_kegiatan)) : '',
@@ -12422,7 +12422,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card standard reveal',
                 'url' => 'https://images.unsplash.com/photo-1556125574-d7f27ec36a06?w=400&q=80',
                 'title' => isset($photos[3]) ? $photos[3]->judul : 'Birthday Party',
-                'creator' => 'by ' . (isset($photos[3]) ? $photos[3]->nama_panggilan : 'Oelin · Fotografer'),
+                'creator' => 'by ' . (isset($photos[3]) ? strtok($photos[3]->nama_panggilan, ' ') . '-' . $photos[3]->kode_nama : 'Oelin · Fotografer'),
                 'desc' => isset($photos[3]) ? ($photos[3]->deskripsi ?? '') : '',
                 'tahun' => isset($photos[3]) ? ($photos[3]->tahun ?? '') : '',
                 'tanggal' => isset($photos[3]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[3]->tanggal_kegiatan)) : '',
@@ -12443,7 +12443,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card wide reveal',
                 'url' => $thumb,
                 'title' => $videos[1]->judul,
-                'creator' => 'by ' . $videos[1]->nama_panggilan,
+                'creator' => 'by ' . strtok($videos[1]->nama_panggilan, ' ') . '-' . $videos[1]->kode_nama,
                 'desc' => $videos[1]->deskripsi ?? '',
                 'tahun' => $videos[1]->tahun ?? '',
                 'tanggal' => isset($videos[1]->tanggal_kegiatan) ? date('d M Y', strtotime($videos[1]->tanggal_kegiatan)) : '',
@@ -12458,7 +12458,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card wide reveal',
                 'url' => 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800&q=80',
                 'title' => isset($videos[1]) ? $videos[1]->judul : 'Employee Gathering',
-                'creator' => 'by ' . (isset($videos[1]) ? $videos[1]->nama_panggilan : 'Oelin · Fotografer'),
+                'creator' => 'by ' . (isset($videos[1]) ? strtok($videos[1]->nama_panggilan, ' ') . '-' . $videos[1]->kode_nama : 'Oelin · Fotografer'),
                 'desc' => isset($videos[1]) ? ($videos[1]->deskripsi ?? '') : '',
                 'tahun' => isset($videos[1]) ? ($videos[1]->tahun ?? '') : '',
                 'tanggal' => isset($videos[1]->tanggal_kegiatan) ? date('d M Y', strtotime($videos[1]->tanggal_kegiatan)) : '',
@@ -12475,7 +12475,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card standard reveal',
                 'url' => $photos[4]->foto_url,
                 'title' => $photos[4]->judul,
-                'creator' => 'by ' . $photos[4]->nama_panggilan,
+                'creator' => 'by ' . strtok($photos[4]->nama_panggilan, ' ') . '-' . $photos[4]->kode_nama,
                 'desc' => $photos[4]->deskripsi ?? '',
                 'tahun' => $photos[4]->tahun ?? '',
                 'tanggal' => isset($photos[4]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[4]->tanggal_kegiatan)) : '',
@@ -12489,7 +12489,7 @@ function render_landing_content_shortcode() {
                 'class' => 'port-card standard reveal',
                 'url' => 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=80',
                 'title' => isset($photos[4]) ? $photos[4]->judul : 'Behind the Scenes',
-                'creator' => 'by ' . (isset($photos[4]) ? $photos[4]->nama_panggilan : 'Crew · Fotografer'),
+                'creator' => 'by ' . (isset($photos[4]) ? strtok($photos[4]->nama_panggilan, ' ') . '-' . $photos[4]->kode_nama : 'Crew · Fotografer'),
                 'desc' => isset($photos[4]) ? ($photos[4]->deskripsi ?? '') : '',
                 'tahun' => isset($photos[4]) ? ($photos[4]->tahun ?? '') : '',
                 'tanggal' => isset($photos[4]->tanggal_kegiatan) ? date('d M Y', strtotime($photos[4]->tanggal_kegiatan)) : '',
@@ -14081,7 +14081,7 @@ function render_tentang_kami_shortcode() {
       <div class="tk-services-grid">
         <ul class="tk-service-list">
             <li>
-                <a href="<?php echo esc_url( home_url('/jasa-pembuatan-video-company-profile/') ); ?>">
+                <a href="<?php echo esc_url( home_url('/company-profile/') ); ?>">
                 <span class="tk-icon">★</span> Company Profile
                 </a>
             </li>
@@ -14643,20 +14643,20 @@ function render_event_production_shortcode() {
             <?php if ($use_fallback): 
                 // Hardcoded fallback list matching mockup
                 $fallback_items = [
-                    ['title' => 'Event Showcase 1', 'author' => 'ONO-0001-FVDE', 'yt' => 'NkycgR8UoIY', 'tag' => 'Event Production'],
-                    ['title' => 'Event Showcase 2', 'author' => '@rto-0002-FVEP', 'yt' => '1yCklnC5aoY', 'tag' => 'Event Organizer'],
-                    ['title' => 'Event Showcase 3', 'author' => 'Adrian-0030-VD', 'yt' => 'YM-ZanSFvlo', 'tag' => 'Event Production'],
-                    ['title' => 'Corporate Gathering', 'author' => 'Aan-0014-FVE', 'yt' => 'duLzCt-xKJE', 'tag' => 'Corporate Event'],
-                    ['title' => 'Product Launching', 'author' => 'cegum-0043-FVDE', 'yt' => 'qMhCdTJk3uw', 'tag' => 'Launching Event'],
+                    ['title' => 'Event Showcase 1', 'author' => 'ian-0064-FVD', 'yt' => 'NkycgR8UoIY', 'tag' => 'Event Production'],
+                    ['title' => 'Event Showcase 2', 'author' => 'ian-0064-FVD', 'yt' => '1yCklnC5aoY', 'tag' => 'Event Organizer'],
+                    ['title' => 'Event Showcase 3', 'author' => 'Krisnha-0068-D', 'yt' => 'YM-ZanSFvlo', 'tag' => 'Event Production'],
+                    ['title' => 'Corporate Gathering', 'author' => 'cegum-0043-FVDE', 'yt' => 'duLzCt-xKJE', 'tag' => 'Corporate Event'],
+                    ['title' => 'Product Launching', 'author' => 'ONO-0001-FVDEP', 'yt' => 'qMhCdTJk3uw', 'tag' => 'Launching Event'],
                     ['title' => 'Private Event', 'author' => 'ian-0064-FVD', 'yt' => 'AWLDShDOwLU', 'tag' => 'Private Event'],
-                    ['title' => 'Stage Production', 'author' => 'ONO-0001-FVDE', 'yt' => '_CXpqsRkhAk', 'tag' => 'Event Stage'],
-                    ['title' => 'Event Documentation', 'author' => 'Adrian-0030-VD', 'yt' => 'btdW-kv_Nf0', 'tag' => 'Event Documentation'],
-                    ['title' => 'Creative Concept Event', 'author' => '@rto-0002-FVEP', 'yt' => 'BbMEzFYObIQ', 'tag' => 'Event Concept'],
+                    ['title' => 'Stage Production', 'author' => 'cegum-0043-FVDE', 'yt' => '_CXpqsRkhAk', 'tag' => 'Event Stage'],
+                    ['title' => 'Event Documentation', 'author' => 'cegum-0043-FVDE', 'yt' => 'btdW-kv_Nf0', 'tag' => 'Event Documentation'],
+                    ['title' => 'Creative Concept Event', 'author' => 'cegum-0043-FVDE', 'yt' => 'BbMEzFYObIQ', 'tag' => 'Event Concept'],
                 ];
                 foreach ($fallback_items as $item):
                     $embed_url = "https://www.youtube.com/embed/" . $item['yt'] . "?autoplay=1";
                     $thumb_url = "https://img.youtube.com/vi/" . $item['yt'] . "/mqdefault.jpg";
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($item['author']));
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode(explode('-', $item['author'], 2)[1] ?? $item['author']));
             ?>
                     <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url); ?>')">
                       <div class="video-card__thumb">
@@ -14879,7 +14879,7 @@ function render_dokumentasi_event_shortcode() {
                 foreach ($fallback_items as $item):
                     $embed_url = "https://www.youtube.com/embed/" . $item['yt'] . "?autoplay=1";
                     $thumb_url = "https://img.youtube.com/vi/" . $item['yt'] . "/mqdefault.jpg";
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($item['author']));
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode(explode('-', $item['author'], 2)[1] ?? $item['author']));
             ?>
                     <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url); ?>')">
                       <div class="video-card__thumb">
@@ -15100,7 +15100,7 @@ function render_video_klip_shortcode() {
                 foreach ($fallback_items as $item):
                     $embed_url = "https://www.youtube.com/embed/" . $item['yt'] . "?autoplay=1";
                     $thumb_url = "https://img.youtube.com/vi/" . $item['yt'] . "/mqdefault.jpg";
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($item['author']));
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode(explode('-', $item['author'], 2)[1] ?? $item['author']));
             ?>
                     <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url); ?>')">
                       <div class="video-card__thumb">
@@ -15325,7 +15325,7 @@ function render_video_produk_iklan_shortcode() {
                 foreach ($fallback_items as $item):
                     $embed_url = "https://www.youtube.com/embed/" . $item['yt'] . "?autoplay=1";
                     $thumb_url = "https://img.youtube.com/vi/" . $item['yt'] . "/mqdefault.jpg";
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($item['author']));
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode(explode('-', $item['author'], 2)[1] ?? $item['author']));
             ?>
                     <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url); ?>')">
                       <div class="video-card__thumb">
