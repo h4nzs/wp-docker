@@ -10017,94 +10017,275 @@ add_action('wp_footer', 'popup_ad_render_frontend', 9999);
 function lx_sidebar_ad_meta_box() {
     add_meta_box(
         'lx_sidebar_ad',
-        'Iklan Sidebar Artikel',
+        'Iklan Sidebar Artikel (maks. 10)',
         'lx_sidebar_ad_meta_box_html',
         'post',
-        'side',
+        'normal',
         'default'
     );
 }
 add_action('add_meta_boxes', 'lx_sidebar_ad_meta_box');
 
 function lx_sidebar_ad_meta_box_html($post) {
-    wp_nonce_field('lx_sidebar_ad_save', 'lx_sidebar_ad_nonce');
+    wp_nonce_field('lx_sidebar_ads_save', 'lx_sidebar_ads_nonce');
 
-    $image   = get_post_meta($post->ID, '_sidebar_ad_image', true);
-    $link    = get_post_meta($post->ID, '_sidebar_ad_link', true);
-    $caption = get_post_meta($post->ID, '_sidebar_ad_caption', true);
-    $active  = get_post_meta($post->ID, '_sidebar_ad_active', true);
+    $ads = get_post_meta($post->ID, '_sidebar_ads', true);
+    if (!is_array($ads)) {
+        $old_image = get_post_meta($post->ID, '_sidebar_ad_image', true);
+        if (!empty($old_image)) {
+            $ads = [[
+                'image_url' => $old_image,
+                'link_url'  => get_post_meta($post->ID, '_sidebar_ad_link', true),
+                'caption'   => get_post_meta($post->ID, '_sidebar_ad_caption', true),
+                'active'    => get_post_meta($post->ID, '_sidebar_ad_active', true) === '1' ? '1' : '0',
+            ]];
+        } else {
+            $ads = [];
+        }
+    }
+
+    $count = count($ads);
     ?>
-    <p>
-        <label for="lx_sidebar_ad_image" style="font-weight:600;">URL Gambar Iklan:</label>
-        <input type="text" id="lx_sidebar_ad_image" name="lx_sidebar_ad_image"
-               value="<?php echo esc_attr($image); ?>" style="width:100%;margin-top:5px;" placeholder="https://..." />
-    </p>
-    <p style="margin-top:8px;">
-        <button type="button" class="button" id="lx_sidebar_ad_upload">Pilih Gambar</button>
-    </p>
-    <?php if ($image) : ?>
-    <p style="margin-top:8px;">
-        <img src="<?php echo esc_url($image); ?>" style="width:100%;height:auto;border-radius:4px;border:1px solid #ddd;">
-    </p>
-    <?php endif; ?>
-    <p style="margin-top:12px;">
-        <label for="lx_sidebar_ad_caption" style="font-weight:600;">Judul / Caption:</label>
-        <input type="text" id="lx_sidebar_ad_caption" name="lx_sidebar_ad_caption"
-               value="<?php echo esc_attr($caption); ?>" style="width:100%;margin-top:5px;" placeholder="Mis: Promo Spesial" />
-    </p>
-    <p style="margin-top:12px;">
-        <label for="lx_sidebar_ad_link" style="font-weight:600;">Link Tujuan (Opsional):</label>
-        <input type="url" id="lx_sidebar_ad_link" name="lx_sidebar_ad_link"
-               value="<?php echo esc_attr($link); ?>" style="width:100%;margin-top:5px;" placeholder="https://..." />
-    </p>
-    <p style="margin-top:12px;">
-        <label>
-            <input type="checkbox" name="lx_sidebar_ad_active" value="1" <?php checked($active, '1'); ?> />
-            Tampilkan iklan di sidebar artikel ini
-        </label>
-    </p>
+    <div id="lx-ads-wrapper" style="margin:8px 0;">
+        <p style="margin:0 0 14px; color:#555;">Atur hingga 10 iklan yang tampil di sidebar artikel ini. Klik "Pilih Gambar" untuk upload dari Media Library.</p>
+
+        <div id="lx-ads-list">
+            <?php $i = 0; foreach ($ads as $ad) : setup_ad_row($post->ID, $i, $ad); $i++; endforeach; ?>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-top:14px;">
+            <button type="button" class="button button-primary" id="lx-ad-add" <?php echo $count >= 10 ? 'disabled' : ''; ?>>+ Tambah Iklan</button>
+            <span id="lx-ad-count" style="font-size:13px;color:#888;"><?php echo $count; ?> / 10</span>
+            <span id="lx-ad-msg" style="font-size:12px;color:#b8860b;display:none;">Maksimal 10 iklan.</span>
+        </div>
+    </div>
+
+    <script type="text/html" id="tmpl-lx-ad-row">
+        <div class="lx-ad-row" style="background:#f6f7f7;border:1px solid #ddd;border-radius:8px;padding:14px 16px;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <span class="lx-ad-label" style="font-weight:600;font-size:13px;color:#333;">Iklan #<span class="lx-ad-idx"></span></span>
+                <button type="button" class="button button-small lx-ad-toggle" aria-label="Toggle" style="margin-left:auto;">
+                    <span class="dashicons dashicons-arrow-up" style="font-size:16px;width:16px;height:16px;"></span>
+                </button>
+                <button type="button" class="button button-small lx-ad-remove" aria-label="Hapus" style="color:#b32d2e;">
+                    <span class="dashicons dashicons-trash" style="font-size:16px;width:16px;height:16px;"></span>
+                </button>
+            </div>
+            <div class="lx-ad-body">
+                <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;">
+                    <div class="lx-ad-preview" style="width:100px;height:70px;border-radius:4px;overflow:hidden;background:#e5e5e5;flex-shrink:0;display:none;align-items:center;justify-content:center;">
+                        <span style="color:#999;font-size:11px;">No Image</span>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="display:flex;gap:6px;margin-bottom:6px;">
+                            <input type="text" id="lx_ad_image___IDX__" name="lx_sidebar_ads[__IDX__][image_url]" value="" placeholder="https://..." style="width:100%;">
+                            <button type="button" class="button lx-ad-upload" data-index="__IDX__">Pilih Gambar</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
+                    <div>
+                        <label style="font-size:12px;color:#666;display:block;margin-bottom:3px;">Judul / Caption</label>
+                        <input type="text" name="lx_sidebar_ads[__IDX__][caption]" value="" placeholder="Mis: Promo Spesial" style="width:100%;">
+                    </div>
+                    <div>
+                        <label style="font-size:12px;color:#666;display:block;margin-bottom:3px;">Link Tujuan</label>
+                        <input type="url" name="lx_sidebar_ads[__IDX__][link_url]" value="" placeholder="https://..." style="width:100%;">
+                    </div>
+                </div>
+                <div>
+                    <label style="font-size:12px;">
+                        <input type="checkbox" name="lx_sidebar_ads[__IDX__][active]" value="1">
+                        Tampilkan iklan ini
+                    </label>
+                </div>
+            </div>
+        </div>
+    </script>
+
     <script>
     jQuery(document).ready(function($) {
-        var uploader = wp.media({
-            title: 'Pilih Gambar Iklan Sidebar',
-            button: { text: 'Gunakan' },
-            multiple: false
-        });
-        $('#lx_sidebar_ad_upload').on('click', function(e) {
+        var uploaders = {};
+
+        $('#lx-ads-list').on('click', '.lx-ad-upload', function(e) {
             e.preventDefault();
-            uploader.open();
+            var btn = $(this);
+            var idx = btn.data('index');
+            var input = $('#lx_ad_image_' + idx);
+
+            if (uploaders[idx]) {
+                uploaders[idx].open();
+                return;
+            }
+
+            uploaders[idx] = wp.media({
+                title: 'Pilih Gambar Iklan',
+                button: { text: 'Gunakan' },
+                multiple: false
+            });
+
+            uploaders[idx].on('select', function() {
+                var attachment = uploaders[idx].state().get('selection').first().toJSON();
+                input.val(attachment.url);
+                btn.closest('.lx-ad-row').find('.lx-ad-preview img').attr('src', attachment.url);
+                btn.closest('.lx-ad-row').find('.lx-ad-preview').show();
+            });
+
+            uploaders[idx].open();
         });
-        uploader.on('select', function() {
-            var attachment = uploader.state().get('selection').first().toJSON();
-            $('#lx_sidebar_ad_image').val(attachment.url);
+
+        // Toggle collapse
+        $('#lx-ads-list').on('click', '.lx-ad-toggle', function() {
+            var body = $(this).closest('.lx-ad-row').find('.lx-ad-body');
+            var icon = $(this).find('.dashicons');
+            body.slideToggle(200);
+            icon.toggleClass('dashicons-arrow-down dashicons-arrow-up');
         });
+
+        // Add row
+        var adIdx = <?php echo $count; ?>;
+        $('#lx-ad-add').on('click', function() {
+            if (adIdx >= 10) return;
+            var tmpl = $('#tmpl-lx-ad-row').html()
+                .replace(/__IDX__/g, adIdx)
+                .replace(/__IDX_LABEL__/g, adIdx + 1);
+            var $row = $(tmpl);
+            $row.find('.lx-ad-preview img').remove(); // no img in template
+            $row.find('.lx-ad-idx').text(adIdx + 1);
+            $('#lx-ads-list').append($row);
+            adIdx++;
+            updateAdCount();
+        });
+
+        // Remove row
+        $('#lx-ads-list').on('click', '.lx-ad-remove', function() {
+            if (confirm('Hapus iklan ini?')) {
+                $(this).closest('.lx-ad-row').remove();
+                updateAdCount();
+                reindexRows();
+            }
+        });
+
+        function updateAdCount() {
+            var count = $('#lx-ads-list .lx-ad-row').length;
+            $('#lx-ad-count').text(count + ' / 10');
+            $('#lx-ad-add').prop('disabled', count >= 10);
+            $('#lx-ad-msg').toggle(count >= 10);
+        }
+
+        function reindexRows() {
+            $('#lx-ads-list .lx-ad-row').each(function(i) {
+                $(this).find('[data-index]').data('index', i);
+                $(this).find('[id^="lx_ad_image_"]').each(function() {
+                    var oldId = this.id;
+                    var newId = 'lx_ad_image_' + i;
+                    this.id = newId;
+                    this.name = 'lx_sidebar_ads[' + i + '][image_url]';
+                });
+                $(this).find('[name^="lx_sidebar_ads["]').each(function() {
+                    var name = this.name;
+                    this.name = name.replace(/\[\d+\]/, '[' + i + ']');
+                });
+                $(this).find('.lx-ad-label').text('Iklan #' + (i + 1));
+            });
+        }
     });
     </script>
     <?php
 }
 
+function setup_ad_row($post_id, $idx, $ad) {
+    $image   = $ad['image_url'] ?? '';
+    $link    = $ad['link_url']  ?? '';
+    $caption = $ad['caption']   ?? '';
+    $active  = ($ad['active'] ?? '0') === '1';
+    ?>
+    <div class="lx-ad-row" style="background:#f6f7f7;border:1px solid #ddd;border-radius:8px;padding:14px 16px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <span class="lx-ad-label" style="font-weight:600;font-size:13px;color:#333;">Iklan #<?php echo $idx + 1; ?></span>
+            <button type="button" class="button button-small lx-ad-toggle" aria-label="Toggle" style="margin-left:auto;">
+                <span class="dashicons dashicons-arrow-up" style="font-size:16px;width:16px;height:16px;"></span>
+            </button>
+            <button type="button" class="button button-small lx-ad-remove" aria-label="Hapus" style="color:#b32d2e;">
+                <span class="dashicons dashicons-trash" style="font-size:16px;width:16px;height:16px;"></span>
+            </button>
+        </div>
+
+        <div class="lx-ad-body">
+            <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;">
+                <div class="lx-ad-preview" style="width:100px;height:70px;border-radius:4px;overflow:hidden;background:#e5e5e5;flex-shrink:0;display:flex;align-items:center;justify-content:center;<?php echo $image ? '' : 'display:none;'; ?>">
+                    <?php if ($image) : ?>
+                        <img src="<?php echo esc_url($image); ?>" style="width:100%;height:100%;object-fit:cover;">
+                    <?php else : ?>
+                        <span style="color:#999;font-size:11px;">No Image</span>
+                    <?php endif; ?>
+                </div>
+                <div style="flex:1;">
+                    <div style="display:flex;gap:6px;margin-bottom:6px;">
+                        <input type="text" id="lx_ad_image_<?php echo $idx; ?>" name="lx_sidebar_ads[<?php echo $idx; ?>][image_url]"
+                               value="<?php echo esc_attr($image); ?>" placeholder="https://..." style="width:100%;">
+                        <button type="button" class="button lx-ad-upload" data-index="<?php echo $idx; ?>">Pilih Gambar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
+                <div>
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:3px;">Judul / Caption</label>
+                    <input type="text" name="lx_sidebar_ads[<?php echo $idx; ?>][caption]"
+                           value="<?php echo esc_attr($caption); ?>" placeholder="Mis: Promo Spesial" style="width:100%;">
+                </div>
+                <div>
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:3px;">Link Tujuan</label>
+                    <input type="url" name="lx_sidebar_ads[<?php echo $idx; ?>][link_url]"
+                           value="<?php echo esc_attr($link); ?>" placeholder="https://..." style="width:100%;">
+                </div>
+            </div>
+
+            <div>
+                <label style="font-size:12px;">
+                    <input type="checkbox" name="lx_sidebar_ads[<?php echo $idx; ?>][active]" value="1" <?php checked($active, true); ?>>
+                    Tampilkan iklan ini
+                </label>
+            </div>
+        </div>
+    </div>
+    <?php
+}
+
 function lx_sidebar_ad_save_meta($post_id) {
-    if (!isset($_POST['lx_sidebar_ad_nonce']) || !wp_verify_nonce($_POST['lx_sidebar_ad_nonce'], 'lx_sidebar_ad_save')) {
+    if (!isset($_POST['lx_sidebar_ads_nonce']) || !wp_verify_nonce($_POST['lx_sidebar_ads_nonce'], 'lx_sidebar_ads_save')) {
         return;
     }
     if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
     if (!current_user_can('edit_post', $post_id)) return;
 
-    $fields = [
-        '_sidebar_ad_image'   => 'esc_url_raw',
-        '_sidebar_ad_link'    => 'esc_url_raw',
-        '_sidebar_ad_caption' => 'sanitize_text_field',
-        '_sidebar_ad_active'  => fn($v) => isset($_POST['lx_sidebar_ad_active']) ? '1' : '0',
-    ];
-
-    foreach ($fields as $meta_key => $sanitize) {
-        if ($meta_key === '_sidebar_ad_active') {
-            update_post_meta($post_id, $meta_key, $sanitize(null));
-        } elseif (isset($_POST[str_replace('_sidebar_ad_', 'lx_sidebar_ad_', $meta_key)])) {
-            $value = $sanitize($_POST[str_replace('_sidebar_ad_', 'lx_sidebar_ad_', $meta_key)]);
-            update_post_meta($post_id, $meta_key, $value);
+    $ads = [];
+    if (isset($_POST['lx_sidebar_ads']) && is_array($_POST['lx_sidebar_ads'])) {
+        foreach ($_POST['lx_sidebar_ads'] as $raw) {
+            $ad = [
+                'image_url' => isset($raw['image_url']) ? esc_url_raw($raw['image_url']) : '',
+                'link_url'  => isset($raw['link_url']) ? esc_url_raw($raw['link_url']) : '',
+                'caption'   => isset($raw['caption']) ? sanitize_text_field($raw['caption']) : '',
+                'active'    => isset($raw['active']) && $raw['active'] === '1' ? '1' : '0',
+            ];
+            if (!empty($ad['image_url'])) {
+                $ads[] = $ad;
+            }
         }
     }
+
+    if (!empty($ads)) {
+        update_post_meta($post_id, '_sidebar_ads', $ads);
+    } else {
+        delete_post_meta($post_id, '_sidebar_ads');
+    }
+
+    // Clean up old meta keys
+    delete_post_meta($post_id, '_sidebar_ad_image');
+    delete_post_meta($post_id, '_sidebar_ad_link');
+    delete_post_meta($post_id, '_sidebar_ad_caption');
+    delete_post_meta($post_id, '_sidebar_ad_active');
 }
 add_action('save_post', 'lx_sidebar_ad_save_meta');
 
@@ -10130,10 +10311,15 @@ function render_article_sidebar_content($content) {
     }
 
     // 2. Sidebar ad
-    $ad_image   = get_post_meta(get_the_ID(), '_sidebar_ad_image', true);
-    $ad_link    = get_post_meta(get_the_ID(), '_sidebar_ad_link', true);
-    $ad_caption = get_post_meta(get_the_ID(), '_sidebar_ad_caption', true);
-    $ad_active  = get_post_meta(get_the_ID(), '_sidebar_ad_active', true) === '1' && !empty($ad_image);
+    $sidebar_ads = get_post_meta(get_the_ID(), '_sidebar_ads', true);
+    if (!is_array($sidebar_ads)) {
+        $sidebar_ads = [];
+    }
+    // Filter only active ads with images
+    $sidebar_ads = array_filter($sidebar_ads, function($a) {
+        return !empty($a['image_url']) && ($a['active'] ?? '0') === '1';
+    });
+    $sidebar_ads = array_values($sidebar_ads); // reindex
 
     // 3. Author info
     $author_id   = get_the_author_meta('ID');
@@ -10551,22 +10737,23 @@ function render_article_sidebar_content($content) {
         </div>
         <?php endif; ?>
 
-        <!-- Ad Card -->
-        <?php if ($ad_active) : ?>
-        <div class="lx-sb-card">
-            <span class="lx-sb-ad-badge">Iklan</span>
-            <h4 class="lx-sb-heading">Featured</h4>
-            <?php if (!empty($ad_link)) : ?>
-                <a href="<?php echo esc_url($ad_link); ?>" target="_blank" rel="noopener nofollow">
-                    <img src="<?php echo esc_url($ad_image); ?>" alt="Iklan" class="lx-sb-ad-img">
-                </a>
-            <?php else : ?>
-                <img src="<?php echo esc_url($ad_image); ?>" alt="Iklan" class="lx-sb-ad-img">
-            <?php endif; ?>
-            <?php if ($ad_caption) : ?>
-            <p class="lx-sb-ad-caption"><?php echo esc_html($ad_caption); ?></p>
-            <?php endif; ?>
-        </div>
+        <!-- Ad Cards -->
+        <?php if (!empty($sidebar_ads)) : ?>
+            <?php foreach ($sidebar_ads as $ad) : ?>
+            <div class="lx-sb-card">
+                <span class="lx-sb-ad-badge">Iklan</span>
+                <?php if (!empty($ad['link_url'])) : ?>
+                    <a href="<?php echo esc_url($ad['link_url']); ?>" target="_blank" rel="noopener nofollow">
+                        <img src="<?php echo esc_url($ad['image_url']); ?>" alt="Iklan" class="lx-sb-ad-img">
+                    </a>
+                <?php else : ?>
+                    <img src="<?php echo esc_url($ad['image_url']); ?>" alt="Iklan" class="lx-sb-ad-img">
+                <?php endif; ?>
+                <?php if (!empty($ad['caption'])) : ?>
+                <p class="lx-sb-ad-caption"><?php echo esc_html($ad['caption']); ?></p>
+                <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
         <?php endif; ?>
 
     </aside>
