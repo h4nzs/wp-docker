@@ -1,0 +1,266 @@
+/* Drone Mapping Page Styles */
+.page-drone-mapping {
+    position: relative;
+    min-height: 100vh;
+    background: #0a0a0f;
+    color: #e5e5e5;
+    overflow: hidden;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* ========== HERO ========== */
+.page-drone-mapping .hero {
+    padding: 80px 20px 40px;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.page-drone-mapping .hero__tag {
+    display: inline-block;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #d4af37;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    padding: 6px 18px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+}
+
+.page-drone-mapping .hero__title {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 600;
+    line-height: 1.15;
+    color: #fff;
+    margin: 0 0 20px;
+}
+
+.page-drone-mapping .hero__title span {
+    color: #d4af37;
+}
+
+.page-drone-mapping .hero__desc {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #999;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* ========== DIVIDER ========== */
+.page-drone-mapping .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+/* ========== SECTION ========== */
+.page-drone-mapping .section {
+    padding: 50px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-drone-mapping .section-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.page-drone-mapping .section-title span {
+    color: #d4af37;
+}
+
+.page-drone-mapping .section-foto {
+    padding-top: 20px;
+}
+
+/* ========== VIDEO SHOWCASE (copied from video-produk-iklan pattern) ========== */
+.page-drone-mapping .video-showcase {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.page-drone-mapping .video-card {
+    background: #111;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.page-drone-mapping .video-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(212, 175, 55, 0.3);
+}
+
+.page-drone-mapping .video-thumb {
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    background: #000;
+}
+
+.page-drone-mapping .video-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.page-drone-mapping .video-card:hover .video-thumb img {
+    transform: scale(1.03);
+}
+
+.page-drone-mapping .ratio16x9 {
+    aspect-ratio: 16 / 9;
+}
+
+.page-drone-mapping .play-btn-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+    transition: background 0.3s ease;
+}
+
+.page-drone-mapping .video-thumb:hover .play-btn-overlay {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.page-drone-mapping .play-btn-overlay svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.85;
+    transition: opacity 0.2s;
+}
+
+.page-drone-mapping .video-thumb:hover .play-btn-overlay svg {
+    opacity: 1;
+}
+
+.page-drone-mapping .video-thumb iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.page-drone-mapping .video-card-body {
+    padding: 16px;
+}
+
+.page-drone-mapping .video-card-body h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 4px;
+}
+
+.page-drone-mapping .video-card-body p {
+    font-size: 0.85rem;
+    color: #999;
+    margin: 0 0 8px;
+}
+
+.page-drone-mapping .vid-tag {
+    display: inline-block;
+    font-size: 11px;
+    background: rgba(212, 175, 55, 0.12);
+    color: #d4af37;
+    padding: 3px 10px;
+    border-radius: 10px;
+}
+
+/* ========== FOTO GRID ========== */
+.page-drone-mapping .foto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.page-drone-mapping .foto-card {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    cursor: pointer;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.page-drone-mapping .foto-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.page-drone-mapping .foto-card:hover img {
+    transform: scale(1.05);
+}
+
+.page-drone-mapping .foto-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px 16px 14px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.page-drone-mapping .foto-card:hover .foto-card-overlay {
+    opacity: 1;
+}
+
+.page-drone-mapping .foto-card-overlay h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 2px;
+}
+
+.page-drone-mapping .foto-card-overlay p {
+    font-size: 0.8rem;
+    color: #ccc;
+    margin: 0;
+}
+
+/* ========== NO CONTENT ========== */
+.page-drone-mapping .no-content {
+    text-align: center;
+    color: #666;
+    padding: 60px 20px;
+    font-size: 1rem;
+    grid-column: 1 / -1;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .page-drone-mapping .hero {
+        padding: 60px 16px 30px;
+    }
+    .page-drone-mapping .video-showcase {
+        grid-template-columns: 1fr;
+    }
+    .page-drone-mapping .foto-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-drone-mapping .foto-grid {
+        grid-template-columns: 1fr;
+    }
+}

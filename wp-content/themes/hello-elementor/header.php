@@ -49,6 +49,7 @@ if ( hello_elementor_display_header_footer() ) {
 	          <li><a href="<?php echo esc_url( home_url('/video-produk-branding-iklan/') ); ?>">Video Produk &amp; Branding Iklan</a></li>
 	          <li><a href="<?php echo esc_url( home_url('/dokumentasi-event/') ); ?>">Dokumentasi Event</a></li>
 	          <li><a href="<?php echo esc_url( home_url('/video-klip/') ); ?>">Video Klip</a></li>
+	          <li><a href="<?php echo esc_url( home_url('/drone-mapping/') ); ?>">Drone Mapping</a></li>
 	        </ul>
 	      </li>
 	      <li class="menu-item-has-children">
