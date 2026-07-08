@@ -12228,9 +12228,6 @@ function render_landing_content_shortcode() {
     <!-- Background glowing fluid blobs -->
 <div class="fluid-glow glow-left"></div>
 <div class="fluid-glow glow-right"></div>
-
-
-
 <!-- HERO SECTION -->
 <header class="hero-wrapper">
   <div class="hero-bg-overlay"></div>
@@ -12375,8 +12372,15 @@ function render_landing_content_shortcode() {
   <div class="services-flex-grid">
     <?php
     $services_data = [
+        'sewa-fotografer-videografer-pilot-drone' => [
+            'num'   => '01',
+            'title' => 'Sewa Fotografer, Videografer, Pilot drone',
+            'desc'  => 'Jasa dokumentasi profesional untuk event, pernikahan, company profile, dan kebutuhan komersial dengan kualitas visual tinggi menggunakan kamera modern serta drone berlisensi.',
+            'img'   => 'https://profesional-indonesia.com/wp-content/uploads/2026/06/Gemini_Generated_Image_3dxcis3dxcis3dxc.png',
+            'link'  => home_url('/list-personel/')
+        ],
         'event-production-event-organizer' => [
-            'num' => '01 — UNGGULAN',
+            'num' => '01',
             'title' => 'Event Production',
             'desc' => 'Multicam live streaming, videotron, sound system, MC, panggung, backdrop, lighting, dan kebutuhan event lainnya — lengkap dalam satu tim.',
             'img' => 'https://profesional-indonesia.com/wp-content/uploads/2026/04/WhatsApp-Image-2026-04-25-at-08.59.52-1.jpeg'
@@ -12410,6 +12414,12 @@ function render_landing_content_shortcode() {
             'title' => 'Video Klip',
             'desc' => 'Produksi video musik/klip sinematik untuk musisi, band, atau kebutuhan promosi kreatif dengan konsep visual yang kuat dan memukau.',
             'img' => 'https://profesional-indonesia.com/wp-content/uploads/2026/04/2j268em4i7ysu14.jpeg'
+        ],
+        'drone-mapping' => [
+            'num' => '07',
+            'title' => 'Drone Mapping',
+            'desc' => 'Layanan pemetaan udara profesional untuk lahan, konstruksi, properti, perkebunan, dan survei menggunakan teknologi drone dengan hasil orthophoto, DEM/DSM, dan model 3D.',
+            'img' => 'https://profesional-indonesia.com/wp-content/uploads/2026/06/Jasa-Drone-Mapping.png'
         ]
     ];
 
@@ -12430,7 +12440,7 @@ function render_landing_content_shortcode() {
         }
 
         $title = $page_match ? get_the_title($page_match->ID) : $fallback['title'];
-        $link = $page_match ? get_permalink($page_match->ID) : '#';
+        $link = $fallback['link'] ?? ($page_match ? get_permalink($page_match->ID) : '#');
         $desc = ($page_match && !empty($page_match->post_excerpt)) ? $page_match->post_excerpt : $fallback['desc'];
         $img = $fallback['img'];
         if ($page_match) {
@@ -12882,6 +12892,9 @@ function render_landing_content_shortcode() {
       </div>
     </div>
     <?php endforeach; ?>
+  </div>
+  <div class="lx-btn-wrap reveal" style="text-align:center;margin:40px 0 20px">
+    <a href="<?php echo esc_url(home_url('/portofolio-foto/')); ?>" class="lx-btn-outline">Lihat Portofolio Lainnya &rarr;</a>
   </div>
   <div class="clients-strip-box reveal">
     <div class="clients-strip-inner">
@@ -15855,6 +15868,140 @@ function render_video_produk_iklan_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('video_produk_iklan', 'render_video_produk_iklan_shortcode');
+
+/**
+ * HALAMAN DRONE MAPPING
+ * Shortcode: [drone_mapping]
+ * Menampilkan portofolio foto + video drone & aerial
+ */
+function enqueue_drone_mapping_assets() {
+    $css_version = file_exists(get_stylesheet_directory() . '/assets/css/drone-mapping.css') ? filemtime(get_stylesheet_directory() . '/assets/css/drone-mapping.css') : '1.0.0';
+    wp_register_style('drone-mapping-css', get_stylesheet_directory_uri() . '/assets/css/drone-mapping.css', [], $css_version);
+}
+add_action('wp_enqueue_scripts', 'enqueue_drone_mapping_assets');
+
+function render_drone_mapping_shortcode() {
+    global $wpdb;
+    wp_enqueue_style('drone-mapping-css');
+
+    // Query video dengan kategori drone-aerial
+    $videos = $wpdb->get_results(
+        "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
+         FROM wp9y_portofolio_video v
+         JOIN wp9y_personel p ON v.personel_id = p.id
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug = 'drone-aerial'
+         ORDER BY v.id DESC
+         LIMIT 6"
+    );
+
+    // Query foto dengan kategori drone-aerial
+    $fotos = $wpdb->get_results(
+        "SELECT DISTINCT f.*, p.nama_panggilan, p.kode_nama
+         FROM wp9y_portofolio f
+         JOIN wp9y_personel p ON f.personel_id = p.id
+         JOIN wp9y_portofolio_kategori_map m ON f.id = m.portofolio_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE f.status = 'approved' AND p.status = 'approved' AND k.slug = 'drone-aerial'
+         ORDER BY f.id DESC
+         LIMIT 12"
+    );
+
+    $use_fallback = (!$videos || count($videos) < 2);
+
+    ob_start();
+    ?>
+    <div class="page-drone-mapping">
+      <div class="fluid-glow glow-left"></div>
+      <div class="fluid-glow glow-right"></div>
+
+      <section class="hero">
+        <div class="hero__inner reveal">
+          <span class="hero__tag">Layanan — Drone Mapping &amp; Aerial Survey</span>
+          <h1 class="hero__title">Pemetaan Udara — <span>Drone Mapping</span></h1>
+          <p class="hero__desc">
+            Layanan drone mapping profesional untuk pemetaan lahan, konstruksi, properti, perkebunan, dan survei udara.
+            Menggunakan teknologi orthophoto, DEM/DSM, dan model 3D yang akurat dan siap pakai untuk kebutuhan
+            analisis, perencanaan, dan dokumentasi proyek Anda.
+          </p>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="section">
+        <div class="reveal-zoom">
+          <div class="video-showcase">
+            <?php if ($use_fallback): ?>
+                    <div class="no-content">
+                      <p>Belum ada portofolio drone mapping. Tim kami sedang mengembangkan layanan ini.</p>
+                    </div>
+            <?php else:
+                foreach ($videos as $vid):
+                    $embed_url = $vid->video_url ? str_replace('watch?v=', 'embed/', $vid->video_url) . '?autoplay=1' : '';
+                    $yt_id = '';
+                    if ($vid->video_url) {
+                        parse_str(parse_url($vid->video_url, PHP_URL_QUERY), $yt_params);
+                        $yt_id = $yt_params['v'] ?? '';
+                    }
+            ?>
+                    <div class="video-card reveal">
+                      <div class="video-thumb ratio16x9" data-embed="<?php echo esc_url($embed_url); ?>">
+                        <img src="https://img.youtube.com/vi/<?php echo $yt_id; ?>/hqdefault.jpg" alt="<?php echo esc_attr($vid->judul ?? 'Drone Video'); ?>">
+                        <div class="play-btn-overlay"><svg viewBox="0 0 24 24" width="48" height="48" fill="white"><polygon points="8,5 19,12 8,19" opacity="0.9"/></svg></div>
+                      </div>
+                      <div class="video-card-body">
+                        <h3><?php echo esc_html($vid->judul ?? 'Drone Mapping'); ?></h3>
+                        <p>by <?php echo esc_html($vid->nama_panggilan . '-' . $vid->kode_nama); ?></p>
+                        <span class="vid-tag">Drone Aerial</span>
+                      </div>
+                    </div>
+            <?php
+                endforeach;
+            endif; ?>
+          </div>
+        </div>
+      </section>
+
+      <?php if ($fotos): ?>
+      <section class="section section-foto">
+        <div class="reveal-zoom">
+          <h2 class="section-title">Foto <span>Drone Mapping</span></h2>
+          <div class="foto-grid">
+            <?php foreach ($fotos as $f):
+                $foto_url = $f->foto_url ?? '';
+                $foto_thumb = $f->foto_thumbnail ?? $foto_url;
+            ?>
+                <div class="foto-card reveal-zoom">
+                  <img src="<?php echo esc_url($foto_thumb); ?>" alt="<?php echo esc_attr($f->judul ?? 'Drone Foto'); ?>">
+                  <div class="foto-card-overlay">
+                    <h4><?php echo esc_html($f->judul ?? 'Drone Mapping'); ?></h4>
+                    <p>by <?php echo esc_html($f->nama_panggilan . '-' . $f->kode_nama); ?></p>
+                  </div>
+                </div>
+            <?php endforeach; ?>
+          </div>
+        </div>
+      </section>
+      <?php endif; ?>
+
+    </div>
+
+    <script>
+    jQuery(document).ready(function($) {
+      $('.video-thumb').on('click', function() {
+        var embed = $(this).data('embed');
+        if (embed) {
+          $(this).html('<iframe src="'+embed+'" frameborder="0" allowfullscreen></iframe>');
+        }
+      });
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('drone_mapping', 'render_drone_mapping_shortcode');
 
 
 /* =========================================================
