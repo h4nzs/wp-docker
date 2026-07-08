@@ -14590,8 +14590,9 @@ function render_company_profile_shortcode() {
         "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio_video v
          JOIN wp9y_personel p ON v.personel_id = p.id
-         JOIN wp9y_service_map sm ON sm.item_type = 'video' AND sm.item_id = v.id
-         WHERE v.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'jasa-pembuatan-video-company-profile'
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug = 'corporate-company'
          ORDER BY v.id DESC
          LIMIT 9"
     );
@@ -14608,17 +14609,7 @@ function render_company_profile_shortcode() {
         );
     }
 
-    
-    // Query foto
-    $fotos = $wpdb->get_results(
-        "SELECT DISTINCT p.*, ps.nama_panggilan, ps.kode_nama
-         FROM wp9y_portofolio p
-         JOIN wp9y_personel ps ON p.personel_id = ps.id
-         JOIN wp9y_service_map sm ON sm.item_type = 'foto' AND sm.item_id = p.id
-         WHERE p.status = 'approved' AND ps.status = 'approved' AND sm.service_slug = 'jasa-pembuatan-video-company-profile'
-         ORDER BY p.id DESC"
-    );
-ob_start();
+    ob_start();
     ?>
     <div class="cp-blob cp-blob--l" aria-hidden="true"></div>
     <div class="cp-blob cp-blob--r" aria-hidden="true"></div>
@@ -14665,48 +14656,6 @@ ob_start();
     </section>
 
     <!-- MODAL VIDEO -->
-
-          <?php if ($fotos): ?>
-          <div class="divider"></div>
-          <section class="section">
-            <div class="reveal-zoom">
-              <div class="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
-                <?php foreach ($fotos as $f):
-                    $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
-                ?>
-                <div class="photo-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="cp_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
-                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
-                  <div style="padding:12px;">
-                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
-                    <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
-                  </div>
-                </div>
-                <?php endforeach; ?>
-              </div>
-            </div>
-          </section>
-          <div class="video-modal" id="cpLightbox" style="z-index:9999;display:none;">
-            <div class="video-modal__backdrop" onclick="cp_closeLightbox()"></div>
-            <div class="video-modal__content" style="background:transparent;box-shadow:none;">
-              <button class="video-modal__close" onclick="cp_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
-              <div class="video-modal__wrap" style="text-align:center;">
-                <img id="cpLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
-              </div>
-            </div>
-          </div>
-          <script>
-          function cp_openLightbox(url){
-            document.getElementById("cpLightboxImg").src = url;
-            document.getElementById("cpLightbox").style.display = "block";
-          }
-          function cp_closeLightbox(){
-            document.getElementById("cpLightboxImg").src = "";
-            document.getElementById("cpLightbox").style.display = "none";
-          }
-          document.addEventListener("keydown",function(e){if(e.key==="Escape")cp_closeLightbox();});
-          </script>
-          <?php endif; ?>
     <div class="cp-modal" id="cpVideoModal">
       <div class="cp-modal__backdrop" onclick="cp_closeVideo()"></div>
       <div class="cp-modal__content">
@@ -14850,8 +14799,9 @@ function render_wedding_shortcode() {
         "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio_video v
          JOIN wp9y_personel p ON v.personel_id = p.id
-         JOIN wp9y_service_map sm ON sm.item_type = 'video' AND sm.item_id = v.id
-         WHERE v.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'wedding-prawedding'
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug = 'wedding-personal'
          ORDER BY v.id DESC
          LIMIT 1"
     );
@@ -14867,17 +14817,7 @@ function render_wedding_shortcode() {
         );
     }
 
-    
-    // Query foto
-    $fotos = $wpdb->get_results(
-        "SELECT DISTINCT p.*, ps.nama_panggilan, ps.kode_nama
-         FROM wp9y_portofolio p
-         JOIN wp9y_personel ps ON p.personel_id = ps.id
-         JOIN wp9y_service_map sm ON sm.item_type = 'foto' AND sm.item_id = p.id
-         WHERE p.status = 'approved' AND ps.status = 'approved' AND sm.service_slug = 'wedding-prawedding'
-         ORDER BY p.id DESC"
-    );
-ob_start();
+    ob_start();
     ?>
     <div class="wd-blob wd-blob--l" aria-hidden="true"></div>
     <div class="wd-blob wd-blob--r" aria-hidden="true"></div>
@@ -14933,48 +14873,6 @@ ob_start();
     <?php endif; ?>
 
     <!-- MODAL VIDEO -->
-
-          <?php if ($fotos): ?>
-          <div class="divider"></div>
-          <section class="section">
-            <div class="reveal-zoom">
-              <div class="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
-                <?php foreach ($fotos as $f):
-                    $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
-                ?>
-                <div class="photo-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="wd_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
-                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
-                  <div style="padding:12px;">
-                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
-                    <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
-                  </div>
-                </div>
-                <?php endforeach; ?>
-              </div>
-            </div>
-          </section>
-          <div class="video-modal" id="wdLightbox" style="z-index:9999;display:none;">
-            <div class="video-modal__backdrop" onclick="wd_closeLightbox()"></div>
-            <div class="video-modal__content" style="background:transparent;box-shadow:none;">
-              <button class="video-modal__close" onclick="wd_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
-              <div class="video-modal__wrap" style="text-align:center;">
-                <img id="wdLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
-              </div>
-            </div>
-          </div>
-          <script>
-          function wd_openLightbox(url){
-            document.getElementById("wdLightboxImg").src = url;
-            document.getElementById("wdLightbox").style.display = "block";
-          }
-          function wd_closeLightbox(){
-            document.getElementById("wdLightboxImg").src = "";
-            document.getElementById("wdLightbox").style.display = "none";
-          }
-          document.addEventListener("keydown",function(e){if(e.key==="Escape")wd_closeLightbox();});
-          </script>
-          <?php endif; ?>
     <div class="wd-modal" id="wdVideoModal">
       <div class="wd-modal__backdrop" onclick="wd_closeVideo()"></div>
       <div class="wd-modal__content">
@@ -15079,23 +14977,15 @@ function render_event_production_shortcode() {
         "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio_video v
          JOIN wp9y_personel p ON v.personel_id = p.id
-         JOIN wp9y_service_map sm ON sm.item_type = 'video' AND sm.item_id = v.id
-         WHERE v.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'event-production-event-organizer'
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug = 'multimedia-production-service'
          ORDER BY v.id DESC
          LIMIT 9"
     );
-    // Query foto portofolio
-    $fotos = $wpdb->get_results(
-        "SELECT DISTINCT p.*, ps.nama_panggilan, ps.kode_nama
-         FROM wp9y_portofolio p
-         JOIN wp9y_personel ps ON p.personel_id = ps.id
-         JOIN wp9y_service_map sm ON sm.item_type = 'foto' AND sm.item_id = p.id
-         WHERE p.status = 'approved' AND ps.status = 'approved' AND sm.service_slug = 'event-production-event-organizer'
-         ORDER BY p.id DESC"
-    );
 
-    // No fallback — if empty, show nothing
-    $has_videos = $videos && count($videos) > 0;
+    // Fallback: if database has fewer than 3 videos, use hardcoded list from mockup
+    $use_fallback = (!$videos || count($videos) < 3);
 
     ob_start();
     ?>
@@ -15118,8 +15008,20 @@ function render_event_production_shortcode() {
       <section class="section">
         <div class="reveal-zoom">
           <div class="video-showcase">
-            <?php if (!$has_videos): ?>
-                    echo '<div class="no-content"><p>Belum ada portofolio untuk halaman ini.</p></div>';
+            <?php if ($use_fallback): 
+                // Hardcoded fallback list matching mockup
+                $fallback_items = [
+                    ['title' => 'Event Showcase 1', 'author' => 'ian-0064-FVD', 'yt' => 'NkycgR8UoIY', 'tag' => 'Event Production'],
+                    ['title' => 'Event Showcase 2', 'author' => 'ian-0064-FVD', 'yt' => '1yCklnC5aoY', 'tag' => 'Event Organizer'],
+                    ['title' => 'Event Showcase 3', 'author' => 'Krisnha-0068-D', 'yt' => 'YM-ZanSFvlo', 'tag' => 'Event Production'],
+                    ['title' => 'Corporate Gathering', 'author' => 'cegum-0043-FVDE', 'yt' => 'duLzCt-xKJE', 'tag' => 'Corporate Event'],
+                    ['title' => 'Product Launching', 'author' => 'ONO-0001-FVDEP', 'yt' => 'qMhCdTJk3uw', 'tag' => 'Launching Event'],
+                    ['title' => 'Private Event', 'author' => 'ian-0064-FVD', 'yt' => 'AWLDShDOwLU', 'tag' => 'Private Event'],
+                    ['title' => 'Stage Production', 'author' => 'cegum-0043-FVDE', 'yt' => '_CXpqsRkhAk', 'tag' => 'Event Stage'],
+                    ['title' => 'Event Documentation', 'author' => 'cegum-0043-FVDE', 'yt' => 'btdW-kv_Nf0', 'tag' => 'Event Documentation'],
+                    ['title' => 'Creative Concept Event', 'author' => 'cegum-0043-FVDE', 'yt' => 'BbMEzFYObIQ', 'tag' => 'Event Concept'],
+                ];
+                foreach ($fallback_items as $item):
                     $embed_url = "https://www.youtube.com/embed/" . $item['yt'] . "?autoplay=1";
                     $thumb_url = "https://img.youtube.com/vi/" . $item['yt'] . "/mqdefault.jpg";
                     $detail_link = home_url('/detail-personel/?kode=' . urlencode(explode('-', $item['author'], 2)[1] ?? $item['author']));
@@ -15134,6 +15036,7 @@ function render_event_production_shortcode() {
                         <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($item['author']); ?></a></div>
                       </div>
                     </div>
+                <?php endforeach; ?>
             <?php else: 
                 foreach ($videos as $v):
                     $embed_url = get_video_embed_url($v->video_url);
@@ -15159,49 +15062,6 @@ function render_event_production_shortcode() {
           </div>
         </div>
       </section>
-
-          <?php if ($fotos): ?>
-          <div class="divider"></div>
-          <section class="section">
-            <div class="reveal-zoom">
-              <div class="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
-                <?php foreach ($fotos as $f):
-                    $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
-                ?>
-                <div class="photo-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="ep_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
-                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
-                  <div style="padding:12px;">
-                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
-                    <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
-                  </div>
-                </div>
-                <?php endforeach; ?>
-              </div>
-            </div>
-          </section>
-          <!-- LIGHTBOX MODAL -->
-          <div class="video-modal" id="epLightbox" style="z-index:9999;display:none;">
-            <div class="video-modal__backdrop" onclick="ep_closeLightbox()"></div>
-            <div class="video-modal__content" style="background:transparent;box-shadow:none;">
-              <button class="video-modal__close" onclick="ep_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
-              <div class="video-modal__wrap" style="text-align:center;">
-                <img id="epLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
-              </div>
-            </div>
-          </div>
-          <script>
-          function ep_openLightbox(url){
-            document.getElementById("epLightboxImg").src = url;
-            document.getElementById("epLightbox").style.display = "block";
-          }
-          function ep_closeLightbox(){
-            document.getElementById("epLightboxImg").src = "";
-            document.getElementById("epLightbox").style.display = "none";
-          }
-          document.addEventListener("keydown",function(e){if(e.key==="Escape")ep_closeLightbox();});
-          </script>
-          <?php endif; ?>
 
       <div class="video-modal" id="videoModal">
         <div class="video-modal__backdrop" onclick="closeVideo()"></div>
@@ -15347,8 +15207,9 @@ function render_dokumentasi_event_shortcode() {
         "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio_video v
          JOIN wp9y_personel p ON v.personel_id = p.id
-         JOIN wp9y_service_map sm ON sm.item_type = 'video' AND sm.item_id = v.id
-         WHERE v.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'dokumentasi-event'
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug = 'event-documentation'
          ORDER BY v.id DESC
          LIMIT 6"
     );
@@ -15377,7 +15238,8 @@ function render_dokumentasi_event_shortcode() {
       <section class="section">
         <div class="reveal-zoom">
           <div class="video-showcase">
-            <?php if (!$has_videos): ?>
+            <?php if ($use_fallback): 
+                // Hardcoded fallback list matching mockup
                 $fallback_items = [
                     ['title' => 'Dokumentasi Event 1', 'author' => 'ian-0064-FVD', 'yt' => 'NkycgR8UoIY', 'tag' => 'Dokumentasi Event'],
                     ['title' => 'Dokumentasi Event 2', 'author' => 'ian-0064-FVD', 'yt' => '1yCklnC5aoY', 'tag' => 'Dokumentasi Event'],
@@ -15397,6 +15259,7 @@ function render_dokumentasi_event_shortcode() {
                         <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($item['author']); ?></a></div>
                       </div>
                     </div>
+                <?php endforeach; ?>
             <?php else: 
                 foreach ($videos as $v):
                     $embed_url = get_video_embed_url($v->video_url);
@@ -15422,49 +15285,6 @@ function render_dokumentasi_event_shortcode() {
           </div>
         </div>
       </section>
-
-          <?php if ($fotos): ?>
-          <div class="divider"></div>
-          <section class="section">
-            <div class="reveal-zoom">
-              <div class="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
-                <?php foreach ($fotos as $f):
-                    $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
-                ?>
-                <div class="photo-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="ep_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
-                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
-                  <div style="padding:12px;">
-                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
-                    <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
-                  </div>
-                </div>
-                <?php endforeach; ?>
-              </div>
-            </div>
-          </section>
-          <!-- LIGHTBOX MODAL -->
-          <div class="video-modal" id="epLightbox" style="z-index:9999;display:none;">
-            <div class="video-modal__backdrop" onclick="ep_closeLightbox()"></div>
-            <div class="video-modal__content" style="background:transparent;box-shadow:none;">
-              <button class="video-modal__close" onclick="ep_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
-              <div class="video-modal__wrap" style="text-align:center;">
-                <img id="epLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
-              </div>
-            </div>
-          </div>
-          <script>
-          function ep_openLightbox(url){
-            document.getElementById("epLightboxImg").src = url;
-            document.getElementById("epLightbox").style.display = "block";
-          }
-          function ep_closeLightbox(){
-            document.getElementById("epLightboxImg").src = "";
-            document.getElementById("epLightbox").style.display = "none";
-          }
-          document.addEventListener("keydown",function(e){if(e.key==="Escape")ep_closeLightbox();});
-          </script>
-          <?php endif; ?>
 
       <div class="video-modal" id="videoModal">
         <div class="video-modal__backdrop" onclick="closeVideo()"></div>
@@ -15608,8 +15428,9 @@ function render_video_klip_shortcode() {
         "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio_video v
          JOIN wp9y_personel p ON v.personel_id = p.id
-         JOIN wp9y_service_map sm ON sm.item_type = 'video' AND sm.item_id = v.id
-         WHERE v.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'video-klip'
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug IN ('media-entertainment', 'film-cinematic')
          ORDER BY v.id DESC
          LIMIT 6"
     );
@@ -15638,7 +15459,8 @@ function render_video_klip_shortcode() {
       <section class="section">
         <div class="reveal-zoom">
           <div class="video-showcase">
-            <?php if (!$has_videos): ?>
+            <?php if ($use_fallback): 
+                // Hardcoded fallback list matching mockup
                 $fallback_items = [
                     ['title' => 'Video Klip 1', 'author' => 'ONO-0001-FVDE', 'yt' => 'zHjHO4iVxU8', 'tag' => 'Video Klip'],
                     ['title' => 'Video Klip 2', 'author' => 'cegum-0043-FVDE', 'yt' => 'btdW-kv_Nf0', 'tag' => 'Video Klip'],
@@ -15658,6 +15480,7 @@ function render_video_klip_shortcode() {
                         <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($item['author']); ?></a></div>
                       </div>
                     </div>
+                <?php endforeach; ?>
             <?php else: 
                 foreach ($videos as $v):
                     $embed_url = get_video_embed_url($v->video_url);
@@ -15683,49 +15506,6 @@ function render_video_klip_shortcode() {
           </div>
         </div>
       </section>
-
-          <?php if ($fotos): ?>
-          <div class="divider"></div>
-          <section class="section">
-            <div class="reveal-zoom">
-              <div class="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
-                <?php foreach ($fotos as $f):
-                    $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
-                ?>
-                <div class="photo-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="ep_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
-                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
-                  <div style="padding:12px;">
-                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
-                    <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
-                  </div>
-                </div>
-                <?php endforeach; ?>
-              </div>
-            </div>
-          </section>
-          <!-- LIGHTBOX MODAL -->
-          <div class="video-modal" id="epLightbox" style="z-index:9999;display:none;">
-            <div class="video-modal__backdrop" onclick="ep_closeLightbox()"></div>
-            <div class="video-modal__content" style="background:transparent;box-shadow:none;">
-              <button class="video-modal__close" onclick="ep_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
-              <div class="video-modal__wrap" style="text-align:center;">
-                <img id="epLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
-              </div>
-            </div>
-          </div>
-          <script>
-          function ep_openLightbox(url){
-            document.getElementById("epLightboxImg").src = url;
-            document.getElementById("epLightbox").style.display = "block";
-          }
-          function ep_closeLightbox(){
-            document.getElementById("epLightboxImg").src = "";
-            document.getElementById("epLightbox").style.display = "none";
-          }
-          document.addEventListener("keydown",function(e){if(e.key==="Escape")ep_closeLightbox();});
-          </script>
-          <?php endif; ?>
 
       <div class="video-modal" id="videoModal">
         <div class="video-modal__backdrop" onclick="closeVideo()"></div>
@@ -15870,24 +15650,15 @@ function render_video_produk_iklan_shortcode() {
         "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio_video v
          JOIN wp9y_personel p ON v.personel_id = p.id
-         JOIN wp9y_service_map sm ON sm.item_type = 'video' AND sm.item_id = v.id
-         WHERE v.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'video-produk-branding-iklan'
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug = 'commercial-advertising'
          ORDER BY v.id DESC
          LIMIT 6"
     );
 
     // Fallback: if database has fewer than 3 videos, use hardcoded list from mockup
-    
-    // Query foto
-    $fotos = $wpdb->get_results(
-        "SELECT DISTINCT p.*, ps.nama_panggilan, ps.kode_nama
-         FROM wp9y_portofolio p
-         JOIN wp9y_personel ps ON p.personel_id = ps.id
-         JOIN wp9y_service_map sm ON sm.item_type = 'foto' AND sm.item_id = p.id
-         WHERE p.status = 'approved' AND ps.status = 'approved' AND sm.service_slug = 'video-produk-branding-iklan'
-         ORDER BY p.id DESC"
-    );
-$use_fallback = (!$videos || count($videos) < 3);
+    $use_fallback = (!$videos || count($videos) < 3);
 
     ob_start();
     ?>
@@ -15910,8 +15681,31 @@ $use_fallback = (!$videos || count($videos) < 3);
       <section class="section">
         <div class="reveal-zoom">
           <div class="video-showcase">
-            <?php if (!$has_videos): ?>
-                            <div class="no-content"><p>Belum ada portofolio untuk halaman ini.</p></div>
+            <?php if ($use_fallback): 
+                // Hardcoded fallback list matching mockup
+                $fallback_items = [
+                    ['title' => 'Video Produk 1', 'author' => '@rto-0002-FVEP', 'yt' => 'Zefbc4R8NVU', 'tag' => 'Video Produk'],
+                    ['title' => 'Video Produk 2', 'author' => 'Adrian-0030-VD', 'yt' => 'ofJj2MyINhs', 'tag' => 'Video Produk'],
+                    ['title' => 'TVC Iklan', 'author' => 'Adrian-0030-VD', 'yt' => '-9_Y3gpA1R8', 'tag' => 'TVC Iklan'],
+                    ['title' => 'Video Branding', 'author' => 'ian-0064-FVD', 'yt' => 'cnXHtR8rPU4', 'tag' => 'Video Branding'],
+                    ['title' => 'Video Iklan Produk', 'author' => 'Adrian-0030-VD', 'yt' => 'Ju8zx6CzC7c', 'tag' => 'Video Iklan Produk'],
+                ];
+                foreach ($fallback_items as $item):
+                    $embed_url = "https://www.youtube.com/embed/" . $item['yt'] . "?autoplay=1";
+                    $thumb_url = "https://img.youtube.com/vi/" . $item['yt'] . "/mqdefault.jpg";
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode(explode('-', $item['author'], 2)[1] ?? $item['author']));
+            ?>
+                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url); ?>')">
+                      <div class="video-card__thumb">
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($item['tag']); ?>" loading="lazy">
+                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+                      </div>
+                      <div class="video-card__body">
+                        <div class="video-card__title"><?php echo esc_html($item['title']); ?></div>
+                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($item['author']); ?></a></div>
+                      </div>
+                    </div>
+                <?php endforeach; ?>
             <?php else: 
                 foreach ($videos as $v):
                     $embed_url = get_video_embed_url($v->video_url);
@@ -15951,48 +15745,6 @@ $use_fallback = (!$videos || count($videos) < 3);
         </div>
       </div>
 
-
-          <?php if ($fotos): ?>
-          <div class="divider"></div>
-          <section class="section">
-            <div class="reveal-zoom">
-              <div class="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
-                <?php foreach ($fotos as $f):
-                    $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
-                ?>
-                <div class="photo-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="vpi_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
-                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
-                  <div style="padding:12px;">
-                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
-                    <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
-                  </div>
-                </div>
-                <?php endforeach; ?>
-              </div>
-            </div>
-          </section>
-          <div class="video-modal" id="vpiLightbox" style="z-index:9999;display:none;">
-            <div class="video-modal__backdrop" onclick="vpi_closeLightbox()"></div>
-            <div class="video-modal__content" style="background:transparent;box-shadow:none;">
-              <button class="video-modal__close" onclick="vpi_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
-              <div class="video-modal__wrap" style="text-align:center;">
-                <img id="vpiLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
-              </div>
-            </div>
-          </div>
-          <script>
-          function vpi_openLightbox(url){
-            document.getElementById("vpiLightboxImg").src = url;
-            document.getElementById("vpiLightbox").style.display = "block";
-          }
-          function vpi_closeLightbox(){
-            document.getElementById("vpiLightboxImg").src = "";
-            document.getElementById("vpiLightbox").style.display = "none";
-          }
-          document.addEventListener("keydown",function(e){if(e.key==="Escape")vpi_closeLightbox();});
-          </script>
-          <?php endif; ?>
       <div class="video-modal" id="videoModal">
         <div class="video-modal__backdrop" onclick="closeVideo()"></div>
         <div class="video-modal__content">
@@ -16137,20 +15889,23 @@ function render_drone_mapping_shortcode() {
         "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio_video v
          JOIN wp9y_personel p ON v.personel_id = p.id
-         JOIN wp9y_service_map sm ON sm.item_type = 'video' AND sm.item_id = v.id
-         WHERE v.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'drone-mapping'
+         JOIN wp9y_portofolio_video_kategori_map m ON v.id = m.video_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE v.status = 'approved' AND p.status = 'approved' AND k.slug = 'drone-aerial'
          ORDER BY v.id DESC
          LIMIT 6"
     );
 
     // Query foto dengan kategori drone-aerial
-        $fotos = $wpdb->get_results(
+    $fotos = $wpdb->get_results(
         "SELECT DISTINCT f.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio f
          JOIN wp9y_personel p ON f.personel_id = p.id
-         JOIN wp9y_service_map sm ON sm.item_type = 'foto' AND sm.item_id = f.id
-         WHERE f.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'drone-mapping'
-         ORDER BY f.id DESC"
+         JOIN wp9y_portofolio_kategori_map m ON f.id = m.portofolio_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE f.status = 'approved' AND p.status = 'approved' AND k.slug = 'drone-aerial'
+         ORDER BY f.id DESC
+         LIMIT 12"
     );
 
     $use_fallback = (!$videos || count($videos) < 2);
@@ -16218,7 +15973,7 @@ function render_drone_mapping_shortcode() {
                 $foto_url = $f->foto_url ?? '';
                 $foto_thumb = $f->foto_thumbnail ?? $foto_url;
             ?>
-                                <div class="foto-card reveal-zoom" style="cursor:pointer;" onclick="dm_openLightbox('<?php echo esc_url($foto_url); ?>')">
+                <div class="foto-card reveal-zoom">
                   <img src="<?php echo esc_url($foto_thumb); ?>" alt="<?php echo esc_attr($f->judul ?? 'Drone Foto'); ?>">
                   <div class="foto-card-overlay">
                     <h4><?php echo esc_html($f->judul ?? 'Drone Mapping'); ?></h4>
@@ -16229,28 +15984,7 @@ function render_drone_mapping_shortcode() {
           </div>
         </div>
       </section>
-            <?php endif; ?>
-      <!-- LIGHTBOX -->
-      <div class="video-modal" id="dmLightbox" style="z-index:9999;display:none;">
-        <div class="video-modal__backdrop" onclick="dm_closeLightbox()"></div>
-        <div class="video-modal__content" style="background:transparent;box-shadow:none;">
-          <button class="video-modal__close" onclick="dm_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
-          <div class="video-modal__wrap" style="text-align:center;">
-            <img id="dmLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
-          </div>
-        </div>
-      </div>
-      <script>
-      function dm_openLightbox(url){
-        document.getElementById('dmLightboxImg').src = url;
-        document.getElementById('dmLightbox').style.display = 'block';
-      }
-      function dm_closeLightbox(){
-        document.getElementById('dmLightboxImg').src = '';
-        document.getElementById('dmLightbox').style.display = 'none';
-      }
-      document.addEventListener('keydown',function(e){if(e.key==='Escape')dm_closeLightbox();});
-      </script>
+      <?php endif; ?>
 
     </div>
 
@@ -17086,172 +16820,6 @@ function wa_button_shortcode($atts) {
          . '</svg> '
          . esc_html($atts['text']) . '</a>';
 }
-
-
-// ============================================================
-// SERVICE MAP — Hubungkan Portofolio ke Halaman Layanan
-// ============================================================
-function wp9y_create_service_map_table() {
-    global $wpdb;
-    $table_name = 'wp9y_service_map';
-    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") !== $table_name) {
-        $charset_collate = $wpdb->get_charset_collate();
-        $sql = "CREATE TABLE $table_name (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            service_slug varchar(100) NOT NULL,
-            item_type varchar(20) NOT NULL,
-            item_id int(11) NOT NULL,
-            sort_order int(11) DEFAULT 0,
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY service_slug (service_slug),
-            KEY item_type (item_type)
-        ) $charset_collate;";
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-        dbDelta($sql);
-    }
-}
-add_action('admin_init', 'wp9y_create_service_map_table');
-
-add_action('admin_menu', function() {
-    add_submenu_page(
-        'options-general.php',
-        'Link Portofolio ke Halaman Layanan',
-        'Service Link',
-        'manage_options',
-        'service-link',
-        'wp9y_render_service_link_page'
-    );
-});
-
-function wp9y_render_service_link_page() {
-    global $wpdb;
-    if (!current_user_can('manage_options')) wp_die('Unauthorized');
-
-    if (isset($_POST['save_service_links']) && isset($_POST['_wpnonce']) && wp_verify_nonce($_POST['_wpnonce'], 'service_links_save')) {
-        $wpdb->query("TRUNCATE TABLE wp9y_service_map");
-        $links = $_POST['link'] ?? []; $order = 0;
-        foreach ($links as $item_type => $items) {
-            foreach ($items as $item_id => $slugs) {
-                if (!is_array($slugs)) continue;
-                foreach ($slugs as $slug) {
-                    $wpdb->insert('wp9y_service_map', [
-                        'service_slug' => sanitize_text_field($slug),
-                        'item_type' => sanitize_text_field($item_type),
-                        'item_id' => intval($item_id),
-                        'sort_order' => $order++,
-                    ]);
-                }
-            }
-        }
-        echo '<div class="notice notice-success"><p>Service links updated!</p></div>';
-    }
-
-    $service_pages = [
-        'jasa-pembuatan-video-company-profile' => 'Company Profile',
-        'wedding-prawedding' => 'Wedding / Prewedding',
-        'event-production-event-organizer' => 'Event Production',
-        'dokumentasi-event' => 'Dokumentasi Event',
-        'video-produk-branding-iklan' => 'Video Produk Iklan',
-        'video-klip' => 'Video Klip',
-        'drone-mapping' => 'Drone Mapping',
-    ];
-
-    $existing = [];
-    $rows = $wpdb->get_results("SELECT * FROM wp9y_service_map ORDER BY sort_order");
-    foreach ($rows as $r) { $existing[$r->item_type][$r->item_id][] = $r->service_slug; }
-
-    $fotos = $wpdb->get_results("SELECT p.*, ps.nama_panggilan, ps.kode_nama FROM wp9y_portofolio p LEFT JOIN wp9y_personel ps ON p.personel_id = ps.id ORDER BY p.id DESC");
-    $videos = $wpdb->get_results("SELECT v.*, ps.nama_panggilan, ps.kode_nama FROM wp9y_portofolio_video v LEFT JOIN wp9y_personel ps ON v.personel_id = ps.id ORDER BY v.id DESC");
-    ?>
-    <div class="wrap">
-        <h1 class="wp-heading-inline">Link Portofolio ke Halaman Layanan</h1>
-        <hr class="wp-header-end">
-        <div style="background:#fff; border:1px solid #c3c4c7; padding:20px; margin-top:20px; border-radius:4px;">
-        <form method="post">
-            <?php wp_nonce_field('service_links_save'); ?>
-            <table class="wp-list-table widefat fixed striped" id="service-link-table">
-                <thead><tr>
-                    <th width="40">No</th>
-                    <th width="60">Tipe</th>
-                    <th width="60">ID</th>
-                    <th>Judul</th>
-                    <th>Creator</th>
-                    <th>Thumbnail</th>
-                    <?php foreach ($service_pages as $slug => $label): ?>
-                    <th style="text-align:center;font-size:11px;"><?php echo esc_html($label); ?></th>
-                    <?php endforeach; ?>
-                </tr></thead>
-                <tbody>
-                <?php $no = 0;
-                foreach ($fotos as $p): $no++;
-                    $checked = $existing['foto'][$p->id] ?? [];
-                    $thumb = !empty($p->foto_thumbnail) ? $p->foto_thumbnail : $p->foto_url;
-                    $yt_id = '';
-                    if (!empty($p->foto_url) && preg_match('/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/', $p->foto_url, $m)) $yt_id = $m[1];
-                ?>
-                    <tr>
-                        <td><?php echo $no; ?></td>
-                        <td><span style="background:#e5f5e5;padding:2px 6px;border-radius:3px;font-size:11px;">foto</span></td>
-                        <td><?php echo $p->id; ?></td>
-                        <td><?php echo esc_html($p->judul); ?></td>
-                        <td><?php echo esc_html(($p->nama_panggilan ?? '-') . '-' . ($p->kode_nama ?? '')); ?></td>
-                        <td><?php if (!empty($thumb)): ?><a href="#" onclick="event.preventDefault();openLxVideoModal('<?php echo esc_url($thumb); ?>');"><img src="<?php echo esc_url($thumb); ?>" style="width:80px;height:45px;object-fit:cover;border-radius:3px;cursor:pointer;"></a><?php else: ?><span style="color:#999;font-size:11px;">—</span><?php endif; ?></td>
-                        <?php foreach ($service_pages as $slug => $label): ?>
-                        <td style="text-align:center;"><input type="checkbox" name="link[foto][<?php echo $p->id; ?>][]" value="<?php echo $slug; ?>" <?php echo in_array($slug, $checked) ? 'checked' : ''; ?>></td>
-                        <?php endforeach; ?>
-                    </tr>
-                <?php endforeach;
-                foreach ($videos as $v): $no++;
-                    $checked = $existing['video'][$v->id] ?? [];
-                    $embed_url = '';
-                    if (!empty($v->video_url) && preg_match('/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/', $v->video_url, $m)) {
-                        $embed_url = "https://img.youtube.com/vi/{$m[1]}/mqdefault.jpg";
-                    }
-                ?>
-                    <tr>
-                        <td><?php echo $no; ?></td>
-                        <td><span style="background:#e5f0ff;padding:2px 6px;border-radius:3px;font-size:11px;">video</span></td>
-                        <td><?php echo $v->id; ?></td>
-                        <td><?php echo esc_html($v->judul); ?></td>
-                        <td><?php echo esc_html(($v->nama_panggilan ?? '-') . '-' . ($v->kode_nama ?? '')); ?></td>
-                        <td><?php if (!empty($embed_url)): ?><a href="#" onclick="event.preventDefault();openLxVideoModal('<?php echo esc_url($v->video_url); ?>');"><img src="<?php echo esc_url($embed_url); ?>" style="width:80px;height:45px;object-fit:cover;border-radius:3px;cursor:pointer;"></a><?php else: ?><span style="color:#999;font-size:11px;">—</span><?php endif; ?></td>
-                        <?php foreach ($service_pages as $slug => $label): ?>
-                        <td style="text-align:center;"><input type="checkbox" name="link[video][<?php echo $v->id; ?>][]" value="<?php echo $slug; ?>" <?php echo in_array($slug, $checked) ? 'checked' : ''; ?>></td>
-                        <?php endforeach; ?>
-                    </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
-            <p style="margin-top:15px;"><button type="submit" name="save_service_links" class="button button-primary">Simpan Semua Perubahan</button></p>
-        </form></div></div>
-
-    <style>
-    .wrap table.wp-list-table.widefat thead th { position:sticky; top:32px; z-index:10; background:#fff; }
-    .wrap table.wp-list-table td { vertical-align:middle; }
-    </style>
-
-    <div id="lxVideoModal" style="display:none;position:fixed;z-index:99999;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.9);" onclick="closeLxVideoModal()">
-      <span style="position:absolute;right:20px;top:20px;color:#fff;font-size:30px;cursor:pointer;z-index:10;" onclick="closeLxVideoModal()">&times;</span>
-      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:960px;">
-        <iframe id="lxVideoFrame" src="" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allowfullscreen></iframe>
-      </div>
-    </div>
-    <script>
-    var m = document.getElementById('lxVideoModal');
-    var f = document.getElementById('lxVideoFrame');
-    function openLxVideoModal(u) {
-        if (!u) return;
-        var id = u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-        f.src = id ? 'https://www.youtube.com/embed/' + id[1] + '?autoplay=1' : u;
-        m.style.display = 'block';
-    }
-    function closeLxVideoModal() { f.src = ''; m.style.display = 'none'; }
-    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLxVideoModal();});
-    </script>
-    <?php
-}
-
 
 /**
  * AJAX Search — Landing page all-in-one search

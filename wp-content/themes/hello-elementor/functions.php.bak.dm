@@ -16144,13 +16144,15 @@ function render_drone_mapping_shortcode() {
     );
 
     // Query foto dengan kategori drone-aerial
-        $fotos = $wpdb->get_results(
+    $fotos = $wpdb->get_results(
         "SELECT DISTINCT f.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio f
          JOIN wp9y_personel p ON f.personel_id = p.id
-         JOIN wp9y_service_map sm ON sm.item_type = 'foto' AND sm.item_id = f.id
-         WHERE f.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'drone-mapping'
-         ORDER BY f.id DESC"
+         JOIN wp9y_portofolio_kategori_map m ON f.id = m.portofolio_id
+         JOIN wp9y_kategori k ON m.kategori_id = k.id
+         WHERE f.status = 'approved' AND p.status = 'approved' AND k.slug = 'drone-aerial'
+         ORDER BY f.id DESC
+         LIMIT 12"
     );
 
     $use_fallback = (!$videos || count($videos) < 2);
@@ -16218,7 +16220,7 @@ function render_drone_mapping_shortcode() {
                 $foto_url = $f->foto_url ?? '';
                 $foto_thumb = $f->foto_thumbnail ?? $foto_url;
             ?>
-                                <div class="foto-card reveal-zoom" style="cursor:pointer;" onclick="dm_openLightbox('<?php echo esc_url($foto_url); ?>')">
+                <div class="foto-card reveal-zoom">
                   <img src="<?php echo esc_url($foto_thumb); ?>" alt="<?php echo esc_attr($f->judul ?? 'Drone Foto'); ?>">
                   <div class="foto-card-overlay">
                     <h4><?php echo esc_html($f->judul ?? 'Drone Mapping'); ?></h4>
@@ -16229,28 +16231,7 @@ function render_drone_mapping_shortcode() {
           </div>
         </div>
       </section>
-            <?php endif; ?>
-      <!-- LIGHTBOX -->
-      <div class="video-modal" id="dmLightbox" style="z-index:9999;display:none;">
-        <div class="video-modal__backdrop" onclick="dm_closeLightbox()"></div>
-        <div class="video-modal__content" style="background:transparent;box-shadow:none;">
-          <button class="video-modal__close" onclick="dm_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
-          <div class="video-modal__wrap" style="text-align:center;">
-            <img id="dmLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
-          </div>
-        </div>
-      </div>
-      <script>
-      function dm_openLightbox(url){
-        document.getElementById('dmLightboxImg').src = url;
-        document.getElementById('dmLightbox').style.display = 'block';
-      }
-      function dm_closeLightbox(){
-        document.getElementById('dmLightboxImg').src = '';
-        document.getElementById('dmLightbox').style.display = 'none';
-      }
-      document.addEventListener('keydown',function(e){if(e.key==='Escape')dm_closeLightbox();});
-      </script>
+      <?php endif; ?>
 
     </div>
 
