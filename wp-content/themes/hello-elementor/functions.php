@@ -14583,9 +14583,9 @@ add_action('wp_enqueue_scripts', 'enqueue_company_profile_assets');
 
 function render_company_profile_shortcode() {
     global $wpdb;
-    wp_enqueue_style('company-profile-css');
+    wp_enqueue_style('event-production-css');
 
-    // Ambil video portofolio dengan kategori corporate-company
+    // Query video
     $videos = $wpdb->get_results(
         "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio_video v
@@ -14596,19 +14596,6 @@ function render_company_profile_shortcode() {
          LIMIT 9"
     );
 
-    // Fallback: ambil video terbaru jika tidak ada yang berkategori
-    if (!$videos || count($videos) < 3) {
-        $videos = $wpdb->get_results(
-            "SELECT v.*, p.nama_panggilan, p.kode_nama
-             FROM wp9y_portofolio_video v
-             JOIN wp9y_personel p ON v.personel_id = p.id
-             WHERE v.status = 'approved' AND p.status = 'approved'
-             ORDER BY v.id DESC
-             LIMIT 9"
-        );
-    }
-
-    
     // Query foto
     $fotos = $wpdb->get_results(
         "SELECT DISTINCT p.*, ps.nama_panggilan, ps.kode_nama
@@ -14618,219 +14605,419 @@ function render_company_profile_shortcode() {
          WHERE p.status = 'approved' AND ps.status = 'approved' AND sm.service_slug = 'jasa-pembuatan-video-company-profile'
          ORDER BY p.id DESC"
     );
-ob_start();
+
+    $has_videos = $videos && count($videos) > 0;
+
+    ob_start();
     ?>
-    <div class="cp-blob cp-blob--l" aria-hidden="true"></div>
-    <div class="cp-blob cp-blob--r" aria-hidden="true"></div>
+    <div class="page-event-production">
+      <div class="fluid-glow glow-left"></div>
+      <div class="fluid-glow glow-right"></div>
 
-    <!-- HERO -->
-    <section class="cp-section cp-hero">
-      <div class="cp-hero__inner cp-reveal">
-        <span class="cp-hero__tag">Layanan — Company Profile</span>
-        <h1 class="cp-hero__title">Company Profile <span>&amp; Corporate Needs</span></h1>
-        <p class="cp-hero__desc">
-          Kami menyediakan jasa pembuatan Video Company Profile profesional, juga kebutuhan Foto &amp; Video kebutuhan Korporasi. Mulai dari konsep, syuting hingga editing — membantu menampilkan keunggulan perusahaan Anda agar menarik, informatif dan terpercaya.
-        </p>
-      </div>
-    </section>
-
-    <div class="cp-divider"></div>
-
-    <!-- VIDEO SHOWCASE -->
-    <section class="cp-section">
-      <div class="cp-reveal-zoom">
-        <?php if ($videos && count($videos) > 0): ?>
-        <div class="cp-video-grid">
-          <?php foreach ($videos as $v):
-            $embed_url = get_video_embed_url($v->video_url);
-            $thumb_url = 'https://img.youtube.com/vi/' . (preg_match('/embed\/([a-zA-Z0-9_-]+)/', $embed_url, $m) ? $m[1] : '') . '/mqdefault.jpg';
-            $detail_link = home_url('/detail-personel/?kode=' . urlencode($v->kode_nama));
-          ?>
-          <div class="cp-video-card" onclick="cp_openVideo('<?php echo esc_js($embed_url); ?>?autoplay=1')">
-            <div class="cp-video-card__thumb">
-              <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($v->judul); ?>" loading="lazy">
-              <div class="cp-video-card__play"><div class="cp-video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-            </div>
-            <div class="cp-video-card__body">
-              <div class="cp-video-card__title"><?php echo esc_html($v->judul); ?></div>
-              <div class="cp-video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($v->nama_panggilan . '-' . $v->kode_nama); ?></a></div>
-            </div>
-          </div>
-          <?php endforeach; ?>
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero__inner reveal">
+          <span class="hero__tag">Layanan — Company Profile & Corporate Needs</span>
+          <h1 class="hero__title">Company Profile <span>&amp; Corporate Needs</span></h1>
+          <p class="hero__desc">
+            Kami menyediakan jasa pembuatan Video Company Profile profesional, juga kebutuhan Foto &amp; Video kebutuhan Korporasi. Mulai dari konsep, syuting hingga editing — membantu menampilkan keunggulan perusahaan Anda agar menarik, informatif dan terpercaya.
+          </p>
         </div>
-        <?php else: ?>
-          <p style="text-align:center;color:var(--text-dim);padding:60px 0;">Belum ada portofolio video Company Profile. Segera hadir.</p>
-        <?php endif; ?>
-      </div>
-    </section>
+      </section>
 
-    <!-- MODAL VIDEO -->
+      <div class="divider"></div>
+
+      <!-- VIDEO SHOWCASE -->
+      <section class="section">
+        <div class="reveal-zoom">
+          <div class="video-showcase">
+            <?php if (!$has_videos): ?>
+                    <div class="no-content"><p>Belum ada portofolio untuk halaman ini.</p></div>
+            <?php else: 
+                foreach ($videos as $v):
+                    $embed_url = get_video_embed_url($v->video_url);
+                    $yt_id = '';
+                    if (preg_match('/(embed\/|v=|be\/)([a-zA-Z0-9_-]+)/', $embed_url, $m)) {
+                        $yt_id = $m[2];
+                    }
+                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "";
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($v->kode_nama));
+            ?>
+                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url . "?autoplay=1"); ?>')">
+                      <div class="video-card__thumb">
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($v->judul); ?>" loading="lazy">
+                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+                      </div>
+                      <div class="video-card__body">
+                        <div class="video-card__title"><?php echo esc_html($v->judul); ?></div>
+                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($v->nama_panggilan); ?>-<?php echo esc_html($v->kode_nama); ?></a></div>
+                      </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+          </div>
+        </div>
+      </section>
 
           <?php if ($fotos): ?>
           <div class="divider"></div>
           <section class="section">
             <div class="reveal-zoom">
-              <div class="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+              <div class="photo-grid">
                 <?php foreach ($fotos as $f):
                     $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
                     $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
                 ?>
-                <div class="photo-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="cp_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
-                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
-                  <div style="padding:12px;">
-                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
-                    <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
+                <div class="photo-card" onclick="ep_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
+                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" loading="lazy">
+                  <div class="photo-card__body">
+                    <div class="photo-card__title"><?php echo esc_html($f->judul); ?></div>
+                    <div class="photo-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
                   </div>
                 </div>
                 <?php endforeach; ?>
               </div>
             </div>
           </section>
-          <div class="video-modal" id="cpLightbox" style="z-index:9999;display:none;">
-            <div class="video-modal__backdrop" onclick="cp_closeLightbox()"></div>
+          <!-- LIGHTBOX MODAL -->
+          <div class="video-modal" id="epLightbox" style="z-index:9999;display:none;">
+            <div class="video-modal__backdrop" onclick="ep_closeLightbox()"></div>
             <div class="video-modal__content" style="background:transparent;box-shadow:none;">
-              <button class="video-modal__close" onclick="cp_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
+              <button class="video-modal__close" onclick="ep_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
               <div class="video-modal__wrap" style="text-align:center;">
-                <img id="cpLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
+                <img id="epLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
               </div>
             </div>
           </div>
           <script>
-          function cp_openLightbox(url){
-            document.getElementById("cpLightboxImg").src = url;
-            document.getElementById("cpLightbox").style.display = "block";
+          function ep_openLightbox(url){
+            document.getElementById("epLightboxImg").src = url;
+            document.getElementById("epLightbox").style.display = "block";
           }
-          function cp_closeLightbox(){
-            document.getElementById("cpLightboxImg").src = "";
-            document.getElementById("cpLightbox").style.display = "none";
+          function ep_closeLightbox(){
+            document.getElementById("epLightboxImg").src = "";
+            document.getElementById("epLightbox").style.display = "none";
           }
-          document.addEventListener("keydown",function(e){if(e.key==="Escape")cp_closeLightbox();});
+          document.addEventListener("keydown",function(e){if(e.key==="Escape")ep_closeLightbox();});
           </script>
           <?php endif; ?>
-    <div class="cp-modal" id="cpVideoModal">
-      <div class="cp-modal__backdrop" onclick="cp_closeVideo()"></div>
-      <div class="cp-modal__content">
-        <button class="cp-modal__close" onclick="cp_closeVideo()">&times;</button>
-        <div class="cp-modal__wrap">
-          <iframe id="cpVideoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+      <!-- VIDEO MODAL -->
+      <div class="video-modal" id="cpVideoModal">
+        <div class="video-modal__backdrop" onclick="closeVideo()"></div>
+        <div class="video-modal__content">
+          <button class="video-modal__close" onclick="closeVideo()">&times;</button>
+          <div class="video-modal__wrap">
+            <iframe id="cpVideoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- CONTENT -->
-    <section class="cp-section">
-      <div class="cp-content cp-reveal">
-        <h2>Jasa Pembuatan Video <span class="hl">Company Profile</span></h2>
+      <!-- CONTENT SECTION -->
+      <section class="section">
+        <div class="content-area reveal">
+          <h2>Jasa Pembuatan Video <span class="hl">Company Profile</span></h2>
 
-        <h3>Jasa Pembuatan Video Company Profile Profesional untuk Korporasi &amp; Perusahaan Besar</h3>
-        <p>Bangun citra perusahaan yang kredibel dan profesional lewat video company profile berkualitas broadcast. Dipercaya oleh perusahaan korporat di seluruh Indonesia untuk kebutuhan presentasi, tender, investor relations, hingga company branding.</p>
+          <h3>Jasa Pembuatan Video Company Profile Profesional untuk Korporasi &amp; Perusahaan Besar</h3>
+          <p>Bangun citra perusahaan yang kredibel dan profesional lewat video company profile berkualitas broadcast. Dipercaya oleh perusahaan korporat di seluruh Indonesia untuk kebutuhan presentasi, tender, investor relations, hingga company branding.</p>
 
-        <hr>
+          <hr>
 
-        <h3>Kenapa Perusahaan Anda Butuh Video Company Profile</h3>
-        <p>Di era digital, calon klien, mitra bisnis, dan investor sering menilai kredibilitas sebuah perusahaan dari bagaimana perusahaan tersebut mempresentasikan dirinya. Sebuah <strong>video company profile</strong> yang dibuat secara profesional mampu menyampaikan visi, kapabilitas, dan keunggulan kompetitif perusahaan Anda jauh lebih efektif dibanding dokumen presentasi biasa.</p>
+          <h3>Kenapa Perusahaan Anda Butuh Video Company Profile</h3>
+          <p>Di era digital, calon klien, mitra bisnis, dan investor sering menilai kredibilitas sebuah perusahaan dari bagaimana perusahaan tersebut mempresentasikan dirinya. Sebuah <strong>video company profile</strong> yang dibuat secara profesional mampu menyampaikan visi, kapabilitas, dan keunggulan kompetitif perusahaan Anda jauh lebih efektif dibanding dokumen presentasi biasa.</p>
 
-        <ul>
-          <li><strong>Meningkatkan kepercayaan klien dan mitra bisnis</strong> sejak kontak pertama</li>
-          <li><strong>Memenangkan tender dan presentasi korporat</strong> dengan materi visual yang kuat</li>
-          <li><strong>Memperkuat company branding</strong> di mata publik, media, dan pemegang saham</li>
-          <li><strong>Mendukung investor relations</strong> dengan menyampaikan kinerja dan visi perusahaan secara meyakinkan</li>
-          <li><strong>Menjadi aset digital jangka panjang</strong> untuk website, media sosial, hingga acara korporat</li>
-        </ul>
+          <ul>
+            <li><strong>Meningkatkan kepercayaan klien dan mitra bisnis</strong> sejak kontak pertama</li>
+            <li><strong>Memenangkan tender dan presentasi korporat</strong> dengan materi visual yang kuat</li>
+            <li><strong>Memperkuat company branding</strong> di mata publik, media, dan pemegang saham</li>
+            <li><strong>Mendukung investor relations</strong> dengan menyampaikan kinerja dan visi perusahaan secara meyakinkan</li>
+            <li><strong>Menjadi aset digital jangka panjang</strong> untuk website, media sosial, hingga acara korporat</li>
+          </ul>
 
-        <hr>
+          <hr>
 
-        <h3>Layanan Video Company Profile Kami</h3>
-        <p>Kami menyediakan layanan produksi video company profile end-to-end, mulai dari konsep, produksi, hingga pasca-produksi, yang disesuaikan dengan kebutuhan dan skala perusahaan Anda.</p>
+          <h3>Layanan Video Company Profile Kami</h3>
+          <p>Kami menyediakan layanan produksi video company profile end-to-end, mulai dari konsep, produksi, hingga pasca-produksi, yang disesuaikan dengan kebutuhan dan skala perusahaan Anda.</p>
 
-        <div class="cp-service-list">
-          <div class="cp-service-item"><strong>Corporate Company Profile Video</strong><span>Video profil perusahaan komprehensif yang menampilkan sejarah, visi-misi, fasilitas, dan keunggulan bisnis Anda.</span></div>
-          <div class="cp-service-item"><strong>Video Profile untuk Tender &amp; Presentasi Bisnis</strong><span>Materi visual pendukung proposal dan presentasi tender yang dirancang untuk meyakinkan klien dan stakeholder.</span></div>
-          <div class="cp-service-item"><strong>Investor Relations Video</strong><span>Video company profile yang dirancang khusus untuk kebutuhan RUPS, laporan tahunan, dan komunikasi kepada investor.</span></div>
-          <div class="cp-service-item"><strong>Video Profile Multi-Industri</strong><span>Berpengalaman menangani company profile untuk berbagai sektor: manufaktur, perbankan &amp; keuangan, energi, konstruksi, BUMN, logistik, hingga teknologi.</span></div>
-          <div class="cp-service-item"><strong>Video Profile Multi-Bahasa</strong><span>Tersedia versi Bahasa Indonesia dan Inggris untuk mendukung ekspansi dan komunikasi perusahaan ke pasar internasional.</span></div>
+          <div class="service-list">
+            <div class="service-item"><strong>Corporate Company Profile Video</strong><span>Video profil perusahaan komprehensif yang menampilkan sejarah, visi-misi, fasilitas, dan keunggulan bisnis Anda.</span></div>
+            <div class="service-item"><strong>Video Profile untuk Tender &amp; Presentasi Bisnis</strong><span>Materi visual pendukung proposal dan presentasi tender yang dirancang untuk meyakinkan klien dan stakeholder.</span></div>
+            <div class="service-item"><strong>Investor Relations Video</strong><span>Video company profile yang dirancang khusus untuk kebutuhan RUPS, laporan tahunan, dan komunikasi kepada investor.</span></div>
+            <div class="service-item"><strong>Video Profile Multi-Industri</strong><span>Berpengalaman menangani company profile untuk berbagai sektor: manufaktur, perbankan &amp; keuangan, energi, konstruksi, BUMN, logistik, hingga teknologi.</span></div>
+            <div class="service-item"><strong>Video Profile Multi-Bahasa</strong><span>Tersedia versi Bahasa Indonesia dan Inggris untuk mendukung ekspansi dan komunikasi perusahaan ke pasar internasional.</span></div>
+          </div>
+
+          <hr>
+
+          <h3>Proses Produksi Video Company Profile yang Terstruktur</h3>
+          <p>Kami memahami bahwa perusahaan besar membutuhkan proses kerja yang jelas, terukur, dan minim risiko. Berikut tahapan kerja kami:</p>
+
+          <div class="steps-grid">
+            <div class="step-card reveal" style="transition-delay:0s"><div class="step-card__num">1</div><h4>Konsultasi &amp; Briefing</h4><p>Memahami visi, target audiens, dan tujuan komunikasi video company profile Anda.</p></div>
+            <div class="step-card reveal" style="transition-delay:.1s"><div class="step-card__num">2</div><h4>Riset &amp; Scripting</h4><p>Menyusun konsep cerita dan naskah yang merepresentasikan keunggulan perusahaan.</p></div>
+            <div class="step-card reveal" style="transition-delay:.2s"><div class="step-card__num">3</div><h4>Produksi (Shooting)</h4><p>Pengambilan gambar dengan tim dan peralatan broadcast quality, siap shooting di seluruh Indonesia.</p></div>
+            <div class="step-card reveal" style="transition-delay:0s"><div class="step-card__num">4</div><h4>Editing &amp; Motion Graphic</h4><p>Proses pasca-produksi profesional termasuk color grading, sound design, dan grafis pendukung data perusahaan.</p></div>
+            <div class="step-card reveal" style="transition-delay:.1s"><div class="step-card__num">5</div><h4>Revisi &amp; Delivery</h4><p>Proses revisi terarah hingga video company profile siap digunakan sesuai kebutuhan Anda.</p></div>
+          </div>
+
+          <hr>
+
+          <h3>Keunggulan Jasa Video Company Profile Kami</h3>
+          <ul>
+            <li><strong>Berpengalaman menangani perusahaan korporat &amp; BUMN</strong> dari berbagai sektor industri di Indonesia</li>
+            <li><strong>Hasil produksi berkualitas broadcast</strong>, didukung peralatan dan kru profesional</li>
+            <li><strong>Pendekatan storytelling strategis</strong>, bukan sekadar dokumentasi visual</li>
+            <li><strong>Jangkauan layanan nasional</strong>, siap produksi di seluruh wilayah Indonesia</li>
+            <li><strong>Proses kerja terstruktur dan tepat waktu</strong>, sesuai standar kebutuhan korporat</li>
+            <li><strong>Kerahasiaan data perusahaan terjamin</strong>, termasuk opsi NDA sebelum project dimulai</li>
+          </ul>
+
+          <hr>
+
+          <h3>Pertanyaan Seputar Jasa Pembuatan Video Company Profile</h3>
+
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa lama proses pembuatan video company profile?<span class="arrow">▾</span></div><div class="faq-item__a">Durasi produksi video company profile umumnya berkisar antara 2-4 minggu, tergantung kompleksitas konsep, jumlah lokasi shooting, dan jumlah revisi.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa biaya jasa pembuatan video company profile?<span class="arrow">▾</span></div><div class="faq-item__a">Biaya disesuaikan dengan kebutuhan, durasi video, jumlah lokasi, serta kompleksitas produksi. Silakan hubungi tim kami untuk mendapatkan penawaran sesuai kebutuhan perusahaan Anda.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah bisa shooting video company profile di luar kota?<span class="arrow">▾</span></div><div class="faq-item__a">Bisa. Kami melayani produksi video company profile di seluruh wilayah Indonesia, termasuk untuk perusahaan dengan multi-cabang atau multi-lokasi pabrik/kantor.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apa bedanya video company profile dengan video corporate lainnya?<span class="arrow">▾</span></div><div class="faq-item__a">Video company profile berfokus pada penyampaian identitas, kapabilitas, dan kredibilitas perusahaan secara menyeluruh, berbeda dengan video produk, video event, atau video iklan yang memiliki tujuan komunikasi lebih spesifik.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah perusahaan kami bisa request revisi?<span class="arrow">▾</span></div><div class="faq-item__a">Ya, kami menyediakan sesi revisi terarah pada tahap akhir produksi untuk memastikan video company profile sesuai dengan visi dan kebutuhan perusahaan Anda.</div></div>
+
+          <hr>
+
+          <div class="cta-section reveal">
+            <h2>Siap Membangun Citra Profesional Perusahaan Anda?</h2>
+            <p>Percayakan kebutuhan video company profile perusahaan Anda kepada tim yang berpengalaman menangani klien korporat di seluruh Indonesia.</p>
+            <a href="https://wa.me/6285771002233" class="wa-btn" target="_blank">Konsultasi via WhatsApp</a>
+          </div>
         </div>
+      </section>
 
-        <hr>
-
-        <h3>Proses Produksi Video Company Profile yang Terstruktur</h3>
-        <p>Kami memahami bahwa perusahaan besar membutuhkan proses kerja yang jelas, terukur, dan minim risiko. Berikut tahapan kerja kami:</p>
-
-        <div class="cp-steps">
-          <div class="cp-step cp-reveal"><div class="cp-step__num">1</div><h4>Konsultasi &amp; Briefing</h4><p>Memahami visi, target audiens, dan tujuan komunikasi video company profile Anda.</p></div>
-          <div class="cp-step cp-reveal" style="transition-delay:.06s"><div class="cp-step__num">2</div><h4>Riset &amp; Scripting</h4><p>Menyusun konsep cerita dan naskah yang merepresentasikan keunggulan perusahaan.</p></div>
-          <div class="cp-step cp-reveal" style="transition-delay:.12s"><div class="cp-step__num">3</div><h4>Produksi (Shooting)</h4><p>Pengambilan gambar dengan tim dan peralatan broadcast quality, siap shooting di seluruh Indonesia.</p></div>
-          <div class="cp-step cp-reveal" style="transition-delay:.06s"><div class="cp-step__num">4</div><h4>Editing &amp; Motion Graphic</h4><p>Proses pasca-produksi profesional termasuk color grading, sound design, dan grafis pendukung data perusahaan.</p></div>
-          <div class="cp-step cp-reveal" style="transition-delay:.12s"><div class="cp-step__num">5</div><h4>Revisi &amp; Delivery</h4><p>Proses revisi terarah hingga video company profile siap digunakan sesuai kebutuhan Anda.</p></div>
-        </div>
-
-        <hr>
-
-        <h3>Keunggulan Jasa Video Company Profile Kami</h3>
-        <ul>
-          <li><strong>Berpengalaman menangani perusahaan korporat &amp; BUMN</strong> dari berbagai sektor industri di Indonesia</li>
-          <li><strong>Hasil produksi berkualitas broadcast</strong>, didukung peralatan dan kru profesional</li>
-          <li><strong>Pendekatan storytelling strategis</strong>, bukan sekadar dokumentasi visual</li>
-          <li><strong>Jangkauan layanan nasional</strong>, siap produksi di seluruh wilayah Indonesia</li>
-          <li><strong>Proses kerja terstruktur dan tepat waktu</strong>, sesuai standar kebutuhan korporat</li>
-          <li><strong>Kerahasiaan data perusahaan terjamin</strong>, termasuk opsi NDA sebelum project dimulai</li>
-        </ul>
-
-        <hr>
-
-        <h3>Pertanyaan Seputar Jasa Pembuatan Video Company Profile</h3>
-
-        <div class="cp-faq-item"><div class="cp-faq-item__q" onclick="cp_toggleFaq(this)">Berapa lama proses pembuatan video company profile?<span class="arrow">▾</span></div><div class="cp-faq-item__a">Durasi produksi video company profile umumnya berkisar antara 2-4 minggu, tergantung kompleksitas konsep, jumlah lokasi shooting, dan jumlah revisi.</div></div>
-        <div class="cp-faq-item"><div class="cp-faq-item__q" onclick="cp_toggleFaq(this)">Berapa biaya jasa pembuatan video company profile?<span class="arrow">▾</span></div><div class="cp-faq-item__a">Biaya disesuaikan dengan kebutuhan, durasi video, jumlah lokasi, serta kompleksitas produksi. Silakan hubungi tim kami untuk mendapatkan penawaran sesuai kebutuhan perusahaan Anda.</div></div>
-        <div class="cp-faq-item"><div class="cp-faq-item__q" onclick="cp_toggleFaq(this)">Apakah bisa shooting video company profile di luar kota?<span class="arrow">▾</span></div><div class="cp-faq-item__a">Bisa. Kami melayani produksi video company profile di seluruh wilayah Indonesia, termasuk untuk perusahaan dengan multi-cabang atau multi-lokasi pabrik/kantor.</div></div>
-        <div class="cp-faq-item"><div class="cp-faq-item__q" onclick="cp_toggleFaq(this)">Apa bedanya video company profile dengan video corporate lainnya?<span class="arrow">▾</span></div><div class="cp-faq-item__a">Video company profile berfokus pada penyampaian identitas, kapabilitas, dan kredibilitas perusahaan secara menyeluruh, berbeda dengan video produk, video event, atau video iklan yang memiliki tujuan komunikasi lebih spesifik.</div></div>
-        <div class="cp-faq-item"><div class="cp-faq-item__q" onclick="cp_toggleFaq(this)">Apakah perusahaan kami bisa request revisi?<span class="arrow">▾</span></div><div class="cp-faq-item__a">Ya, kami menyediakan sesi revisi terarah pada tahap akhir produksi untuk memastikan video company profile sesuai dengan visi dan kebutuhan perusahaan Anda.</div></div>
-
-        <hr>
-
-        <div class="cp-cta cp-reveal">
-          <h2>Siap Membangun Citra Profesional Perusahaan Anda?</h2>
-          <p>Percayakan kebutuhan video company profile perusahaan Anda kepada tim yang berpengalaman menangani klien korporat di seluruh Indonesia.</p>
-          <a href="https://wa.me/6285771002233" class="cp-wa-btn" target="_blank">Konsultasi via WhatsApp</a>
-        </div>
-      </div>
-    </section>
+    </div><!-- /.page-event-production -->
 
     <script>
-    // Modal video
-    function cp_openVideo(url) {
+    function openVideo(url) {
       document.getElementById('cpVideoIframe').src = url;
       document.getElementById('cpVideoModal').style.display = 'block';
     }
-    function cp_closeVideo() {
+    function closeVideo() {
       document.getElementById('cpVideoIframe').src = '';
       document.getElementById('cpVideoModal').style.display = 'none';
     }
     document.getElementById('cpVideoModal').addEventListener('click', function(e) {
-      if (e.target === this) cp_closeVideo();
+      if (e.target === this) closeVideo();
     });
-
-    // FAQ accordion
-    function cp_toggleFaq(el) {
+    function toggleFaq(el) {
       el.classList.toggle('open');
       el.nextElementSibling.classList.toggle('open');
     }
-
-    // Scroll reveal
-    const cp_observer = new IntersectionObserver(function(entries) {
+    const observer = new IntersectionObserver(function(entries) {
       entries.forEach(function(entry) {
         if (entry.isIntersecting) entry.target.classList.add('show');
       });
     }, { threshold: 0.1 });
-    document.querySelectorAll('.cp-reveal, .cp-reveal-zoom').forEach(function(el) {
-      cp_observer.observe(el);
+    document.querySelectorAll('.reveal, .reveal-zoom').forEach(function(el) {
+      observer.observe(el);
+    });
+</section>
+
+      <div class="divider"></div>
+
+      <!-- VIDEO SHOWCASE -->
+      <section class="section">
+        <div class="reveal-zoom">
+          <div class="video-showcase">
+            <?php if (!$has_videos): ?>
+                    <div class="no-content"><p>Belum ada portofolio untuk halaman ini.</p></div>
+            <?php else: 
+                foreach ($videos as $v):
+                    $embed_url = get_video_embed_url($v->video_url);
+                    $yt_id = '';
+                    if (preg_match('/(embed\/|v=|be\/)([a-zA-Z0-9_-]+)/', $embed_url, $m)) {
+                        $yt_id = $m[2];
+                    }
+                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "";
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($v->kode_nama));
+            ?>
+                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url . "?autoplay=1"); ?>')">
+                      <div class="video-card__thumb">
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($v->judul); ?>" loading="lazy">
+                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+                      </div>
+                      <div class="video-card__body">
+                        <div class="video-card__title"><?php echo esc_html($v->judul); ?></div>
+                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($v->nama_panggilan); ?>-<?php echo esc_html($v->kode_nama); ?></a></div>
+                      </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+          </div>
+        </div>
+      </section>
+
+          <?php if ($fotos): ?>
+          <div class="divider"></div>
+          <section class="section">
+            <div class="reveal-zoom">
+              <div class="photo-grid">
+                <?php foreach ($fotos as $f):
+                    $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
+                ?>
+                <div class="photo-card" onclick="ep_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
+                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" loading="lazy">
+                  <div class="photo-card__body">
+                    <div class="photo-card__title"><?php echo esc_html($f->judul); ?></div>
+                    <div class="photo-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
+                  </div>
+                </div>
+                <?php endforeach; ?>
+              </div>
+            </div>
+          </section>
+          <!-- LIGHTBOX MODAL -->
+          <div class="video-modal" id="epLightbox" style="z-index:9999;display:none;">
+            <div class="video-modal__backdrop" onclick="ep_closeLightbox()"></div>
+            <div class="video-modal__content" style="background:transparent;box-shadow:none;">
+              <button class="video-modal__close" onclick="ep_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
+              <div class="video-modal__wrap" style="text-align:center;">
+                <img id="epLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
+              </div>
+            </div>
+          </div>
+          <script>
+          function ep_openLightbox(url){
+            document.getElementById("epLightboxImg").src = url;
+            document.getElementById("epLightbox").style.display = "block";
+          }
+          function ep_closeLightbox(){
+            document.getElementById("epLightboxImg").src = "";
+            document.getElementById("epLightbox").style.display = "none";
+          }
+          document.addEventListener("keydown",function(e){if(e.key==="Escape")ep_closeLightbox();});
+          </script>
+          <?php endif; ?>
+
+      <!-- VIDEO MODAL -->
+      <div class="video-modal" id="cpVideoModal">
+        <div class="video-modal__backdrop" onclick="closeVideo()"></div>
+        <div class="video-modal__content">
+          <button class="video-modal__close" onclick="closeVideo()">&times;</button>
+          <div class="video-modal__wrap">
+            <iframe id="cpVideoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTENT SECTION -->
+      <section class="section">
+        <div class="content-area reveal">
+          <h2>Jasa Pembuatan Video <span class="hl">Company Profile</span></h2>
+
+          <h3>Jasa Pembuatan Video Company Profile Profesional untuk Korporasi &amp; Perusahaan Besar</h3>
+          <p>Bangun citra perusahaan yang kredibel dan profesional lewat video company profile berkualitas broadcast. Dipercaya oleh perusahaan korporat di seluruh Indonesia untuk kebutuhan presentasi, tender, investor relations, hingga company branding.</p>
+
+          <hr>
+
+          <h3>Kenapa Perusahaan Anda Butuh Video Company Profile</h3>
+          <p>Di era digital, calon klien, mitra bisnis, dan investor sering menilai kredibilitas sebuah perusahaan dari bagaimana perusahaan tersebut mempresentasikan dirinya. Sebuah <strong>video company profile</strong> yang dibuat secara profesional mampu menyampaikan visi, kapabilitas, dan keunggulan kompetitif perusahaan Anda jauh lebih efektif dibanding dokumen presentasi biasa.</p>
+
+          <ul>
+            <li><strong>Meningkatkan kepercayaan klien dan mitra bisnis</strong> sejak kontak pertama</li>
+            <li><strong>Memenangkan tender dan presentasi korporat</strong> dengan materi visual yang kuat</li>
+            <li><strong>Memperkuat company branding</strong> di mata publik, media, dan pemegang saham</li>
+            <li><strong>Mendukung investor relations</strong> dengan menyampaikan kinerja dan visi perusahaan secara meyakinkan</li>
+            <li><strong>Menjadi aset digital jangka panjang</strong> untuk website, media sosial, hingga acara korporat</li>
+          </ul>
+
+          <hr>
+
+          <h3>Layanan Video Company Profile Kami</h3>
+          <p>Kami menyediakan layanan produksi video company profile end-to-end, mulai dari konsep, produksi, hingga pasca-produksi, yang disesuaikan dengan kebutuhan dan skala perusahaan Anda.</p>
+
+          <div class="service-list">
+            <div class="service-item"><strong>Corporate Company Profile Video</strong><span>Video profil perusahaan komprehensif yang menampilkan sejarah, visi-misi, fasilitas, dan keunggulan bisnis Anda.</span></div>
+            <div class="service-item"><strong>Video Profile untuk Tender &amp; Presentasi Bisnis</strong><span>Materi visual pendukung proposal dan presentasi tender yang dirancang untuk meyakinkan klien dan stakeholder.</span></div>
+            <div class="service-item"><strong>Investor Relations Video</strong><span>Video company profile yang dirancang khusus untuk kebutuhan RUPS, laporan tahunan, dan komunikasi kepada investor.</span></div>
+            <div class="service-item"><strong>Video Profile Multi-Industri</strong><span>Berpengalaman menangani company profile untuk berbagai sektor: manufaktur, perbankan &amp; keuangan, energi, konstruksi, BUMN, logistik, hingga teknologi.</span></div>
+            <div class="service-item"><strong>Video Profile Multi-Bahasa</strong><span>Tersedia versi Bahasa Indonesia dan Inggris untuk mendukung ekspansi dan komunikasi perusahaan ke pasar internasional.</span></div>
+          </div>
+
+          <hr>
+
+          <h3>Proses Produksi Video Company Profile yang Terstruktur</h3>
+          <p>Kami memahami bahwa perusahaan besar membutuhkan proses kerja yang jelas, terukur, dan minim risiko. Berikut tahapan kerja kami:</p>
+
+          <div class="steps-grid">
+            <div class="step-card reveal" style="transition-delay:0s"><div class="step-card__num">1</div><h4>Konsultasi &amp; Briefing</h4><p>Memahami visi, target audiens, dan tujuan komunikasi video company profile Anda.</p></div>
+            <div class="step-card reveal" style="transition-delay:.1s"><div class="step-card__num">2</div><h4>Riset &amp; Scripting</h4><p>Menyusun konsep cerita dan naskah yang merepresentasikan keunggulan perusahaan.</p></div>
+            <div class="step-card reveal" style="transition-delay:.2s"><div class="step-card__num">3</div><h4>Produksi (Shooting)</h4><p>Pengambilan gambar dengan tim dan peralatan broadcast quality, siap shooting di seluruh Indonesia.</p></div>
+            <div class="step-card reveal" style="transition-delay:0s"><div class="step-card__num">4</div><h4>Editing &amp; Motion Graphic</h4><p>Proses pasca-produksi profesional termasuk color grading, sound design, dan grafis pendukung data perusahaan.</p></div>
+            <div class="step-card reveal" style="transition-delay:.1s"><div class="step-card__num">5</div><h4>Revisi &amp; Delivery</h4><p>Proses revisi terarah hingga video company profile siap digunakan sesuai kebutuhan Anda.</p></div>
+          </div>
+
+          <hr>
+
+          <h3>Keunggulan Jasa Video Company Profile Kami</h3>
+          <ul>
+            <li><strong>Berpengalaman menangani perusahaan korporat &amp; BUMN</strong> dari berbagai sektor industri di Indonesia</li>
+            <li><strong>Hasil produksi berkualitas broadcast</strong>, didukung peralatan dan kru profesional</li>
+            <li><strong>Pendekatan storytelling strategis</strong>, bukan sekadar dokumentasi visual</li>
+            <li><strong>Jangkauan layanan nasional</strong>, siap produksi di seluruh wilayah Indonesia</li>
+            <li><strong>Proses kerja terstruktur dan tepat waktu</strong>, sesuai standar kebutuhan korporat</li>
+            <li><strong>Kerahasiaan data perusahaan terjamin</strong>, termasuk opsi NDA sebelum project dimulai</li>
+          </ul>
+
+          <hr>
+
+          <h3>Pertanyaan Seputar Jasa Pembuatan Video Company Profile</h3>
+
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa lama proses pembuatan video company profile?<span class="arrow">▾</span></div><div class="faq-item__a">Durasi produksi video company profile umumnya berkisar antara 2-4 minggu, tergantung kompleksitas konsep, jumlah lokasi shooting, dan jumlah revisi.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa biaya jasa pembuatan video company profile?<span class="arrow">▾</span></div><div class="faq-item__a">Biaya disesuaikan dengan kebutuhan, durasi video, jumlah lokasi, serta kompleksitas produksi. Silakan hubungi tim kami untuk mendapatkan penawaran sesuai kebutuhan perusahaan Anda.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah bisa shooting video company profile di luar kota?<span class="arrow">▾</span></div><div class="faq-item__a">Bisa. Kami melayani produksi video company profile di seluruh wilayah Indonesia, termasuk untuk perusahaan dengan multi-cabang atau multi-lokasi pabrik/kantor.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apa bedanya video company profile dengan video corporate lainnya?<span class="arrow">▾</span></div><div class="faq-item__a">Video company profile berfokus pada penyampaian identitas, kapabilitas, dan kredibilitas perusahaan secara menyeluruh, berbeda dengan video produk, video event, atau video iklan yang memiliki tujuan komunikasi lebih spesifik.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah perusahaan kami bisa request revisi?<span class="arrow">▾</span></div><div class="faq-item__a">Ya, kami menyediakan sesi revisi terarah pada tahap akhir produksi untuk memastikan video company profile sesuai dengan visi dan kebutuhan perusahaan Anda.</div></div>
+
+          <hr>
+
+          <div class="cta-section reveal">
+            <h2>Siap Membangun Citra Profesional Perusahaan Anda?</h2>
+            <p>Percayakan kebutuhan video company profile perusahaan Anda kepada tim yang berpengalaman menangani klien korporat di seluruh Indonesia.</p>
+            <a href="https://wa.me/6285771002233" class="wa-btn" target="_blank">Konsultasi via WhatsApp</a>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /.page-event-production -->
+
+    <script>
+    function openVideo(url) {
+      document.getElementById('cpVideoIframe').src = url;
+      document.getElementById('cpVideoModal').style.display = 'block';
+    }
+    function closeVideo() {
+      document.getElementById('cpVideoIframe').src = '';
+      document.getElementById('cpVideoModal').style.display = 'none';
+    }
+    document.getElementById('cpVideoModal').addEventListener('click', function(e) {
+      if (e.target === this) closeVideo();
+    });
+    function toggleFaq(el) {
+      el.classList.toggle('open');
+      el.nextElementSibling.classList.toggle('open');
+    }
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) entry.target.classList.add('show');
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal, .reveal-zoom').forEach(function(el) {
+      observer.observe(el);
     });
     </script>
     <?php
     return ob_get_clean();
 }
 add_shortcode('company_profile', 'render_company_profile_shortcode');
-
 // ============================================================
 // HALAMAN WEDDING & PRAWEDDING
 // ============================================================
@@ -14935,16 +15122,16 @@ function render_wedding_shortcode() {
       <section class="section section-foto">
         <div class="reveal-zoom">
           <h2 class="section-title">Foto <span>Wedding &amp; Prawedding</span></h2>
-          <div class="foto-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+          <div class="photo-grid">
             <?php foreach ($fotos as $f):
                 $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
                 $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
             ?>
-                <div class="foto-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="wd_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
-                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
-                  <div style="padding:12px;">
-                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
-                    <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
+                <div class="photo-card" onclick="wd_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
+                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" loading="lazy">
+                  <div class="photo-card__body">
+                    <div class="photo-card__title"><?php echo esc_html($f->judul); ?></div>
+                    <div class="photo-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
                   </div>
                 </div>
             <?php endforeach; ?>
@@ -14976,8 +15163,8 @@ function render_wedding_shortcode() {
 
       <!-- CONTENT SECTION -->
       <section class="section">
-        <div class="hero__inner reveal">
-          <h2 class="section-title">Layanan <span>Wedding &amp; Prawedding</span></h2>
+        <div class="content-area reveal">
+          <h2>Layanan <span class="hl">Wedding &amp; Prawedding</span></h2>
 
           <h3>Abadikan Cinta Anda dalam Bingkai yang Tak Terlupakan</h3>
           <p>Momen pernikahan adalah salah satu hari terpenting dalam hidup. Setiap detail — dari tatapan pertama, haru di pelaminan, hingga tawa bersama keluarga — layak diabadikan dengan sempurna. Tim profesional kami siap merangkai setiap detik menjadi cerita visual yang akan Anda kenang selamanya.</p>
@@ -14985,10 +15172,10 @@ function render_wedding_shortcode() {
           <hr>
 
           <h3>Paket Layanan Kami</h3>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;">
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:28px;"><div style="font-size:36px;margin-bottom:8px;">💍</div><h4>Wedding Photography</h4><p>Dokumentasi foto pernikahan dari persiapan hingga resepsi, dengan gaya reportase dan fine art.</p></div>
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:28px;"><div style="font-size:36px;margin-bottom:8px;">🥂</div><h4>Wedding Videography</h4><p>Video sinematik yang merangkai cerita pernikahan Anda dengan editing artistik dan musik yang menyentuh.</p></div>
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:28px;"><div style="font-size:36px;margin-bottom:8px;">🌅</div><h4>Prawedding &amp; Engagement</h4><p>Sesi foto dan video pra-nikah di lokasi pilihan, dengan konsep yang mencerminkan kepribadian Anda berdua.</p></div>
+          <div class="package-grid">
+            <div class="package-card"><div class="package-card__icon">💍</div><h4>Wedding Photography</h4><p>Dokumentasi foto pernikahan dari persiapan hingga resepsi, dengan gaya reportase dan fine art.</p></div>
+            <div class="package-card"><div class="package-card__icon">🥂</div><h4>Wedding Videography</h4><p>Video sinematik yang merangkai cerita pernikahan Anda dengan editing artistik dan musik yang menyentuh.</p></div>
+            <div class="package-card"><div class="package-card__icon">🌅</div><h4>Prawedding &amp; Engagement</h4><p>Sesi foto dan video pra-nikah di lokasi pilihan, dengan konsep yang mencerminkan kepribadian Anda berdua.</p></div>
           </div>
 
           <h3>Mengapa Memilih Kami?</h3>
@@ -15003,20 +15190,20 @@ function render_wedding_shortcode() {
           <hr>
 
           <h3>Layanan Lengkap Wedding &amp; Prawedding</h3>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;"><strong>Wedding Day Documentation</strong><br><span style="color:#aaa;font-size:14px;">Dokumentasi lengkap hari pernikahan dari akad hingga resepsi, termasuk foto dan video.</span></div>
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;"><strong>Prewedding Photo &amp; Video</strong><br><span style="color:#aaa;font-size:14px;">Sesi foto dan video pra-nikah dengan konsep outdoor, studio, atau cinematic.</span></div>
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;"><strong>Engagement / Lamaran</strong><br><span style="color:#aaa;font-size:14px;">Dokumentasi momen pertunangan yang intim dan penuh makna.</span></div>
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;"><strong>Cinematic Wedding Video</strong><br><span style="color:#aaa;font-size:14px;">Film pendek sinematik yang merangkum hari istimewa Anda dengan gaya artistik.</span></div>
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;"><strong>Photo &amp; Video Booth</strong><br><span style="color:#aaa;font-size:14px;">Layanan booth interaktif untuk tamu undangan, lengkap dengan cetak foto instan.</span></div>
+          <div class="service-list">
+            <div class="service-item"><strong>Wedding Day Documentation</strong><span>Dokumentasi lengkap hari pernikahan dari akad hingga resepsi, termasuk foto dan video.</span></div>
+            <div class="service-item"><strong>Prewedding Photo &amp; Video</strong><span>Sesi foto dan video pra-nikah dengan konsep outdoor, studio, atau cinematic.</span></div>
+            <div class="service-item"><strong>Engagement / Lamaran</strong><span>Dokumentasi momen pertunangan yang intim dan penuh makna.</span></div>
+            <div class="service-item"><strong>Cinematic Wedding Video</strong><span>Film pendek sinematik yang merangkum hari istimewa Anda dengan gaya artistik.</span></div>
+            <div class="service-item"><strong>Photo &amp; Video Booth</strong><span>Layanan booth interaktif untuk tamu undangan, lengkap dengan cetak foto instan.</span></div>
           </div>
 
           <hr>
 
-          <div style="background:linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(212,175,55,0.02) 100%);border:1px solid rgba(212,175,55,0.15);border-radius:20px;padding:40px;text-align:center;">
+          <div class="cta-section reveal">
             <h2>Wujudkan Dokumentasi Pernikahan Impian Anda</h2>
             <p>Konsultasikan konsep wedding &amp; prawedding Anda dengan tim profesional kami. Dari konsep hingga hasil akhir, kami siap membantu.</p>
-            <a href="https://wa.me/6285771002233" style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#b8952d,#d4af37);color:#000;font-weight:700;border-radius:12px;text-decoration:none;" target="_blank">Konsultasi via WhatsApp</a>
+            <a href="https://wa.me/6285771002233" class="wa-btn" target="_blank">Konsultasi via WhatsApp</a>
           </div>
         </div>
       </section>
@@ -15129,16 +15316,16 @@ function render_event_production_shortcode() {
           <div class="divider"></div>
           <section class="section">
             <div class="reveal-zoom">
-              <div class="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+              <div class="photo-grid">
                 <?php foreach ($fotos as $f):
                     $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
                     $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
                 ?>
-                <div class="photo-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="ep_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
-                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
-                  <div style="padding:12px;">
-                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
-                    <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
+                <div class="photo-card" onclick="ep_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
+                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" loading="lazy">
+                  <div class="photo-card__body">
+                    <div class="photo-card__title"><?php echo esc_html($f->judul); ?></div>
+                    <div class="photo-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
                   </div>
                 </div>
                 <?php endforeach; ?>
@@ -15305,7 +15492,7 @@ add_action('wp_enqueue_scripts', 'enqueue_dokumentasi_event_assets');
 
 function render_dokumentasi_event_shortcode() {
     global $wpdb;
-    wp_enqueue_style('dokumentasi-event-css');
+    wp_enqueue_style('event-production-css');
 
     // Query event-documentation videos
     $videos = $wpdb->get_results(
@@ -15315,10 +15502,10 @@ function render_dokumentasi_event_shortcode() {
          JOIN wp9y_service_map sm ON sm.item_type = 'video' AND sm.item_id = v.id
          WHERE v.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'dokumentasi-event'
          ORDER BY v.id DESC
-         LIMIT 6"
+         LIMIT 9"
     );
 
-    // Query event-documentation photos
+    // Query photos
     $fotos = $wpdb->get_results(
         "SELECT DISTINCT p.*, ps.nama_panggilan, ps.kode_nama
          FROM wp9y_portofolio p
@@ -15328,15 +15515,15 @@ function render_dokumentasi_event_shortcode() {
          ORDER BY p.id DESC"
     );
 
-    // Fallback: if database has fewer than 2 videos, use hardcoded list from mockup
-    $use_fallback = (!$videos || count($videos) < 2);
+    $has_videos = $videos && count($videos) > 0;
 
     ob_start();
     ?>
-    <div class="page-dokumentasi-event">
+    <div class="page-event-production">
       <div class="fluid-glow glow-left"></div>
       <div class="fluid-glow glow-right"></div>
 
+      <!-- HERO -->
       <section class="hero">
         <div class="hero__inner reveal">
           <span class="hero__tag">Layanan — Dokumentasi Event</span>
@@ -15349,39 +15536,20 @@ function render_dokumentasi_event_shortcode() {
 
       <div class="divider"></div>
 
+      <!-- VIDEO SHOWCASE -->
       <section class="section">
         <div class="reveal-zoom">
           <div class="video-showcase">
-            <?php if ($use_fallback):
-                $fallback_items = [
-                    ['title' => 'Dokumentasi Event 1', 'author' => 'ian-0064-FVD', 'yt' => 'NkycgR8UoIY', 'tag' => 'Dokumentasi Event'],
-                    ['title' => 'Dokumentasi Event 2', 'author' => 'ian-0064-FVD', 'yt' => '1yCklnC5aoY', 'tag' => 'Dokumentasi Event'],
-                ];
-                foreach ($fallback_items as $item):
-                    $embed_url = "https://www.youtube.com/embed/" . $item['yt'] . "?autoplay=1";
-                    $thumb_url = "https://img.youtube.com/vi/" . $item['yt'] . "/mqdefault.jpg";
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode(explode('-', $item['author'], 2)[1] ?? $item['author']));
-            ?>
-                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url); ?>')">
-                      <div class="video-card__thumb">
-                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($item['tag']); ?>" loading="lazy">
-                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-                      </div>
-                      <div class="video-card__body">
-                        <div class="video-card__title"><?php echo esc_html($item['title']); ?></div>
-                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($item['author']); ?></a></div>
-                      </div>
-                    </div>
-            <?php 
-                endforeach;
-            else: 
+            <?php if (!$has_videos): ?>
+                    <div class="no-content"><p>Belum ada portofolio untuk halaman ini.</p></div>
+            <?php else: 
                 foreach ($videos as $v):
                     $embed_url = get_video_embed_url($v->video_url);
                     $yt_id = '';
                     if (preg_match('/(embed\/|v=|be\/)([a-zA-Z0-9_-]+)/', $embed_url, $m)) {
                         $yt_id = $m[2];
                     }
-                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "https://images.unsplash.com/photo-1551817958-20204d6ab212?w=600&q=80";
+                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "";
                     $detail_link = home_url('/detail-personel/?kode=' . urlencode($v->kode_nama));
             ?>
                     <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url . "?autoplay=1"); ?>')">
@@ -15404,16 +15572,16 @@ function render_dokumentasi_event_shortcode() {
           <div class="divider"></div>
           <section class="section">
             <div class="reveal-zoom">
-              <div class="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+              <div class="photo-grid">
                 <?php foreach ($fotos as $f):
                     $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
                     $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
                 ?>
-                <div class="photo-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="ep_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
-                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
-                  <div style="padding:12px;">
-                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
-                    <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
+                <div class="photo-card" onclick="ep_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
+                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" loading="lazy">
+                  <div class="photo-card__body">
+                    <div class="photo-card__title"><?php echo esc_html($f->judul); ?></div>
+                    <div class="photo-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
                   </div>
                 </div>
                 <?php endforeach; ?>
@@ -15443,32 +15611,55 @@ function render_dokumentasi_event_shortcode() {
           </script>
           <?php endif; ?>
 
-      <div class="video-modal" id="videoModal">
+      <!-- VIDEO MODAL -->
+      <div class="video-modal" id="deVideoModal">
         <div class="video-modal__backdrop" onclick="closeVideo()"></div>
         <div class="video-modal__content">
           <button class="video-modal__close" onclick="closeVideo()">&times;</button>
           <div class="video-modal__wrap">
-            <iframe id="videoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe id="deVideoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
           </div>
         </div>
       </div>
 
       <script>
       function openVideo(url){
-        document.getElementById('videoIframe').src = url;
-        document.getElementById('videoModal').style.display = 'block';
+        document.getElementById('deVideoIframe').src = url;
+        document.getElementById('deVideoModal').style.display = 'block';
       }
       function closeVideo(){
-        document.getElementById('videoIframe').src = '';
-        document.getElementById('videoModal').style.display = 'none';
+        document.getElementById('deVideoIframe').src = '';
+        document.getElementById('deVideoModal').style.display = 'none';
       }
-      document.getElementById('videoModal').addEventListener('click', function(e){
+      document.getElementById('deVideoModal').addEventListener('click', function(e){
         if(e.target === this) closeVideo();
+      });
+      
+      // FAQ Toggle
+      if (typeof toggleFaq !== 'function') {
+        function toggleFaq(el) {
+          el.classList.toggle('open');
+          const answer = el.nextElementSibling;
+          answer.classList.toggle('open');
+        }
+      }
+      
+      // Scroll Reveal
+      jQuery(document).ready(function($) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add('active');
+          });
+        }, { threshold: 0.1 });
+        $('.page-event-production .reveal, .page-event-production .reveal-zoom').each(function() {
+          observer.observe(this);
+        });
       });
       </script>
 
+      <!-- CONTENT SECTION -->
       <section class="section">
-        <div class="content-section reveal">
+        <div class="content-area reveal">
           <h2>Jasa <span class="hl">Dokumentasi Event Profesional</span></h2>
 
           <h3>Layanan Dokumentasi Foto & Video untuk Berbagai Acara</h3>
@@ -15532,41 +15723,15 @@ function render_dokumentasi_event_shortcode() {
           <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa biaya jasa dokumentasi event?<span class="arrow">▾</span></div><div class="faq-item__a">Biaya dokumentasi event bervariasi tergantung pada durasi acara, jumlah kru, jenis dokumentasi (foto/video/keduanya), dan kebutuhan peralatan khusus. Kami memberikan penawaran yang transparan sesuai dengan kebutuhan acara Anda. Hubungi tim kami untuk konsultasi dan simulasi biaya.</div></div>
           <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa lama hasil dokumentasi selesai?<span class="arrow">▾</span></div><div class="faq-item__a">Untuk foto, hasil edit biasanya selesai dalam 3-7 hari kerja. Untuk video highlights, estimasi pengerjaan 1-2 minggu tergantung kompleksitas editing. Kami juga menyediakan layanan express jika diperlukan.</div></div>
           <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah bisa menangani acara di luar kota?<span class="arrow">▾</span></div><div class="faq-item__a">Tentu. Kami melayani dokumentasi event di seluruh Indonesia. Tim kami siap mobilisasi ke lokasi acara Anda dengan peralatan lengkap. Biaya transportasi dan akomodasi akan disesuaikan dengan lokasi.</div></div>
-          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apa saja jenis acara yang pernah didokumentasikan?<span class="arrow">▾</span></div><div class="faq-item__a">Kami telah mendokumentasikan berbagai jenis acara: corporate event, product launching, seminar & konferensi, gathering, konser musik, pernikahan, pameran, festival, dan various event sosial maupun komersial lainnya.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apa saja jenis acara yang pernah didokumentasikan?<span class="arrow">▾</span></div><div class="faq-item__a">Kami telah mendokumentasikan berbagai jenis acara: corporate event, product launching, seminar & konferensi, gathering, konser musik, pernikahan, pameran, festival, dan berbagai event sosial maupun komersial lainnya.</div></div>
           <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah hasil dokumentasi bisa digunakan untuk keperluan komersial?<span class="arrow">▾</span></div><div class="faq-item__a">Ya, hasil dokumentasi sepenuhnya menjadi hak milik klien dan dapat digunakan untuk keperluan komersial, publikasi, promosi, dan arsip perusahaan tanpa royalti tambahan.</div></div>
         </div>
       </section>
-    </div>
-
-    <script>
-    // FAQ Toggle
-    if (typeof toggleFaq !== 'function') {
-      function toggleFaq(el) {
-        el.classList.toggle('open');
-        const answer = el.nextElementSibling;
-        answer.classList.toggle('open');
-      }
-    }
-    
-    // Scroll Reveal for dynamic shortcode content
-    jQuery(document).ready(function($) {
-      const de_observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('active');
-          }
-        });
-      }, { threshold: 0.1 });
-      $('.page-dokumentasi-event .reveal, .page-dokumentasi-event .reveal-zoom').each(function() {
-        de_observer.observe(this);
-      });
-    });
-    </script>
+    </div><!-- /.page-event-production -->
     <?php
     return ob_get_clean();
 }
 add_shortcode('dokumentasi_event', 'render_dokumentasi_event_shortcode');
-
 /**
  * HALAMAN VIDEO KLIP
  */
@@ -15578,9 +15743,9 @@ add_action('wp_enqueue_scripts', 'enqueue_video_klip_assets');
 
 function render_video_klip_shortcode() {
     global $wpdb;
-    wp_enqueue_style('video-klip-css');
+    wp_enqueue_style('event-production-css');
 
-    // Query video klip videos (categories: media-entertainment, film-cinematic)
+    // Query video klip videos
     $videos = $wpdb->get_results(
         "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio_video v
@@ -15588,10 +15753,10 @@ function render_video_klip_shortcode() {
          JOIN wp9y_service_map sm ON sm.item_type = 'video' AND sm.item_id = v.id
          WHERE v.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'video-klip'
          ORDER BY v.id DESC
-         LIMIT 6"
+         LIMIT 9"
     );
 
-    // Query video klip photos
+    // Query photos
     $fotos = $wpdb->get_results(
         "SELECT DISTINCT p.*, ps.nama_panggilan, ps.kode_nama
          FROM wp9y_portofolio p
@@ -15601,15 +15766,15 @@ function render_video_klip_shortcode() {
          ORDER BY p.id DESC"
     );
 
-    // Fallback: if database has fewer than 2 videos, use hardcoded list from mockup
-    $use_fallback = (!$videos || count($videos) < 2);
+    $has_videos = $videos && count($videos) > 0;
 
     ob_start();
     ?>
-    <div class="page-video-klip">
+    <div class="page-event-production">
       <div class="fluid-glow glow-left"></div>
       <div class="fluid-glow glow-right"></div>
 
+      <!-- HERO -->
       <section class="hero">
         <div class="hero__inner reveal">
           <span class="hero__tag">Layanan — Video Klip</span>
@@ -15622,39 +15787,20 @@ function render_video_klip_shortcode() {
 
       <div class="divider"></div>
 
+      <!-- VIDEO SHOWCASE -->
       <section class="section">
         <div class="reveal-zoom">
           <div class="video-showcase">
-            <?php if ($use_fallback):
-                $fallback_items = [
-                    ['title' => 'Video Klip 1', 'author' => 'ONO-0001-FVDE', 'yt' => 'zHjHO4iVxU8', 'tag' => 'Video Klip'],
-                    ['title' => 'Video Klip 2', 'author' => 'cegum-0043-FVDE', 'yt' => 'btdW-kv_Nf0', 'tag' => 'Video Klip'],
-                ];
-                foreach ($fallback_items as $item):
-                    $embed_url = "https://www.youtube.com/embed/" . $item['yt'] . "?autoplay=1";
-                    $thumb_url = "https://img.youtube.com/vi/" . $item['yt'] . "/mqdefault.jpg";
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode(explode('-', $item['author'], 2)[1] ?? $item['author']));
-            ?>
-                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url); ?>')">
-                      <div class="video-card__thumb">
-                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($item['tag']); ?>" loading="lazy">
-                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-                      </div>
-                      <div class="video-card__body">
-                        <div class="video-card__title"><?php echo esc_html($item['title']); ?></div>
-                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($item['author']); ?></a></div>
-                      </div>
-                    </div>
-            <?php 
-                endforeach;
-            else: 
+            <?php if (!$has_videos): ?>
+                    <div class="no-content"><p>Belum ada portofolio untuk halaman ini.</p></div>
+            <?php else: 
                 foreach ($videos as $v):
                     $embed_url = get_video_embed_url($v->video_url);
                     $yt_id = '';
                     if (preg_match('/(embed\/|v=|be\/)([a-zA-Z0-9_-]+)/', $embed_url, $m)) {
                         $yt_id = $m[2];
                     }
-                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&q=80";
+                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "";
                     $detail_link = home_url('/detail-personel/?kode=' . urlencode($v->kode_nama));
             ?>
                     <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url . "?autoplay=1"); ?>')">
@@ -15677,16 +15823,16 @@ function render_video_klip_shortcode() {
           <div class="divider"></div>
           <section class="section">
             <div class="reveal-zoom">
-              <div class="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+              <div class="photo-grid">
                 <?php foreach ($fotos as $f):
                     $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
                     $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
                 ?>
-                <div class="photo-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="ep_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
-                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
-                  <div style="padding:12px;">
-                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
-                    <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
+                <div class="photo-card" onclick="ep_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
+                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" loading="lazy">
+                  <div class="photo-card__body">
+                    <div class="photo-card__title"><?php echo esc_html($f->judul); ?></div>
+                    <div class="photo-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
                   </div>
                 </div>
                 <?php endforeach; ?>
@@ -15716,32 +15862,34 @@ function render_video_klip_shortcode() {
           </script>
           <?php endif; ?>
 
-      <div class="video-modal" id="videoModal">
+      <!-- VIDEO MODAL -->
+      <div class="video-modal" id="vkVideoModal">
         <div class="video-modal__backdrop" onclick="closeVideo()"></div>
         <div class="video-modal__content">
           <button class="video-modal__close" onclick="closeVideo()">&times;</button>
           <div class="video-modal__wrap">
-            <iframe id="videoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe id="vkVideoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
           </div>
         </div>
       </div>
 
       <script>
       function openVideo(url){
-        document.getElementById('videoIframe').src = url;
-        document.getElementById('videoModal').style.display = 'block';
+        document.getElementById('vkVideoIframe').src = url;
+        document.getElementById('vkVideoModal').style.display = 'block';
       }
       function closeVideo(){
-        document.getElementById('videoIframe').src = '';
-        document.getElementById('videoModal').style.display = 'none';
+        document.getElementById('vkVideoIframe').src = '';
+        document.getElementById('vkVideoModal').style.display = 'none';
       }
-      document.getElementById('videoModal').addEventListener('click', function(e){
+      document.getElementById('vkVideoModal').addEventListener('click', function(e){
         if(e.target === this) closeVideo();
       });
       </script>
 
+      <!-- CONTENT SECTION -->
       <section class="section">
-        <div class="content-section reveal">
+        <div class="content-area reveal">
           <h2>Jasa Pembuatan <span class="hl">Video Klip</span></h2>
 
           <h3>Layanan Produksi Video Klip Profesional</h3>
@@ -15750,12 +15898,12 @@ function render_video_klip_shortcode() {
           <hr>
 
           <h3>Kenapa Video Klip Penting untuk Karya Musik Anda</h3>
-          <p>Video klip bukan sekadar pelengkap lagu — ia adalah medium storytelling visual yang memperkuat pesan, emosi, dan identitas dari sebuah karya musik. Di era digital di mana konten visual mendominasi, video klip yang berkualitas dapat menjadi pembeda yang signifikan, membantu artis dan musisi menjangkau audiens yang lebih luas, meningkatkan engagement, dan memperkuat personal branding di industri musik.</p>
+          <p>Video klip bukan sekadar pelengkap lagu — ia adalah medium storytelling visual yang memperkuat pesan, emosi, dan identitas dari sebuah karya musik.</p>
 
           <ul>
             <li><strong>Meningkatkan daya tarik dan engagement audiens</strong> melalui visual yang kuat dan sinematik</li>
             <li><strong>Memperkuat identitas dan karakter artistik</strong> dengan konsep visual yang unik dan personal</li>
-            <li><strong>Memperluas jangkauan distribusi</strong> — siap tayang di YouTube, Spotify Canvas, Instagram Reels, TikTok, dan platform digital lainnya</li>
+            <li><strong>Memperluas jangkauan distribusi</strong> — siap tayang di YouTube, Spotify Canvas, Instagram Reels, TikTok</li>
             <li><strong>Membangun koneksi emosional</strong> antara pendengar dan karya melalui narasi visual yang mendalam</li>
             <li><strong>Meningkatkan nilai produksi</strong> dan kredibilitas artis di mata industri dan audiens</li>
           </ul>
@@ -15763,56 +15911,51 @@ function render_video_klip_shortcode() {
           <hr>
 
           <h3>Layanan Produksi Video Klip Kami</h3>
-          <p>Kami menyediakan berbagai layanan produksi video klip yang dapat disesuaikan dengan genre musik, konsep kreatif, dan anggaran Anda — dari artis independen hingga label rekaman.</p>
 
           <div class="service-list">
-            <div class="service-item"><strong>Video Klip Live Performance</strong><span>Pengambilan gambar penampilan live dengan tata cahaya panggung profesional, multi-angle camera setup, dan audio yang disinkronisasi dengan sempurna.</span></div>
-            <div class="service-item"><strong>Video Klip Narrative / Storytelling</strong><span>Video klip dengan alur cerita yang kuat — cocok untuk lagu dengan pesan naratif yang ingin divisualisasikan secara sinematik.</span></div>
-            <div class="service-item"><strong>Video Klip Concept / Visual Art</strong><span>Pendekatan visual artistik dengan konsep abstrak, simbolis, dan eksekusi sinematografi yang eksperimental dan ikonik.</span></div>
-            <div class="service-item"><strong>Lyric Video</strong><span>Video lirik dengan tipografi dinamis, motion graphic, dan visual pendukung yang estetis — ideal untuk distribusi digital.</span></div>
-            <div class="service-item"><strong>Behind The Scene & Content BTS</strong><span>Dokumentasi proses kreatif di balik produksi video klip — cocok untuk konten media sosial dan strategi branding artis.</span></div>
+            <div class="service-item"><strong>Video Klip Live Performance</strong><span>Multi-angle camera, lighting panggung profesional, audio sinkronisasi sempurna.</span></div>
+            <div class="service-item"><strong>Video Klip Narrative / Storytelling</strong><span>Alur cerita kuat, sinematik — cocok untuk lagu dengan pesan naratif.</span></div>
+            <div class="service-item"><strong>Video Klip Concept / Visual Art</strong><span>Pendekatan visual artistik, konsep abstrak, eksekusi sinematografi ikonik.</span></div>
+            <div class="service-item"><strong>Lyric Video</strong><span>Tipografi dinamis, motion graphic estetis — ideal untuk distribusi digital.</span></div>
+            <div class="service-item"><strong>Behind The Scene & Content BTS</strong><span>Dokumentasi proses kreatif — cocok untuk konten media sosial artis.</span></div>
           </div>
 
           <hr>
 
           <h3>Proses Produksi Video Klip</h3>
-          <p>Kami memiliki alur kerja produksi yang terstruktur untuk memastikan setiap video klip yang kami kerjakan menghasilkan kualitas sinematik terbaik sesuai visi artistik Anda.</p>
 
           <div class="steps">
-            <div class="step-card reveal"><div class="step-card__num">1</div><h4>Konsep &amp; Brief</h4><p>Diskusi mendalam tentang lagu, visi artistik, referensi visual, dan konsep kreatif yang ingin diwujudkan.</p></div>
-            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">2</div><h4>Storyboard &amp; Treatment</h4><p>Menyusun storyboard visual, mood board, dan treatment lengkap sebagai panduan produksi.</p></div>
-            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">3</div><h4>Produksi</h4><p>Shooting dengan kamera sinematik, tata cahaya artistik, dan arahan kreatif dari tim profesional.</p></div>
-            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">4</div><h4>Post-Production</h4><p>Editing, color grading sinematik, sound design, dan efek visual untuk hasil akhir yang maksimal.</p></div>
-            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">5</div><h4>Revisi &amp; Delivery</h4><p>Finishing, revisi terarah, dan pengiriman file dalam format siap distribusi ke berbagai platform.</p></div>
+            <div class="step-card reveal"><div class="step-card__num">1</div><h4>Konsep &amp; Brief</h4><p>Diskusi lagu, visi artistik, referensi visual, dan konsep kreatif.</p></div>
+            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">2</div><h4>Storyboard &amp; Treatment</h4><p>Menyusun storyboard visual dan mood board sebagai panduan produksi.</p></div>
+            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">3</div><h4>Produksi</h4><p>Shooting dengan kamera sinematik, tata cahaya artistik, arahan kreatif.</p></div>
+            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">4</div><h4>Post-Production</h4><p>Editing, color grading, sound design, efek visual untuk hasil maksimal.</p></div>
+            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">5</div><h4>Revisi &amp; Delivery</h4><p>Finishing dan pengiriman file siap distribusi ke berbagai platform.</p></div>
           </div>
 
           <hr>
 
           <h3>Keunggulan Jasa Video Klip Kami</h3>
           <ul>
-            <li><strong>Tim kreatif dan teknisi berpengalaman</strong> dalam produksi video klip untuk berbagai genre musik</li>
-            <li><strong>Peralatan sinematik profesional</strong> — kamera cinema, lighting, dan audio berkualitas broadcast</li>
-            <li><strong>Pendekatan artistik yang personal</strong> — setiap video klip dirancang sesuai dengan karakter unik karya musik Anda</li>
-            <li><strong>Fleksibel untuk berbagai platform</strong> — format video dioptimalkan untuk YouTube, Instagram, TikTok, dan platform digital lainnya</li>
-            <li><strong>Layanan one-stop</strong> — dari konsep, produksi, hingga post-production dalam satu tim terpadu</li>
-            <li><strong>Proses kerja transparan</strong> dengan timeline dan komunikasi yang jelas sepanjang proyek</li>
+            <li><strong>Tim kreatif dan teknisi berpengalaman</strong> dalam produksi video klip berbagai genre musik</li>
+            <li><strong>Peralatan sinematik profesional</strong> — kamera cinema, lighting, audio broadcast quality</li>
+            <li><strong>Pendekatan artistik yang personal</strong> — setiap video klip sesuai karakter unik karya musik Anda</li>
+            <li><strong>Fleksibel untuk berbagai platform</strong> — YouTube, Instagram, TikTok, dan platform digital lainnya</li>
+            <li><strong>Layanan one-stop</strong> — dari konsep, produksi, hingga post-production dalam satu tim</li>
           </ul>
 
           <hr>
 
           <h3>Pertanyaan Seputar Jasa Video Klip</h3>
 
-          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa biaya produksi video klip?<span class="arrow">▾</span></div><div class="faq-item__a">Biaya produksi video klip bervariasi tergantung pada kompleksitas konsep, durasi, jumlah lokasi, talent, dan kebutuhan efek visual. Kami memberikan penawaran yang transparan sesuai dengan anggaran dan kebutuhan artistik Anda. Hubungi tim kami untuk konsultasi gratis.</div></div>
-          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa lama proses produksi video klip?<span class="arrow">▾</span></div><div class="faq-item__a">Proses produksi video klip umumnya memakan waktu 1-3 minggu, tergantung pada kompleksitas proyek. Untuk proyek dengan kebutuhan produksi yang lebih kompleks seperti efek visual atau multi-lokasi, waktu pengerjaan dapat disesuaikan melalui diskusi awal.</div></div>
-          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah bisa produksi video klip untuk semua genre musik?<span class="arrow">▾</span></div><div class="faq-item__a">Tentu. Kami memiliki pengalaman dalam memproduksi video klip untuk berbagai genre musik — dari pop, rock, jazz, tradisional, hingga EDM dan musik eksperimental. Setiap genre memiliki pendekatan visual yang berbeda dan kami akan menyesuaikan konsep dengan karakter musik Anda.</div></div>
-          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah video klip bisa digunakan untuk distribusi digital dan media sosial?<span class="arrow">▾</span></div><div class="faq-item__a">Ya, video klip kami diproduksi dengan format yang optimal untuk berbagai platform digital termasuk YouTube, Instagram Reels, TikTok, Facebook, dan platform streaming musik seperti Spotify Canvas. Kami juga dapat menyesuaikan aspek rasio dan durasi sesuai spesifikasi masing-masing platform.</div></div>
-          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah melayani pembuatan lyric video juga?<span class="arrow">▾</span></div><div class="faq-item__a">Ya, kami menyediakan layanan pembuatan lyric video dengan tipografi dinamis, motion graphic yang estetis, dan visual pendukung yang menarik. Lyric video cocok untuk distribusi digital sebagai konten pendamping perilisan single atau album.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa biaya produksi video klip?<span class="arrow">▾</span></div><div class="faq-item__a">Biaya bervariasi tergantung kompleksitas konsep, durasi, lokasi, dan talent. Hubungi tim kami untuk konsultasi gratis.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Berapa lama proses produksi video klip?<span class="arrow">▾</span></div><div class="faq-item__a">Umumnya 1-3 minggu tergantung kompleksitas proyek.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah bisa untuk semua genre musik?<span class="arrow">▾</span></div><div class="faq-item__a">Tentu, kami berpengalaman dalam pop, rock, jazz, tradisional, EDM, dan musik eksperimental.</div></div>
+          <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah melayani lyric video?<span class="arrow">▾</span></div><div class="faq-item__a">Ya, lyric video dengan tipografi dinamis dan motion graphic estetis untuk distribusi digital.</div></div>
         </div>
       </section>
-    </div>
+    </div><!-- /.page-event-production -->
 
     <script>
-    // FAQ Toggle
     if (typeof toggleFaq !== 'function') {
       function toggleFaq(el) {
         el.classList.toggle('open');
@@ -15820,17 +15963,13 @@ function render_video_klip_shortcode() {
         answer.classList.toggle('open');
       }
     }
-    
-    // Scroll Reveal for dynamic shortcode content
     jQuery(document).ready(function($) {
       const vk_observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('active');
-          }
+          if (entry.isIntersecting) entry.target.classList.add('active');
         });
       }, { threshold: 0.1 });
-      $('.page-video-klip .reveal, .page-video-klip .reveal-zoom').each(function() {
+      $('.page-event-production .reveal, .page-event-production .reveal-zoom').each(function() {
         vk_observer.observe(this);
       });
     });
@@ -15839,7 +15978,6 @@ function render_video_klip_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('video_klip', 'render_video_klip_shortcode');
-
 
 /**
  * HALAMAN VIDEO PRODUK & BRANDING IKLAN
@@ -15852,9 +15990,9 @@ add_action('wp_enqueue_scripts', 'enqueue_video_produk_iklan_assets');
 
 function render_video_produk_iklan_shortcode() {
     global $wpdb;
-    wp_enqueue_style('video-produk-iklan-css');
+    wp_enqueue_style('event-production-css');
 
-    // Query video produk videos (category: commercial-advertising)
+    // Query video produk videos
     $videos = $wpdb->get_results(
         "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio_video v
@@ -15862,11 +16000,9 @@ function render_video_produk_iklan_shortcode() {
          JOIN wp9y_service_map sm ON sm.item_type = 'video' AND sm.item_id = v.id
          WHERE v.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'video-produk-branding-iklan'
          ORDER BY v.id DESC
-         LIMIT 6"
+         LIMIT 9"
     );
 
-    // Fallback: if database has fewer than 3 videos, use hardcoded list from mockup
-    
     // Query foto
     $fotos = $wpdb->get_results(
         "SELECT DISTINCT p.*, ps.nama_panggilan, ps.kode_nama
@@ -15876,15 +16012,16 @@ function render_video_produk_iklan_shortcode() {
          WHERE p.status = 'approved' AND ps.status = 'approved' AND sm.service_slug = 'video-produk-branding-iklan'
          ORDER BY p.id DESC"
     );
-$use_fallback = (!$videos || count($videos) < 3);
-$has_videos = $videos && count($videos) > 0;
+
+    $has_videos = $videos && count($videos) > 0;
 
     ob_start();
     ?>
-    <div class="page-video-produk-iklan">
+    <div class="page-event-production">
       <div class="fluid-glow glow-left"></div>
       <div class="fluid-glow glow-right"></div>
 
+      <!-- HERO -->
       <section class="hero">
         <div class="hero__inner reveal">
           <span class="hero__tag">Layanan — Video Produk & Branding Iklan</span>
@@ -15897,11 +16034,12 @@ $has_videos = $videos && count($videos) > 0;
 
       <div class="divider"></div>
 
+      <!-- VIDEO SHOWCASE -->
       <section class="section">
         <div class="reveal-zoom">
           <div class="video-showcase">
             <?php if (!$has_videos): ?>
-                            <div class="no-content"><p>Belum ada portofolio untuk halaman ini.</p></div>
+                    <div class="no-content"><p>Belum ada portofolio untuk halaman ini.</p></div>
             <?php else: 
                 foreach ($videos as $v):
                     $embed_url = get_video_embed_url($v->video_url);
@@ -15909,7 +16047,7 @@ $has_videos = $videos && count($videos) > 0;
                     if (preg_match('/(embed\/|v=|be\/)([a-zA-Z0-9_-]+)/', $embed_url, $m)) {
                         $yt_id = $m[2];
                     }
-                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&q=80";
+                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "";
                     $detail_link = home_url('/detail-personel/?kode=' . urlencode($v->kode_nama));
             ?>
                     <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url . "?autoplay=1"); ?>')">
@@ -15941,74 +16079,77 @@ $has_videos = $videos && count($videos) > 0;
         </div>
       </div>
 
-
           <?php if ($fotos): ?>
           <div class="divider"></div>
           <section class="section">
             <div class="reveal-zoom">
-              <div class="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+              <div class="photo-grid">
                 <?php foreach ($fotos as $f):
                     $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
                     $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
                 ?>
-                <div class="photo-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="vpi_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
-                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
-                  <div style="padding:12px;">
-                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
-                    <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
+                <div class="photo-card" onclick="ep_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
+                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" loading="lazy">
+                  <div class="photo-card__body">
+                    <div class="photo-card__title"><?php echo esc_html($f->judul); ?></div>
+                    <div class="photo-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
                   </div>
                 </div>
                 <?php endforeach; ?>
               </div>
             </div>
           </section>
-          <div class="video-modal" id="vpiLightbox" style="z-index:9999;display:none;">
-            <div class="video-modal__backdrop" onclick="vpi_closeLightbox()"></div>
+          <!-- LIGHTBOX MODAL -->
+          <div class="video-modal" id="epLightbox" style="z-index:9999;display:none;">
+            <div class="video-modal__backdrop" onclick="ep_closeLightbox()"></div>
             <div class="video-modal__content" style="background:transparent;box-shadow:none;">
-              <button class="video-modal__close" onclick="vpi_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
+              <button class="video-modal__close" onclick="ep_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
               <div class="video-modal__wrap" style="text-align:center;">
-                <img id="vpiLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
+                <img id="epLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
               </div>
             </div>
           </div>
           <script>
-          function vpi_openLightbox(url){
-            document.getElementById("vpiLightboxImg").src = url;
-            document.getElementById("vpiLightbox").style.display = "block";
+          function ep_openLightbox(url){
+            document.getElementById("epLightboxImg").src = url;
+            document.getElementById("epLightbox").style.display = "block";
           }
-          function vpi_closeLightbox(){
-            document.getElementById("vpiLightboxImg").src = "";
-            document.getElementById("vpiLightbox").style.display = "none";
+          function ep_closeLightbox(){
+            document.getElementById("epLightboxImg").src = "";
+            document.getElementById("epLightbox").style.display = "none";
           }
-          document.addEventListener("keydown",function(e){if(e.key==="Escape")vpi_closeLightbox();});
+          document.addEventListener("keydown",function(e){if(e.key==="Escape")ep_closeLightbox();});
           </script>
           <?php endif; ?>
-      <div class="video-modal" id="videoModal">
+
+      <!-- VIDEO MODAL -->
+      <div class="video-modal" id="vpiVideoModal">
         <div class="video-modal__backdrop" onclick="closeVideo()"></div>
         <div class="video-modal__content">
           <button class="video-modal__close" onclick="closeVideo()">&times;</button>
           <div class="video-modal__wrap">
-            <iframe id="videoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe id="vpiVideoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
           </div>
         </div>
       </div>
 
       <script>
       function openVideo(url){
-        document.getElementById('videoIframe').src = url;
-        document.getElementById('videoModal').style.display = 'block';
+        document.getElementById('vpiVideoIframe').src = url;
+        document.getElementById('vpiVideoModal').style.display = 'block';
       }
       function closeVideo(){
-        document.getElementById('videoIframe').src = '';
-        document.getElementById('videoModal').style.display = 'none';
+        document.getElementById('vpiVideoIframe').src = '';
+        document.getElementById('vpiVideoModal').style.display = 'none';
       }
-      document.getElementById('videoModal').addEventListener('click', function(e){
+      document.getElementById('vpiVideoModal').addEventListener('click', function(e){
         if(e.target === this) closeVideo();
       });
       </script>
 
+      <!-- CONTENT SECTION -->
       <section class="section">
-        <div class="content-section reveal">
+        <div class="content-area reveal">
           <h2>Jasa Pembuatan <span class="hl">Video Produk &amp; Branding Iklan</span></h2>
 
           <h3>Layanan Video Produk, TVC &amp; Branding Iklan Profesional</h3>
@@ -16037,7 +16178,7 @@ $has_videos = $videos && count($videos) > 0;
             <div class="service-item"><strong>TVC &amp; Video Iklan Komersial</strong><span>Produksi TVC (Television Commercial) dan video iklan digital untuk siaran TV, YouTube, Instagram, TikTok, dan platform media sosial lainnya.</span></div>
             <div class="service-item"><strong>Branding Video &amp; Company Story</strong><span>Video branding yang menceritakan kisah brand, value proposition, dan misi perusahaan secara visual dan emosional.</span></div>
             <div class="service-item"><strong>Foto Produk Profesional</strong><span>Foto produk berkualitas broadcast dengan berbagai gaya — flat lay, isolated, lifestyle, dan creative composition — untuk kebutuhan katalog dan promosi.</span></div>
-            <div class="service-item"><strong>Motion Graphic &amp; Product Animation</strong><span>Animasi produk and motion graphic untuk menjelaskan fitur produk secara visual yang menarik dan mudah dipahami audiens.</span></div>
+            <div class="service-item"><strong>Motion Graphic &amp; Product Animation</strong><span>Animasi produk dan motion graphic untuk menjelaskan fitur produk secara visual yang menarik dan mudah dipahami audiens.</span></div>
           </div>
 
           <hr>
@@ -16076,10 +16217,9 @@ $has_videos = $videos && count($videos) > 0;
           <div class="faq-item"><div class="faq-item__q" onclick="toggleFaq(this)">Apakah melayani jasa foto produk juga?<span class="arrow">▾</span></div><div class="faq-item__a">Ya, kami menyediakan layanan foto produk profesional dengan berbagai gaya: isolated white background, flat lay, lifestyle, dan creative composition. Foto produk kami siap digunakan untuk katalog, website, marketplace, dan materi promosi cetak maupun digital.</div></div>
         </div>
       </section>
-    </div>
+    </div><!-- /.page-event-production -->
 
     <script>
-    // FAQ Toggle
     if (typeof toggleFaq !== 'function') {
       function toggleFaq(el) {
         el.classList.toggle('open');
@@ -16087,17 +16227,13 @@ $has_videos = $videos && count($videos) > 0;
         answer.classList.toggle('open');
       }
     }
-    
-    // Scroll Reveal for dynamic shortcode content
     jQuery(document).ready(function($) {
       const vpi_observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('active');
-          }
+          if (entry.isIntersecting) entry.target.classList.add('active');
         });
       }, { threshold: 0.1 });
-      $('.page-video-produk-iklan .reveal, .page-video-produk-iklan .reveal-zoom').each(function() {
+      $('.page-event-production .reveal, .page-event-production .reveal-zoom').each(function() {
         vpi_observer.observe(this);
       });
     });
@@ -16106,7 +16242,6 @@ $has_videos = $videos && count($videos) > 0;
     return ob_get_clean();
 }
 add_shortcode('video_produk_iklan', 'render_video_produk_iklan_shortcode');
-
 /**
  * HALAMAN DRONE MAPPING
  * Shortcode: [drone_mapping]
