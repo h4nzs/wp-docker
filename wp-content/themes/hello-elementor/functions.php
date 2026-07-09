@@ -15119,21 +15119,7 @@ function render_event_production_shortcode() {
         <div class="reveal-zoom">
           <div class="video-showcase">
             <?php if (!$has_videos): ?>
-                    echo '<div class="no-content"><p>Belum ada portofolio untuk halaman ini.</p></div>';
-                    $embed_url = "https://www.youtube.com/embed/" . $item['yt'] . "?autoplay=1";
-                    $thumb_url = "https://img.youtube.com/vi/" . $item['yt'] . "/mqdefault.jpg";
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode(explode('-', $item['author'], 2)[1] ?? $item['author']));
-            ?>
-                    <div class="video-card" onclick="openVideo('<?php echo esc_url($embed_url); ?>')">
-                      <div class="video-card__thumb">
-                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($item['tag']); ?>" loading="lazy">
-                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-                      </div>
-                      <div class="video-card__body">
-                        <div class="video-card__title"><?php echo esc_html($item['title']); ?></div>
-                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($item['author']); ?></a></div>
-                      </div>
-                    </div>
+                    <div class="no-content"><p>Belum ada portofolio untuk halaman ini.</p></div>
             <?php else: 
                 foreach ($videos as $v):
                     $embed_url = get_video_embed_url($v->video_url);
@@ -15353,6 +15339,16 @@ function render_dokumentasi_event_shortcode() {
          LIMIT 6"
     );
 
+    // Query event-documentation photos
+    $fotos = $wpdb->get_results(
+        "SELECT DISTINCT p.*, ps.nama_panggilan, ps.kode_nama
+         FROM wp9y_portofolio p
+         JOIN wp9y_personel ps ON p.personel_id = ps.id
+         JOIN wp9y_service_map sm ON sm.item_type = 'foto' AND sm.item_id = p.id
+         WHERE p.status = 'approved' AND ps.status = 'approved' AND sm.service_slug = 'dokumentasi-event'
+         ORDER BY p.id DESC"
+    );
+
     // Fallback: if database has fewer than 2 videos, use hardcoded list from mockup
     $use_fallback = (!$videos || count($videos) < 2);
 
@@ -15377,7 +15373,7 @@ function render_dokumentasi_event_shortcode() {
       <section class="section">
         <div class="reveal-zoom">
           <div class="video-showcase">
-            <?php if (!$has_videos): ?>
+            <?php if ($use_fallback):
                 $fallback_items = [
                     ['title' => 'Dokumentasi Event 1', 'author' => 'ian-0064-FVD', 'yt' => 'NkycgR8UoIY', 'tag' => 'Dokumentasi Event'],
                     ['title' => 'Dokumentasi Event 2', 'author' => 'ian-0064-FVD', 'yt' => '1yCklnC5aoY', 'tag' => 'Dokumentasi Event'],
@@ -15397,7 +15393,9 @@ function render_dokumentasi_event_shortcode() {
                         <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($item['author']); ?></a></div>
                       </div>
                     </div>
-            <?php else: 
+            <?php 
+                endforeach;
+            else: 
                 foreach ($videos as $v):
                     $embed_url = get_video_embed_url($v->video_url);
                     $yt_id = '';
@@ -15614,6 +15612,16 @@ function render_video_klip_shortcode() {
          LIMIT 6"
     );
 
+    // Query video klip photos
+    $fotos = $wpdb->get_results(
+        "SELECT DISTINCT p.*, ps.nama_panggilan, ps.kode_nama
+         FROM wp9y_portofolio p
+         JOIN wp9y_personel ps ON p.personel_id = ps.id
+         JOIN wp9y_service_map sm ON sm.item_type = 'foto' AND sm.item_id = p.id
+         WHERE p.status = 'approved' AND ps.status = 'approved' AND sm.service_slug = 'video-klip'
+         ORDER BY p.id DESC"
+    );
+
     // Fallback: if database has fewer than 2 videos, use hardcoded list from mockup
     $use_fallback = (!$videos || count($videos) < 2);
 
@@ -15638,7 +15646,7 @@ function render_video_klip_shortcode() {
       <section class="section">
         <div class="reveal-zoom">
           <div class="video-showcase">
-            <?php if (!$has_videos): ?>
+            <?php if ($use_fallback):
                 $fallback_items = [
                     ['title' => 'Video Klip 1', 'author' => 'ONO-0001-FVDE', 'yt' => 'zHjHO4iVxU8', 'tag' => 'Video Klip'],
                     ['title' => 'Video Klip 2', 'author' => 'cegum-0043-FVDE', 'yt' => 'btdW-kv_Nf0', 'tag' => 'Video Klip'],
@@ -15658,7 +15666,9 @@ function render_video_klip_shortcode() {
                         <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($item['author']); ?></a></div>
                       </div>
                     </div>
-            <?php else: 
+            <?php 
+                endforeach;
+            else: 
                 foreach ($videos as $v):
                     $embed_url = get_video_embed_url($v->video_url);
                     $yt_id = '';
@@ -15888,6 +15898,7 @@ function render_video_produk_iklan_shortcode() {
          ORDER BY p.id DESC"
     );
 $use_fallback = (!$videos || count($videos) < 3);
+$has_videos = $videos && count($videos) > 0;
 
     ob_start();
     ?>
