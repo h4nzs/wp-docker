@@ -14843,31 +14843,19 @@ add_action('wp_enqueue_scripts', 'enqueue_wedding_assets');
 
 function render_wedding_shortcode() {
     global $wpdb;
-    wp_enqueue_style('wedding-css');
+    wp_enqueue_style('event-production-css');
 
-    // Ambil 1 video wedding terbaru untuk shorts highlight
-    $shorts_video = $wpdb->get_row(
+    // Ambil video wedding dari service map
+    $videos = $wpdb->get_results(
         "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio_video v
          JOIN wp9y_personel p ON v.personel_id = p.id
          JOIN wp9y_service_map sm ON sm.item_type = 'video' AND sm.item_id = v.id
          WHERE v.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'wedding-prawedding'
          ORDER BY v.id DESC
-         LIMIT 1"
+         LIMIT 9"
     );
 
-    if (!$shorts_video) {
-        $shorts_video = $wpdb->get_row(
-            "SELECT v.*, p.nama_panggilan, p.kode_nama
-             FROM wp9y_portofolio_video v
-             JOIN wp9y_personel p ON v.personel_id = p.id
-             WHERE v.status = 'approved' AND p.status = 'approved'
-             ORDER BY v.id DESC
-             LIMIT 1"
-        );
-    }
-
-    
     // Query foto
     $fotos = $wpdb->get_results(
         "SELECT DISTINCT p.*, ps.nama_panggilan, ps.kode_nama
@@ -14877,185 +14865,176 @@ function render_wedding_shortcode() {
          WHERE p.status = 'approved' AND ps.status = 'approved' AND sm.service_slug = 'wedding-prawedding'
          ORDER BY p.id DESC"
     );
-ob_start();
+
+    $has_videos = $videos && count($videos) > 0;
+
+    ob_start();
     ?>
-    <div class="wd-blob wd-blob--l" aria-hidden="true"></div>
-    <div class="wd-blob wd-blob--r" aria-hidden="true"></div>
+    <div class="page-event-production">
+      <div class="fluid-glow glow-left"></div>
+      <div class="fluid-glow glow-right"></div>
 
-    <!-- HERO -->
-    <section class="wd-section wd-hero">
-      <div class="wd-hero__inner wd-reveal">
-        <span class="wd-hero__tag">Layanan — Wedding &amp; Prawedding</span>
-        <h1 class="wd-hero__title">Wedding &amp; <span>Pra Wedding</span></h1>
-        <p class="wd-hero__desc">
-          Hari pernikahan hanya terjadi sekali seumur hidup, biarkan kami mengabadikannya untuk Anda. Kami tidak hanya merekam momen, tapi merangkai cerita cinta Anda menjadi kenangan visual yang bisa dikenang selamanya.
-        </p>
-      </div>
-    </section>
-
-    <div class="wd-divider"></div>
-
-    <!-- PHOTO SHOWCASE -->
-    <section class="wd-section">
-      <div class="wd-photo-duo wd-reveal-zoom">
-        <div class="wd-photo-card wd-photo-card--tall">
-          <img src="<?php echo esc_url(home_url('/wp-content/uploads/2026/04/PreweddingLigthing-1-light-Godox-TT685-Capture-with-sony-A7rii-sony-28mm-f2________Book-or--1024x683.webp')); ?>" alt="Prewedding Photography" loading="lazy">
-          <div class="wd-photo-card__cap">Fotografer = Prisai</div>
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero__inner reveal">
+          <span class="hero__tag">Layanan — Wedding &amp; Prawedding</span>
+          <h1 class="hero__title">Wedding &amp; <span>Pra Wedding</span></h1>
+          <p class="hero__desc">
+            Hari pernikahan hanya terjadi sekali seumur hidup, biarkan kami mengabadikannya untuk Anda. Kami tidak hanya merekam momen, tapi merangkai cerita cinta Anda menjadi kenangan visual yang bisa dikenang selamanya.
+          </p>
         </div>
-        <div class="wd-photo-card wd-photo-card--slim">
-          <img src="<?php echo esc_url(home_url('/wp-content/uploads/2026/04/Collaborasi-PhotoshotLigthing-1-light-Godox-TT685-@godoxindonesia.idMuse-@kko.si_Mua-war-819x1024.webp')); ?>" alt="Collaboration Photoshoot" loading="lazy">
-          <div class="wd-photo-card__cap">Fotografer = Prisai</div>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- SHORTS VIDEO HIGHLIGHT -->
-    <?php if ($shorts_video):
-        $embed_url = get_video_embed_url($shorts_video->video_url);
-        $thumb_url = 'https://img.youtube.com/vi/' . (preg_match('/embed\/([a-zA-Z0-9_-]+)/', $embed_url, $m) ? $m[1] : '') . '/mqdefault.jpg';
-        $detail_link = home_url('/detail-personel/?kode=' . urlencode($shorts_video->kode_nama));
-    ?>
-    <section class="wd-section">
-      <div class="wd-shorts wd-reveal">
-        <h3>Video Highlight</h3>
-        <div class="wd-shorts-card" onclick="wd_openVideo('<?php echo esc_js($embed_url); ?>?autoplay=1')">
-          <div class="wd-shorts-card__thumb">
-            <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($shorts_video->judul); ?>" loading="lazy">
-            <div class="wd-shorts-card__play"><div class="wd-shorts-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          </div>
-          <div class="wd-shorts-card__body">
-            <strong><?php echo esc_html($shorts_video->judul); ?></strong>
-            <small>by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($shorts_video->nama_panggilan . '-' . $shorts_video->kode_nama); ?></a></small>
+      <div class="divider"></div>
+
+      <!-- VIDEO SHOWCASE -->
+      <section class="section">
+        <div class="reveal-zoom">
+          <div class="video-showcase">
+            <?php if (!$has_videos): ?>
+                    <div class="no-content"><p>Belum ada portofolio untuk halaman ini.</p></div>
+            <?php else: 
+                foreach ($videos as $v):
+                    $embed_url = get_video_embed_url($v->video_url);
+                    $yt_id = '';
+                    if (preg_match('/(embed\/|v=|be\/)([a-zA-Z0-9_-]+)/', $embed_url, $m)) {
+                        $yt_id = $m[2];
+                    }
+                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "";
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($v->kode_nama));
+            ?>
+                    <div class="video-card" onclick="wd_openVideo('<?php echo esc_url($embed_url . "?autoplay=1"); ?>')">
+                      <div class="video-card__thumb">
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($v->judul); ?>" loading="lazy">
+                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+                      </div>
+                      <div class="video-card__body">
+                        <div class="video-card__title"><?php echo esc_html($v->judul); ?></div>
+                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($v->nama_panggilan); ?>-<?php echo esc_html($v->kode_nama); ?></a></div>
+                      </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
           </div>
         </div>
+      </section>
+
+      <!-- VIDEO MODAL -->
+      <div class="video-modal" id="wdVideoModal" style="display:none;">
+        <div class="video-modal__backdrop" onclick="wd_closeVideo()"></div>
+        <div class="video-modal__content">
+          <button class="video-modal__close" onclick="wd_closeVideo()">&times;</button>
+          <div class="video-modal__wrap">
+            <iframe id="wdVideoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
       </div>
-    </section>
-    <?php endif; ?>
 
-    <!-- MODAL VIDEO -->
-
-          <?php if ($fotos): ?>
-          <div class="divider"></div>
-          <section class="section">
-            <div class="reveal-zoom">
-              <div class="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
-                <?php foreach ($fotos as $f):
-                    $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
-                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
-                ?>
-                <div class="photo-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="wd_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
+      <?php if ($fotos): ?>
+      <div class="divider"></div>
+      <section class="section section-foto">
+        <div class="reveal-zoom">
+          <h2 class="section-title">Foto <span>Wedding &amp; Prawedding</span></h2>
+          <div class="foto-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+            <?php foreach ($fotos as $f):
+                $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
+                $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
+            ?>
+                <div class="foto-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="wd_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
                   <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
                   <div style="padding:12px;">
                     <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
                     <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
                   </div>
                 </div>
-                <?php endforeach; ?>
-              </div>
-            </div>
-          </section>
-          <div class="video-modal" id="wdLightbox" style="z-index:9999;display:none;">
-            <div class="video-modal__backdrop" onclick="wd_closeLightbox()"></div>
-            <div class="video-modal__content" style="background:transparent;box-shadow:none;">
-              <button class="video-modal__close" onclick="wd_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
-              <div class="video-modal__wrap" style="text-align:center;">
-                <img id="wdLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
-              </div>
-            </div>
+            <?php endforeach; ?>
           </div>
-          <script>
-          function wd_openLightbox(url){
-            document.getElementById("wdLightboxImg").src = url;
-            document.getElementById("wdLightbox").style.display = "block";
-          }
-          function wd_closeLightbox(){
-            document.getElementById("wdLightboxImg").src = "";
-            document.getElementById("wdLightbox").style.display = "none";
-          }
-          document.addEventListener("keydown",function(e){if(e.key==="Escape")wd_closeLightbox();});
-          </script>
-          <?php endif; ?>
-    <div class="wd-modal" id="wdVideoModal">
-      <div class="wd-modal__backdrop" onclick="wd_closeVideo()"></div>
-      <div class="wd-modal__content">
-        <button class="wd-modal__close" onclick="wd_closeVideo()">&times;</button>
-        <div class="wd-modal__wrap">
-          <iframe id="wdVideoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </section>
+      <!-- FOTO LIGHTBOX -->
+      <div class="video-modal" id="wdLightbox" style="z-index:9999;display:none;">
+        <div class="video-modal__backdrop" onclick="wd_closeLightbox()"></div>
+        <div class="video-modal__content" style="background:transparent;box-shadow:none;">
+          <button class="video-modal__close" onclick="wd_closeLightbox()" style="color:#fff;font-size:40px;">&times;</button>
+          <div class="video-modal__wrap" style="text-align:center;">
+            <img id="wdLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;">
+          </div>
         </div>
       </div>
-    </div>
+      <script>
+      function wd_openLightbox(url){
+        document.getElementById("wdLightboxImg").src = url;
+        document.getElementById("wdLightbox").style.display = "block";
+      }
+      function wd_closeLightbox(){
+        document.getElementById("wdLightboxImg").src = "";
+        document.getElementById("wdLightbox").style.display = "none";
+      }
+      document.addEventListener("keydown",function(e){if(e.key==="Escape")wd_closeLightbox();});
+      </script>
+      <?php endif; ?>
 
-    <!-- CONTENT -->
-    <section class="wd-section">
-      <div class="wd-content wd-reveal">
-        <h2>Layanan <span class="hl">Wedding &amp; Prawedding</span></h2>
+      <!-- CONTENT SECTION -->
+      <section class="section">
+        <div class="hero__inner reveal">
+          <h2 class="section-title">Layanan <span>Wedding &amp; Prawedding</span></h2>
 
-        <h3>Abadikan Cinta Anda dalam Bingkai yang Tak Terlupakan</h3>
-        <p>Momen pernikahan adalah salah satu hari terpenting dalam hidup. Setiap detail — dari tatapan pertama, haru di pelaminan, hingga tawa bersama keluarga — layak diabadikan dengan sempurna. Tim profesional kami siap merangkai setiap detik menjadi cerita visual yang akan Anda kenang selamanya.</p>
+          <h3>Abadikan Cinta Anda dalam Bingkai yang Tak Terlupakan</h3>
+          <p>Momen pernikahan adalah salah satu hari terpenting dalam hidup. Setiap detail — dari tatapan pertama, haru di pelaminan, hingga tawa bersama keluarga — layak diabadikan dengan sempurna. Tim profesional kami siap merangkai setiap detik menjadi cerita visual yang akan Anda kenang selamanya.</p>
 
-        <hr>
+          <hr>
 
-        <h3>Paket Layanan Kami</h3>
-        <div class="wd-packages">
-          <div class="wd-package wd-reveal"><div class="wd-package__icon">💍</div><h4>Wedding Photography</h4><p>Dokumentasi foto pernikahan dari persiapan hingga resepsi, dengan gaya reportase dan fine art.</p></div>
-          <div class="wd-package wd-reveal" style="transition-delay:.06s"><div class="wd-package__icon">🥂</div><h4>Wedding Videography</h4><p>Video sinematik yang merangkai cerita pernikahan Anda dengan editing artistik dan musik yang menyentuh.</p></div>
-          <div class="wd-package wd-reveal" style="transition-delay:.12s"><div class="wd-package__icon">🌅</div><h4>Prawedding &amp; Engagement</h4><p>Sesi foto dan video pra-nikah di lokasi pilihan, dengan konsep yang mencerminkan kepribadian Anda berdua.</p></div>
+          <h3>Paket Layanan Kami</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;">
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:28px;"><div style="font-size:36px;margin-bottom:8px;">💍</div><h4>Wedding Photography</h4><p>Dokumentasi foto pernikahan dari persiapan hingga resepsi, dengan gaya reportase dan fine art.</p></div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:28px;"><div style="font-size:36px;margin-bottom:8px;">🥂</div><h4>Wedding Videography</h4><p>Video sinematik yang merangkai cerita pernikahan Anda dengan editing artistik dan musik yang menyentuh.</p></div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:28px;"><div style="font-size:36px;margin-bottom:8px;">🌅</div><h4>Prawedding &amp; Engagement</h4><p>Sesi foto dan video pra-nikah di lokasi pilihan, dengan konsep yang mencerminkan kepribadian Anda berdua.</p></div>
+          </div>
+
+          <h3>Mengapa Memilih Kami?</h3>
+          <ul>
+            <li><strong>Tim profesional dan berpengalaman</strong> dalam menangani berbagai konsep pernikahan</li>
+            <li><strong>Peralatan broadcast quality</strong> untuk hasil foto dan video terbaik</li>
+            <li><strong>Pendekatan storytelling</strong> yang personal — setiap pasangan memiliki cerita unik</li>
+            <li><strong>Hasil editing cepat dan rapi</strong> tanpa mengurangi kualitas artistik</li>
+            <li><strong>Fleksibel menyesuaikan budget dan kebutuhan</strong> Anda</li>
+          </ul>
+
+          <hr>
+
+          <h3>Layanan Lengkap Wedding &amp; Prawedding</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;"><strong>Wedding Day Documentation</strong><br><span style="color:#aaa;font-size:14px;">Dokumentasi lengkap hari pernikahan dari akad hingga resepsi, termasuk foto dan video.</span></div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;"><strong>Prewedding Photo &amp; Video</strong><br><span style="color:#aaa;font-size:14px;">Sesi foto dan video pra-nikah dengan konsep outdoor, studio, atau cinematic.</span></div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;"><strong>Engagement / Lamaran</strong><br><span style="color:#aaa;font-size:14px;">Dokumentasi momen pertunangan yang intim dan penuh makna.</span></div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;"><strong>Cinematic Wedding Video</strong><br><span style="color:#aaa;font-size:14px;">Film pendek sinematik yang merangkum hari istimewa Anda dengan gaya artistik.</span></div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;"><strong>Photo &amp; Video Booth</strong><br><span style="color:#aaa;font-size:14px;">Layanan booth interaktif untuk tamu undangan, lengkap dengan cetak foto instan.</span></div>
+          </div>
+
+          <hr>
+
+          <div style="background:linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(212,175,55,0.02) 100%);border:1px solid rgba(212,175,55,0.15);border-radius:20px;padding:40px;text-align:center;">
+            <h2>Wujudkan Dokumentasi Pernikahan Impian Anda</h2>
+            <p>Konsultasikan konsep wedding &amp; prawedding Anda dengan tim profesional kami. Dari konsep hingga hasil akhir, kami siap membantu.</p>
+            <a href="https://wa.me/6285771002233" style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#b8952d,#d4af37);color:#000;font-weight:700;border-radius:12px;text-decoration:none;" target="_blank">Konsultasi via WhatsApp</a>
+          </div>
         </div>
+      </section>
 
-        <h3>Mengapa Memilih Kami?</h3>
-        <ul>
-          <li><strong>Tim profesional dan berpengalaman</strong> dalam menangani berbagai konsep pernikahan</li>
-          <li><strong>Peralatan broadcast quality</strong> untuk hasil foto dan video terbaik</li>
-          <li><strong>Pendekatan storytelling</strong> yang personal — setiap pasangan memiliki cerita unik</li>
-          <li><strong>Hasil editing cepat dan rapi</strong> tanpa mengurangi kualitas artistik</li>
-          <li><strong>Fleksibel menyesuaikan budget dan kebutuhan</strong> Anda</li>
-        </ul>
-
-        <hr>
-
-        <h3>Layanan Lengkap Wedding &amp; Prawedding</h3>
-        <div class="wd-service-list">
-          <div class="wd-service-item"><strong>Wedding Day Documentation</strong><span>Dokumentasi lengkap hari pernikahan dari akad hingga resepsi, termasuk foto dan video.</span></div>
-          <div class="wd-service-item"><strong>Prewedding Photo &amp; Video</strong><span>Sesi foto dan video pra-nikah dengan konsep outdoor, studio, atau cinematic.</span></div>
-          <div class="wd-service-item"><strong>Engagement / Lamaran</strong><span>Dokumentasi momen pertunangan yang intim dan penuh makna.</span></div>
-          <div class="wd-service-item"><strong>Cinematic Wedding Video</strong><span>Film pendek sinematik yang merangkum hari istimewa Anda dengan gaya artistik.</span></div>
-          <div class="wd-service-item"><strong>Photo &amp; Video Booth</strong><span>Layanan booth interaktif untuk tamu undangan, lengkap dengan cetak foto instan.</span></div>
-        </div>
-
-        <hr>
-
-        <div class="wd-cta wd-reveal">
-          <h2>Wujudkan Dokumentasi Pernikahan Impian Anda</h2>
-          <p>Konsultasikan konsep wedding &amp; prawedding Anda dengan tim profesional kami. Dari konsep hingga hasil akhir, kami siap membantu.</p>
-          <a href="https://wa.me/6285771002233" class="wd-wa-btn" target="_blank">Konsultasi via WhatsApp</a>
-        </div>
-      </div>
-    </section>
-
-    <script>
-    // Modal video
-    function wd_openVideo(url) {
-      document.getElementById('wdVideoIframe').src = url;
-      document.getElementById('wdVideoModal').style.display = 'block';
-    }
-    function wd_closeVideo() {
-      document.getElementById('wdVideoIframe').src = '';
-      document.getElementById('wdVideoModal').style.display = 'none';
-    }
-    document.getElementById('wdVideoModal').addEventListener('click', function(e) {
-      if (e.target === this) wd_closeVideo();
-    });
-
-    // Scroll reveal
-    const wd_observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) entry.target.classList.add('show');
+      <script>
+      function wd_openVideo(url) {
+        document.getElementById('wdVideoIframe').src = url;
+        document.getElementById('wdVideoModal').style.display = 'block';
+      }
+      function wd_closeVideo() {
+        document.getElementById('wdVideoIframe').src = '';
+        document.getElementById('wdVideoModal').style.display = 'none';
+      }
+      document.getElementById('wdVideoModal')?.addEventListener('click', function(e) {
+        if (e.target === this) wd_closeVideo();
       });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.wd-reveal, .wd-reveal-zoom').forEach(function(el) {
-      wd_observer.observe(el);
-    });
-    </script>
+      </script>
+    </div>
     <?php
     return ob_get_clean();
 }
@@ -16141,9 +16120,9 @@ add_action('wp_enqueue_scripts', 'enqueue_drone_mapping_assets');
 
 function render_drone_mapping_shortcode() {
     global $wpdb;
-    wp_enqueue_style('drone-mapping-css');
+    wp_enqueue_style('event-production-css');
 
-    // Query video dengan kategori drone-aerial
+    // Ambil video
     $videos = $wpdb->get_results(
         "SELECT DISTINCT v.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio_video v
@@ -16151,11 +16130,11 @@ function render_drone_mapping_shortcode() {
          JOIN wp9y_service_map sm ON sm.item_type = 'video' AND sm.item_id = v.id
          WHERE v.status = 'approved' AND p.status = 'approved' AND sm.service_slug = 'drone-mapping'
          ORDER BY v.id DESC
-         LIMIT 6"
+         LIMIT 9"
     );
 
-    // Query foto dengan kategori drone-aerial
-        $fotos = $wpdb->get_results(
+    // Query foto
+    $fotos = $wpdb->get_results(
         "SELECT DISTINCT f.*, p.nama_panggilan, p.kode_nama
          FROM wp9y_portofolio f
          JOIN wp9y_personel p ON f.personel_id = p.id
@@ -16164,84 +16143,106 @@ function render_drone_mapping_shortcode() {
          ORDER BY f.id DESC"
     );
 
-    $use_fallback = (!$videos || count($videos) < 2);
+    $has_videos = $videos && count($videos) > 0;
 
     ob_start();
     ?>
-    <div class="page-drone-mapping">
+    <div class="page-event-production">
       <div class="fluid-glow glow-left"></div>
       <div class="fluid-glow glow-right"></div>
 
+      <!-- HERO -->
       <section class="hero">
         <div class="hero__inner reveal">
-          <span class="hero__tag">Layanan — Drone Mapping &amp; Aerial Survey</span>
-          <h1 class="hero__title">Pemetaan Udara — <span>Drone Mapping</span></h1>
+          <span class="hero__tag">Layanan — Drone Mapping</span>
+          <h1 class="hero__title">Drone <span>Mapping</span></h1>
           <p class="hero__desc">
-            Layanan drone mapping profesional untuk pemetaan lahan, konstruksi, properti, perkebunan, dan survei udara.
-            Menggunakan teknologi orthophoto, DEM/DSM, dan model 3D yang akurat dan siap pakai untuk kebutuhan
-            analisis, perencanaan, dan dokumentasi proyek Anda.
+            Layanan pemetaan udara menggunakan drone untuk berbagai kebutuhan profesional. Dari pemetaan lahan, dokumentasi konstruksi, hingga inspeksi infrastruktur — kami menghadirkan data visual presisi tinggi yang dapat diandalkan untuk mendukung proyek Anda.
           </p>
         </div>
       </section>
 
       <div class="divider"></div>
 
+      <!-- VIDEO SHOWCASE -->
       <section class="section">
         <div class="reveal-zoom">
           <div class="video-showcase">
-            <?php if ($use_fallback): ?>
-                    <div class="no-content">
-                      <p>Belum ada portofolio drone mapping. Tim kami sedang mengembangkan layanan ini.</p>
-                    </div>
-            <?php else:
-                foreach ($videos as $vid):
-                    $embed_url = $vid->video_url ? str_replace('watch?v=', 'embed/', $vid->video_url) . '?autoplay=1' : '';
+            <?php if (!$has_videos && !$fotos): ?>
+                    <div class="no-content"><p>Belum ada portofolio drone mapping. Tim kami sedang mengembangkan layanan ini.</p></div>
+            <?php else: 
+                foreach ($videos as $v):
+                    $embed_url = get_video_embed_url($v->video_url);
                     $yt_id = '';
-                    if ($vid->video_url) {
-                        parse_str(parse_url($vid->video_url, PHP_URL_QUERY), $yt_params);
-                        $yt_id = $yt_params['v'] ?? '';
+                    if (preg_match('/(embed\/|v=|be\/)([a-zA-Z0-9_-]+)/', $embed_url, $m)) {
+                        $yt_id = $m[2];
                     }
+                    $thumb_url = $yt_id ? "https://img.youtube.com/vi/$yt_id/mqdefault.jpg" : "";
+                    $detail_link = home_url('/detail-personel/?kode=' . urlencode($v->kode_nama));
             ?>
-                    <div class="video-card reveal">
-                      <div class="video-thumb ratio16x9" data-embed="<?php echo esc_url($embed_url); ?>">
-                        <img src="https://img.youtube.com/vi/<?php echo $yt_id; ?>/hqdefault.jpg" alt="<?php echo esc_attr($vid->judul ?? 'Drone Video'); ?>">
-                        <div class="play-btn-overlay"><svg viewBox="0 0 24 24" width="48" height="48" fill="white"><polygon points="8,5 19,12 8,19" opacity="0.9"/></svg></div>
+                    <div class="video-card" onclick="dm_openVideo('<?php echo esc_url($embed_url . "?autoplay=1"); ?>')">
+                      <div class="video-card__thumb">
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($v->judul); ?>" loading="lazy">
+                        <div class="video-card__play"><div class="video-card__play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
                       </div>
-                      <div class="video-card-body">
-                        <h3><?php echo esc_html($vid->judul ?? 'Drone Mapping'); ?></h3>
-                        <p>by <?php echo esc_html($vid->nama_panggilan . '-' . $vid->kode_nama); ?></p>
-                        <span class="vid-tag">Drone Aerial</span>
+                      <div class="video-card__body">
+                        <div class="video-card__title"><?php echo esc_html($v->judul); ?></div>
+                        <div class="video-card__author">by <a href="<?php echo esc_url($detail_link); ?>"><?php echo esc_html($v->nama_panggilan); ?>-<?php echo esc_html($v->kode_nama); ?></a></div>
                       </div>
                     </div>
-            <?php
-                endforeach;
-            endif; ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
           </div>
         </div>
       </section>
 
+      <!-- VIDEO MODAL -->
+      <div class="video-modal" id="dmVideoModal" style="display:none;">
+        <div class="video-modal__backdrop" onclick="dm_closeVideo()"></div>
+        <div class="video-modal__content">
+          <button class="video-modal__close" onclick="dm_closeVideo()">&times;</button>
+          <div class="video-modal__wrap">
+            <iframe id="dmVideoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+
       <?php if ($fotos): ?>
+      <div class="divider"></div>
+      <!-- PHOTO SECTION -->
+      <!-- <section class="section">
+        <div class="reveal-zoom">
+          <div class="photo-section">
+            <div style="width:100%;height:300px;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#d4af37;font-size:48px;">🚁</div>
+            <div class="photo-section__content">
+              <span class="photo-tag">Foto Drone</span>
+              <h3>Dokumentasi Pemetaan Drone</h3>
+              <p>Kami mendokumentasikan setiap proyek drone mapping dengan foto udara berkualitas tinggi yang menampilkan detail lahan, infrastruktur, dan topografi dari perspektif yang unik. Setiap foto memberikan gambaran komprehensif untuk kebutuhan analisis, perencanaan, dan dokumentasi proyek Anda.</p>
+            </div>
+          </div>
+        </div>
+      </section> -->
+      <div class="divider"></div>
       <section class="section section-foto">
         <div class="reveal-zoom">
           <h2 class="section-title">Foto <span>Drone Mapping</span></h2>
-          <div class="foto-grid">
+          <div class="foto-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
             <?php foreach ($fotos as $f):
-                $foto_url = $f->foto_url ?? '';
-                $foto_thumb = $f->foto_thumbnail ?? $foto_url;
+                $foto_img = !empty($f->foto_thumbnail) ? $f->foto_thumbnail : $f->foto_url;
+                $detail_link = home_url('/detail-personel/?kode=' . urlencode($f->kode_nama));
             ?>
-                                <div class="foto-card reveal-zoom" style="cursor:pointer;" onclick="dm_openLightbox('<?php echo esc_url($foto_url); ?>')">
-                  <img src="<?php echo esc_url($foto_thumb); ?>" alt="<?php echo esc_attr($f->judul ?? 'Drone Foto'); ?>">
-                  <div class="foto-card-overlay">
-                    <h4><?php echo esc_html($f->judul ?? 'Drone Mapping'); ?></h4>
-                    <p>by <?php echo esc_html($f->nama_panggilan . '-' . $f->kode_nama); ?></p>
+                <div class="foto-card" style="background:#1a1a2e;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="dm_openLightbox('<?php echo esc_url($f->foto_url); ?>')">
+                  <img src="<?php echo esc_url($foto_img); ?>" alt="<?php echo esc_attr($f->judul); ?>" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
+                  <div style="padding:12px;">
+                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;"><?php echo esc_html($f->judul); ?></div>
+                    <div style="font-size:12px;color:#aaa;">by <a href="<?php echo esc_url($detail_link); ?>" style="color:#d4af37;text-decoration:none;"><?php echo esc_html($f->nama_panggilan ?? '-'); ?>-<?php echo esc_html($f->kode_nama ?? ''); ?></a></div>
                   </div>
                 </div>
             <?php endforeach; ?>
           </div>
         </div>
       </section>
-            <?php endif; ?>
-      <!-- LIGHTBOX -->
+      <!-- FOTO LIGHTBOX -->
       <div class="video-modal" id="dmLightbox" style="z-index:9999;display:none;">
         <div class="video-modal__backdrop" onclick="dm_closeLightbox()"></div>
         <div class="video-modal__content" style="background:transparent;box-shadow:none;">
@@ -16253,28 +16254,234 @@ function render_drone_mapping_shortcode() {
       </div>
       <script>
       function dm_openLightbox(url){
-        document.getElementById('dmLightboxImg').src = url;
-        document.getElementById('dmLightbox').style.display = 'block';
+        document.getElementById("dmLightboxImg").src = url;
+        document.getElementById("dmLightbox").style.display = "block";
       }
       function dm_closeLightbox(){
-        document.getElementById('dmLightboxImg').src = '';
-        document.getElementById('dmLightbox').style.display = 'none';
+        document.getElementById("dmLightboxImg").src = "";
+        document.getElementById("dmLightbox").style.display = "none";
       }
-      document.addEventListener('keydown',function(e){if(e.key==='Escape')dm_closeLightbox();});
+      document.addEventListener("keydown",function(e){if(e.key==="Escape")dm_closeLightbox();});
+      </script>
+      <?php endif; ?>
+
+      <!-- CONTENT SECTION -->
+      <section class="section">
+        <div class="content-section reveal">
+          <h2>Layanan <span class="hl">Drone Mapping</span></h2>
+
+          <h3>Pemetaan Drone Presisi untuk Kebutuhan Profesional</h3>
+          <p>Kami menghadirkan layanan pemetaan drone (drone mapping) yang memberikan solusi pengambilan data visual dari udara dengan akurasi tinggi. Dari pemetaan lahan untuk perencanaan proyek, dokumentasi progres konstruksi, hingga inspeksi infrastruktur — setiap misi penerbangan dirancang untuk menghasilkan data yang presisi, komprehensif, dan siap digunakan untuk analisis lebih lanjut.</p>
+
+          <hr>
+
+          <h3>Kenapa Drone Mapping Penting untuk Proyek Anda</h3>
+          <p>Di era modern, pemetaan konvensional seringkali memakan waktu dan biaya yang besar, terutama untuk area yang luas atau sulit dijangkau. Teknologi drone mapping hadir sebagai solusi yang lebih efisien, akurat, dan fleksibel — memungkinkan Anda mendapatkan data visual berkualitas tinggi dalam waktu yang jauh lebih singkat.</p>
+
+          <ul>
+            <li><strong>Efisiensi waktu dan biaya operasional</strong> — pemetaan area hingga puluhan hektar dalam satu kali penerbangan</li>
+            <li><strong>Akurasi data tinggi</strong> dengan teknologi GPS, RTK, dan sensor multi-spektral untuk hasil presisi</li>
+            <li><strong>Akses area sulit dan berbahaya</strong> — tebing, rawa, area pasca-bencana, dan infrastruktur tinggi</li>
+            <li><strong>Data multi-format</strong> — ortofoto, model 3D, point cloud, DSM/DTM, dan kontur siap analisis</li>
+            <li><strong>Dokumentasi visual komprehensif</strong> dari berbagai sudut dan ketinggian untuk perencanaan dan presentasi</li>
+          </ul>
+
+          <hr>
+
+          <h3>Layanan Drone Mapping Kami</h3>
+          <p>Kami menyediakan berbagai layanan pemetaan drone yang dapat disesuaikan dengan kebutuhan proyek dan industri Anda.</p>
+
+          <div class="service-list">
+            <div class="service-item"><strong>Pemetaan Lahan &amp; Topografi</strong><span>Pemetaan area lahan dengan ortofoto digital, model 3D, dan kontur topografi yang akurat untuk perencanaan pembangunan, pertanian, dan pertambangan.</span></div>
+            <div class="service-item"><strong>Dokumentasi Progres Konstruksi</strong><span>Pemantauan progres pembangunan secara berkala dari udara — dari tahap pondasi hingga struktur akhir — untuk dokumentasi dan evaluasi proyek.</span></div>
+            <div class="service-item"><strong>Inspeksi Infrastruktur</strong><span>Inspeksi visual tower SUTT/SUTET, jembatan, atap gedung, cerobong pabrik, dan infrastruktur lainnya yang sulit atau berbahaya dijangkau manusia.</span></div>
+            <div class="service-item"><strong>Pemetaan Pertanian &amp; Perkebunan</strong><span>Pemetaan lahan pertanian dan perkebunan dengan NDVI dan analisis multi-spektral untuk monitoring kesehatan tanaman dan optimasi hasil panen.</span></div>
+            <div class="service-item"><strong>Pemetaan Area Tambang &amp; Galian C</strong><span>Pemetaan area tambang dan galian C untuk kalkulasi volume, monitoring progress, dan perencanaan reklamasi lahan.</span></div>
+          </div>
+
+          <hr>
+
+          <h3>Proses Pengerjaan Drone Mapping</h3>
+          <p>Kami memiliki alur kerja yang terstruktur dan profesional untuk memastikan setiap proyek drone mapping menghasilkan data yang akurat dan sesuai dengan kebutuhan Anda.</p>
+
+          <div class="steps">
+            <div class="step-card reveal"><div class="step-card__num">1</div><h4>Konsultasi &amp; Survey</h4><p>Diskusi kebutuhan, survey lokasi, dan perencanaan misi terbang — termasuk analisis regulasi dan kondisi cuaca.</p></div>
+            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">2</div><h4>Perencanaan Misi</h4><p>Menyusun flight path, menentukan ketinggian dan overlap, serta menyiapkan GCP (Ground Control Point) untuk akurasi geospasial.</p></div>
+            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">3</div><h4>Akuisisi Data Udara</h4><p>Penerbangan drone dengan sensor yang sesuai (RGB, multispektral, termal) untuk pengambilan data visual dan spasial.</p></div>
+            <div class="step-card reveal" style="transition-delay:.06s"><div class="step-card__num">4</div><h4>Pengolahan Data</h4><p>Processing data mentah menjadi ortofoto, point cloud, model 3D, DSM/DTM, dan kontur menggunakan software fotogrametri profesional.</p></div>
+            <div class="step-card reveal" style="transition-delay:.12s"><div class="step-card__num">5</div><h4>Analisis &amp; Delivery</h4><p>Analisis data, penyusunan laporan, dan deliver hasil akhir dalam format yang siap digunakan untuk kebutuhan proyek Anda.</p></div>
+          </div>
+
+          <hr>
+
+          <h3>Keunggulan Jasa Drone Mapping Kami</h3>
+          <ul>
+            <li><strong>Pilot drone bersertifikasi</strong> — terbang aman, legal, dan bertanggung jawab sesuai regulasi penerbangan</li>
+            <li><strong>Peralatan kelas industri</strong> — drone dengan sensor RGB 20MP+, RTK, multispektral, dan termal</li>
+            <li><strong>Akurasi geospasial tinggi</strong> — menggunakan GCP dan teknologi RTK untuk presisi hingga tingkat cm</li>
+            <li><strong>Tim berpengalaman</strong> — telah menangani berbagai proyek pemetaan di berbagai sektor dan skala</li>
+            <li><strong>Hasil siap pakai</strong> — data output dalam format standar (GeoTIFF, LAS, OBJ, DXF, PDF) yang kompatibel dengan GIS dan CAD</li>
+            <li><strong>Laporan komprehensif</strong> — disertai dokumentasi lengkap dan analisis data untuk mendukung pengambilan keputusan</li>
+          </ul>
+
+          <hr>
+
+          <h3>Pertanyaan Seputar Drone Mapping</h3>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="dm_toggleFaq(this)">
+              <span>Apa itu drone mapping?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">Drone mapping adalah teknik pemetaan menggunakan drone (UAV) yang dilengkapi kamera dan sensor untuk mengambil data visual dan spasial dari udara. Data ini kemudian diolah menjadi peta ortofoto, model 3D, point cloud, dan produk geospasial lainnya yang digunakan untuk analisis, perencanaan, dan dokumentasi proyek.</div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="dm_toggleFaq(this)">
+              <span>Berapa luas area yang bisa dipetakan dalam satu kali penerbangan?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">Luas area yang dapat dipetakan tergantung pada ketinggian terbang, jenis drone, dan resolusi yang diinginkan. Dalam satu kali penerbangan, kami dapat memetakan area hingga puluhan hektar dengan resolusi yang memadai. Untuk area yang lebih luas, kami dapat melakukan multiple flight mission atau menggunakan drone dengan baterai tambahan.</div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="dm_toggleFaq(this)">
+              <span>Bagaimana dengan akurasi data drone mapping?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">Akurasi data drone mapping sangat tergantung pada ketinggian terbang, kualitas sensor, dan penggunaan GCP (Ground Control Point). Dengan menggunakan GCP dan teknologi RTK, kami dapat mencapai akurasi hingga tingkat centimeter (horizontal dan vertikal) yang memenuhi standar pemetaan teknis.</div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="dm_toggleFaq(this)">
+              <span>Apakah drone mapping memerlukan izin khusus?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">Ya, penerbangan drone untuk keperluan komersial dan pemetaan memerlukan izin dari otoritas penerbangan sipil (DJU Kemenhub). Tim kami telah memiliki sertifikasi dan izin yang diperlukan sehingga Anda tidak perlu mengurus perizinan — kami yang mengurus seluruh aspek regulasi penerbangan.</div>
+          </div>
+
+          <hr>
+
+          <div style="background:linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(212,175,55,0.02) 100%);border:1px solid rgba(212,175,55,0.15);border-radius:20px;padding:40px;text-align:center;">
+            <h2>Butuh Pemetaan Drone untuk Proyek Anda?</h2>
+            <p>Konsultasikan kebutuhan drone mapping Anda dengan tim profesional kami. Dari lahan kecil hingga proyek skala besar, kami siap membantu mewujudkan data visual presisi tinggi untuk mendukung kesuksesan proyek Anda.</p>
+            <a href="https://wa.me/6285771002233" style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#b8952d,#d4af37);color:#000;font-weight:700;border-radius:12px;text-decoration:none;" target="_blank">Konsultasi via WhatsApp</a>
+          </div>
+        </div>
+      </section>
+
+      <style>
+      .page-event-production .photo-section {
+        display:flex;gap:30px;align-items:center;background:rgba(255,255,255,0.02);
+        border:1px solid rgba(255,255,255,0.06);border-radius:20px;padding:30px;
+      }
+      @media(max-width:768px){.page-event-production .photo-section{flex-direction:column;}}
+      .page-event-production .photo-section img,.page-event-production .photo-section > div:first-child {
+        width:280px;height:280px;object-fit:cover;border-radius:12px;flex-shrink:0;
+      }
+      @media(max-width:768px){.page-event-production .photo-section img,.page-event-production .photo-section > div:first-child{width:100%;height:200px;}}
+      .page-event-production .photo-section__content {flex:1;}
+      .page-event-production .photo-tag {
+        display:inline-block;background:rgba(212,175,55,0.12);color:#d4af37;
+        padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:12px;
+      }
+      .page-event-production .photo-section__content h3 {margin:0 0 12px 0;font-size:22px;color:#fff;}
+      .page-event-production .photo-section__content p {color:#aaa;font-size:15px;line-height:1.7;margin:0;}
+      .page-event-production .photo-credit {color:#888;font-size:13px;margin-top:12px;display:block;}
+      .page-event-production .photo-credit a {color:#d4af37;text-decoration:none;}
+
+      /* FAQ Styles */
+      .page-event-production .faq-item {
+        background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);
+        border-radius:12px;margin-bottom:10px;overflow:hidden;
+      }
+      .page-event-production .faq-question {
+        display:flex;justify-content:space-between;align-items:center;
+        padding:16px 20px;cursor:pointer;user-select:none;color:#ddd;
+        font-weight:500;font-size:15px;transition:background 0.2s;
+      }
+      .page-event-production .faq-question:hover {background:rgba(255,255,255,0.04);}
+      .page-event-production .faq-icon {
+        font-size:20px;font-weight:300;color:#d4af37;transition:transform 0.2s;
+        width:24px;text-align:center;
+      }
+      .page-event-production .faq-answer {
+        display:none;padding:0 20px 16px 20px;color:#999;
+        font-size:14px;line-height:1.7;
+      }
+
+      /* Section title fix */
+      .page-event-production .section-title {font-size:28px;margin-bottom:24px;}
+      .page-event-production .section-title span {color:#d4af37;}
+
+      /* Content section */
+      .page-event-production .content-section {max-width:800px;margin:0 auto;}
+      .page-event-production .content-section h2 {font-size:32px;margin-bottom:30px;}
+      .page-event-production .content-section h2 .hl {color:#d4af37;}
+      .page-event-production .content-section h3 {font-size:20px;margin:0 0 16px 0;color:#eee;}
+      .page-event-production .content-section p {color:#999;line-height:1.8;margin:0 0 24px 0;}
+      .page-event-production .content-section ul {list-style:none;padding:0;margin:0 0 24px 0;}
+      .page-event-production .content-section ul li {
+        padding:8px 0 8px 24px;position:relative;color:#bbb;line-height:1.6;
+      }
+      .page-event-production .content-section ul li::before {
+        content:"✓";position:absolute;left:0;color:#d4af37;font-weight:bold;
+      }
+      .page-event-production .content-section hr {
+        border:none;border-top:1px solid rgba(255,255,255,0.06);margin:32px 0;
+      }
+
+      /* Service list */
+      .page-event-production .service-list {display:flex;flex-direction:column;gap:12px;margin-bottom:24px;}
+      .page-event-production .service-item {
+        background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);
+        border-radius:12px;padding:18px 20px;
+      }
+      .page-event-production .service-item strong {display:block;color:#eee;font-size:15px;margin-bottom:4px;}
+      .page-event-production .service-item span {color:#999;font-size:14px;line-height:1.6;}
+
+      /* Steps */
+      .page-event-production .steps {display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;}
+      .page-event-production .step-card {
+        background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);
+        border-radius:16px;padding:24px 20px;position:relative;
+      }
+      .page-event-production .step-card__num {
+        width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#b8952d,#d4af37);
+        color:#000;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;
+        margin-bottom:12px;
+      }
+      .page-event-production .step-card h4 {margin:0 0 8px 0;color:#eee;font-size:15px;}
+      .page-event-production .step-card p {margin:0;color:#999;font-size:13px;line-height:1.6;}
+      </style>
+      <script>
+      function dm_toggleFaq(el) {
+        var answer = el.nextElementSibling;
+        var icon = el.querySelector(".faq-icon");
+        if (answer.style.display === "block") {
+          answer.style.display = "none";
+          icon.textContent = "+";
+        } else {
+          answer.style.display = "block";
+          icon.textContent = "−";
+        }
+      }
       </script>
 
-    </div>
-
-    <script>
-    jQuery(document).ready(function($) {
-      $('.video-thumb').on('click', function() {
-        var embed = $(this).data('embed');
-        if (embed) {
-          $(this).html('<iframe src="'+embed+'" frameborder="0" allowfullscreen></iframe>');
-        }
+      <script>
+      function dm_openVideo(url) {
+        document.getElementById('dmVideoIframe').src = url;
+        document.getElementById('dmVideoModal').style.display = 'block';
+      }
+      function dm_closeVideo() {
+        document.getElementById('dmVideoIframe').src = '';
+        document.getElementById('dmVideoModal').style.display = 'none';
+      }
+      document.getElementById('dmVideoModal')?.addEventListener('click', function(e) {
+        if (e.target === this) dm_closeVideo();
       });
-    });
-    </script>
+      </script>
+    </div>
     <?php
     return ob_get_clean();
 }
@@ -17110,13 +17317,11 @@ function wp9y_create_service_map_table() {
         $sql = "CREATE TABLE $table_name (
             id int(11) NOT NULL AUTO_INCREMENT,
             service_slug varchar(100) NOT NULL,
-            item_type varchar(20) NOT NULL,
+            item_type enum('foto','video') NOT NULL,
             item_id int(11) NOT NULL,
-            sort_order int(11) DEFAULT 0,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            KEY service_slug (service_slug),
-            KEY item_type (item_type)
+            UNIQUE KEY service_item (service_slug,item_type,item_id)
         ) $charset_collate;";
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
@@ -17150,7 +17355,6 @@ function wp9y_render_service_link_page() {
                         'service_slug' => sanitize_text_field($slug),
                         'item_type' => sanitize_text_field($item_type),
                         'item_id' => intval($item_id),
-                        'sort_order' => $order++,
                     ]);
                 }
             }
@@ -17169,7 +17373,7 @@ function wp9y_render_service_link_page() {
     ];
 
     $existing = [];
-    $rows = $wpdb->get_results("SELECT * FROM wp9y_service_map ORDER BY sort_order");
+    $rows = $wpdb->get_results("SELECT * FROM wp9y_service_map");
     foreach ($rows as $r) { $existing[$r->item_type][$r->item_id][] = $r->service_slug; }
 
     $fotos = $wpdb->get_results("SELECT p.*, ps.nama_panggilan, ps.kode_nama FROM wp9y_portofolio p LEFT JOIN wp9y_personel ps ON p.personel_id = ps.id ORDER BY p.id DESC");
