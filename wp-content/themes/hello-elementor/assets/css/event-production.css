@@ -485,6 +485,305 @@
   border: none;
 }
 
+/* Section Title */
+.page-event-production .section-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 32px;
+}
+.page-event-production .section-title span {
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Photo Grid & Cards */
+.page-event-production .photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+.page-event-production .photo-card {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  transition: all 0.35s ease;
+}
+.page-event-production .photo-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255,210,117,0.2);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+}
+.page-event-production .photo-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+.page-event-production .photo-card:hover img {
+  transform: scale(1.05);
+}
+.page-event-production .photo-card__body {
+  padding: 12px 14px;
+}
+.page-event-production .photo-card__title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 14px;
+  color: #fff;
+  margin-bottom: 4px;
+  transition: color 0.25s ease;
+}
+.page-event-production .photo-card:hover .photo-card__title {
+  color: var(--gold);
+}
+.page-event-production .photo-card__author {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.page-event-production .photo-card__author a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+.page-event-production .photo-card__author a:hover {
+  color: var(--gold);
+}
+
+/* Section Foto */
+.page-event-production .section-foto {
+  padding-top: 20px;
+}
+
+/* Content Area (generic wrapper used in layanan pages) */
+.page-event-production .content-area {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.page-event-production .content-area h2 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 32px;
+  color: #fff;
+  margin-bottom: 24px;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+}
+.page-event-production .content-area h2 .hl {
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.page-event-production .content-area h3 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--gold);
+  margin-bottom: 14px;
+  margin-top: 40px;
+  letter-spacing: -0.3px;
+}
+.page-event-production .content-area p {
+  font-size: 15.5px;
+  color: var(--text-dim);
+  line-height: 1.85;
+  margin-bottom: 18px;
+}
+.page-event-production .content-area ul,
+.page-event-production .content-area ol {
+  padding-left: 24px;
+  margin-bottom: 22px;
+}
+.page-event-production .content-area li {
+  font-size: 15px;
+  color: var(--text-dim);
+  line-height: 1.85;
+  margin-bottom: 10px;
+}
+.page-event-production .content-area li strong {
+  color: var(--text-main);
+}
+.page-event-production .content-area hr {
+  margin: 40px 0;
+  border: none;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Steps Grid (used in company-profile with non-uniform count) */
+.page-event-production .steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin: 24px 0 40px;
+}
+
+/* Package Cards (wedding) */
+.page-event-production .package-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  margin: 24px 0;
+}
+.page-event-production .package-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 22px;
+  transition: all 0.3s ease;
+}
+.page-event-production .package-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(255,210,117,0.15);
+  box-shadow: 0 14px 35px rgba(0,0,0,.3);
+}
+.page-event-production .package-card__icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+.page-event-production .package-card h4 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--gold);
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+.page-event-production .package-card p {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* CTA Section */
+.page-event-production .cta-section {
+  text-align: center;
+  padding: 50px 40px;
+  margin-top: 40px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.page-event-production .cta-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 70% 60%, rgba(212,175,55,.07), transparent 60%);
+  pointer-events: none;
+}
+.page-event-production .cta-section h2 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 26px;
+  color: #fff;
+  margin-bottom: 12px;
+}
+.page-event-production .cta-section p {
+  font-size: 15px;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.page-event-production .cta-section .wa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 16px 36px;
+  border-radius: 50px;
+  background: var(--grad-primary);
+  color: #121017 !important;
+  box-shadow: 0 10px 30px rgba(179,134,34,0.3);
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+.page-event-production .cta-section .wa-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(179,134,34,0.4);
+}
+
+/* No content placeholder */
+.page-event-production .no-content {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 60px 20px;
+  font-size: 1rem;
+  grid-column: 1 / -1;
+}
+
+/* Photo Section (video-produk feature layout) */
+.page-event-production .photo-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: center;
+  margin: 40px 0;
+}
+.page-event-production .photo-section__img {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: all 0.35s ease;
+}
+.page-event-production .photo-section__img:hover {
+  border-color: rgba(255,210,117,0.15);
+  box-shadow: 0 16px 40px rgba(0,0,0,.3);
+}
+.page-event-production .photo-section__img img {
+  width: 100%;
+  height: auto;
+  transition: transform 0.5s ease;
+}
+.page-event-production .photo-section__img:hover img {
+  transform: scale(1.03);
+}
+.page-event-production .photo-section__info h3 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 22px;
+  color: #fff;
+  margin-bottom: 12px;
+  margin-top: 0;
+}
+.page-event-production .photo-section__info h3 span {
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.page-event-production .photo-section__info p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.8;
+  margin-bottom: 10px;
+}
+.page-event-production .photo-section__info .credit {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.page-event-production .photo-section__info .credit a {
+  color: var(--accent);
+}
+.page-event-production .photo-section__info .credit a:hover {
+  color: var(--gold);
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .page-event-production .video-showcase {
@@ -492,6 +791,12 @@
   }
   .page-event-production .steps {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .page-event-production .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .page-event-production .photo-section {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 768px) {
@@ -514,8 +819,27 @@
   .page-event-production .steps {
     grid-template-columns: 1fr;
   }
+  .page-event-production .steps-grid {
+    grid-template-columns: 1fr;
+  }
+  .page-event-production .package-grid {
+    grid-template-columns: 1fr;
+  }
   .page-event-production .content-section h2 {
     font-size: 24px;
+  }
+  .page-event-production .content-area h2 {
+    font-size: 24px;
+  }
+  .page-event-production .cta-section {
+    padding: 36px 22px;
+  }
+  .page-event-production .cta-section h2 {
+    font-size: 20px;
+  }
+  .page-event-production .photo-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
   .page-event-production .video-modal {
     padding: 16px;
@@ -527,5 +851,10 @@
     right: 0;
     top: -32px;
     font-size: 30px;
+  }
+}
+@media (max-width: 480px) {
+  .page-event-production .photo-grid {
+    grid-template-columns: 1fr;
   }
 }
