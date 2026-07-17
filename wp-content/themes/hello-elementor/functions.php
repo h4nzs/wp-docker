@@ -10702,7 +10702,6 @@ function render_article_sidebar_content($content) {
         <span>📅 <?php echo esc_html($post_date); ?></span>
         <span>👤 <?php echo esc_html($author_name); ?></span>
         <span>⏱ <?php echo $read_min; ?> menit baca</span>
-        <span>💬 <?php echo get_comments_number(); ?> komentar</span>
     </div>
 
     <!-- SIDEBAR -->
@@ -10741,7 +10740,7 @@ function render_article_sidebar_content($content) {
         <?php if (!empty($sidebar_ads)) : ?>
             <?php foreach ($sidebar_ads as $ad) : ?>
             <div class="lx-sb-card">
-                <span class="lx-sb-ad-badge">Iklan</span>
+                <!-- <span class="lx-sb-ad-badge">Iklan</span> -->
                 <?php if (!empty($ad['link_url'])) : ?>
                     <a href="<?php echo esc_url($ad['link_url']); ?>" target="_blank" rel="noopener nofollow">
                         <img src="<?php echo esc_url($ad['image_url']); ?>" alt="Iklan" class="lx-sb-ad-img">
@@ -12267,8 +12266,8 @@ function render_landing_content_shortcode() {
         <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/WhatsApp-Image-2026-04-25-at-08.59.52-3.jpeg" alt="fotografer">
       </div>
       <div class="floating-blob-label">
-        <h4>Live Event Production</h4>
-        <span>Multicam · Lighting · Streaming</span>
+        <h4>Fotografer, Videografer, Drone</h4>
+        <span>Multicam · Sewa kebutuhan Event</span>
       </div>
     </div>
   </div>
@@ -12420,7 +12419,14 @@ function render_landing_content_shortcode() {
             'title' => 'Drone Mapping',
             'desc' => 'Layanan pemetaan udara profesional untuk lahan, konstruksi, properti, perkebunan, dan survei menggunakan teknologi drone dengan hasil orthophoto, DEM/DSM, dan model 3D.',
             'img' => 'https://profesional-indonesia.com/wp-content/uploads/2026/06/Jasa-Drone-Mapping.png'
-        ]
+        ],
+        'outsourcing-fotografer-videografer-pilot-drone' => [
+            'num'   => '08  ',
+            'title' => 'Outsourcing Fotografer, Videografer & Pilot Drone',
+            'desc'  => 'Penyediaan tenaga profesional dokumentasi untuk event, pernikahan, company profile, dan kebutuhan komersial dengan kualitas visual tinggi menggunakan kamera modern serta drone berlisensi.',
+            'img'   => 'https://profesional-indonesia.com/wp-content/uploads/2026/06/Gemini_Generated_Image_3dxcis3dxcis3dxc.png',
+            'link'  => home_url('/list-personel/')
+        ],
     ];
 
     $service_pages = get_posts([
@@ -12549,7 +12555,7 @@ function render_landing_content_shortcode() {
 <section id="event">
   <div class="sec-header reveal">
     <span class="sec-tag">Event Articles</span>
-    <h2>Kebutuhan <span>Event</span></h2>
+    <h2>Sewa Kebutuhan <span>Event</span></h2>
     <p class="sec-desc">Sewa logistik event berkualitas tinggi — dipandu dengan artikel edukasi untuk mempersiapkan produksi media Anda.</p>
   </div>
 
