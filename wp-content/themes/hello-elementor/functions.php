@@ -12422,10 +12422,10 @@ function render_landing_content_shortcode() {
         ],
         'outsourcing-fotografer-videografer-pilot-drone' => [
             'num'   => '08  ',
-            'title' => 'Outsourcing Fotografer, Videografer & Pilot Drone',
-            'desc'  => 'Penyediaan tenaga profesional dokumentasi untuk event, pernikahan, company profile, dan kebutuhan komersial dengan kualitas visual tinggi menggunakan kamera modern serta drone berlisensi.',
+            'title' => 'Outsourcing Multimedia, Fotografer, Videografer dan Pilot Drone',
+            'desc'  => 'Profesional Indonesia menyediakan layanan outsourcing tenaga multimedia profesional untuk mendukung berbagai kebutuhan dokumentasi, produksi konten, hingga operasional event perusahaan. Kami menghadirkan tenaga ahli berpengalaman yang siap bekerja secara profesional, baik untuk kebutuhan harian, proyek jangka pendek, maupun kerja sama jangka panjang.',
             'img'   => 'https://profesional-indonesia.com/wp-content/uploads/2026/06/Gemini_Generated_Image_3dxcis3dxcis3dxc.png',
-            'link'  => home_url('/list-personel/')
+            'link'  => home_url('/outsourcing-fotografer-videografer-drone/')
         ],
     ];
 
@@ -12610,7 +12610,7 @@ function render_landing_content_shortcode() {
 <section id="portofolio">
   <div class="sec-header reveal">
     <span class="sec-tag">Our Work</span>
-    <h2>Portofolio <span>Pilihan</span></h2>
+    <h2>Portofolio <span>Kami</span></h2>
     <p class="sec-desc">Sebagian hasil karya tim kreatif kami untuk berbagai klien korporat dan personal.</p>
   </div>
 
