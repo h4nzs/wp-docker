@@ -12576,7 +12576,7 @@ function render_landing_content_shortcode() {
     <div class="event-search-wrapper" style="max-width: 500px; margin: 20px auto 0 auto; position: relative;">
       <div class="event-search-box" style="display: flex; align-items: center; gap: 10px; background: rgba(36, 32, 43, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); padding: 6px 12px 6px 20px; border-radius: 100px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); backdrop-filter: blur(10px); transition: all 0.3s ease;">
         <i class="fas fa-search" style="color: #ffd275; font-size: 14px;"></i>
-        <input type="text" id="event-search-input" placeholder="Cari kebutuhan atau panduan event..." style="flex: 1; background: none; border: none; outline: none; color: #fff; font-size: 13.5px; padding: 8px 0; font-family: 'Outfit', sans-serif;">
+        <input type="text" id="event-search-input" placeholder="Cari kebutuhan event..." style="flex: 1; background: none; border: none; outline: none; color: #fff; font-size: 13.5px; padding: 8px 0; font-family: 'Outfit', sans-serif;">
         <button type="button" id="event-search-clear" style="background: none; border: none; color: #9b98a6; cursor: pointer; display: none; font-size: 14px; padding: 0 5px;"><i class="fas fa-times"></i></button>
       </div>
     </div>
