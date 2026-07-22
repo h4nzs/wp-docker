@@ -12097,6 +12097,21 @@ function render_landing_content_shortcode() {
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes spin { to { transform: rotate(360deg); } }
         
+        /* Event Search Box Styles */
+        .event-search-box:focus-within {
+          border-color: rgba(255, 210, 117, 0.45) !important;
+          box-shadow: 0 10px 30px rgba(255, 210, 117, 0.1), 0 15px 40px rgba(0,0,0,0.4) !important;
+          transform: translateY(-2px);
+        }
+        .sec-header h2 a {
+          color: inherit;
+          text-decoration: none;
+          transition: color 0.3s ease;
+        }
+        .sec-header h2 a:hover {
+          color: #ffd275;
+        }
+        
         .search-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -12555,18 +12570,27 @@ function render_landing_content_shortcode() {
 <section id="event">
   <div class="sec-header reveal">
     <span class="sec-tag">Event Articles</span>
-    <h2>Sewa Kebutuhan <span>Event</span></h2>
+     <h2><a href="<?php echo esc_url(home_url('/kebutuhan-event/')); ?>">Sewa Kebutuhan <span>Event</span></a></h2>
     <p class="sec-desc">Sewa logistik event berkualitas tinggi — dipandu dengan artikel edukasi untuk mempersiapkan produksi media Anda.</p>
+    
+    <div class="event-search-wrapper" style="max-width: 500px; margin: 20px auto 0 auto; position: relative;">
+      <div class="event-search-box" style="display: flex; align-items: center; gap: 10px; background: rgba(36, 32, 43, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); padding: 6px 12px 6px 20px; border-radius: 100px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); backdrop-filter: blur(10px); transition: all 0.3s ease;">
+        <i class="fas fa-search" style="color: #ffd275; font-size: 14px;"></i>
+        <input type="text" id="event-search-input" placeholder="Cari kebutuhan atau panduan event..." style="flex: 1; background: none; border: none; outline: none; color: #fff; font-size: 13.5px; padding: 8px 0; font-family: 'Outfit', sans-serif;">
+        <button type="button" id="event-search-clear" style="background: none; border: none; color: #9b98a6; cursor: pointer; display: none; font-size: 14px; padding: 0 5px;"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
   </div>
 
-  <div class="event-vouchers-list">
+  <div class="event-vouchers-list" id="eventVouchersList">
     <?php
     $event_query = new WP_Query(array(
         'post_type'      => 'post',
-        'posts_per_page' => 15,
+        'posts_per_page' => 8,
         'category_name'  => 'kebutuhan event',
         'orderby'        => 'date',
-        'order'          => 'DESC'
+        'order'          => 'DESC',
+        'post_status'    => 'publish'
     ));
     if ($event_query->have_posts()) :
         while ($event_query->have_posts()) : $event_query->the_post(); 
@@ -12601,9 +12625,159 @@ function render_landing_content_shortcode() {
         wp_reset_postdata();
     else :
     ?>
-        <p style="color:#666; text-align:center; width:100%;">Belum ada panduan event.</p>
+        <p class="lx-no-data" style="color:#666; text-align:center; width:100%; padding: 40px 0;">Belum ada panduan event.</p>
     <?php endif; ?>
+    <!-- Trigger element for infinite scroll -->
+    <div id="event-list-trigger" style="height: 10px; width: 100%; order: 9999; margin-top: 10px;"></div>
   </div>
+
+  <!-- Loading spinner for scroll-load -->
+  <div class="event-list-loading" style="display: none; text-align: center; padding: 15px 0; margin-top: 10px;">
+    <span class="spinner" style="display: inline-block; width: 24px; height: 24px; border: 2px solid #ffd275; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></span>
+  </div>
+
+  <script>
+  jQuery(document).ready(function($) {
+      var searchInput = $('#event-search-input');
+      var clearBtn = $('#event-search-clear');
+      var vouchersList = $('#eventVouchersList');
+      var trigger = $('#event-list-trigger');
+      var spinner = $('.event-list-loading');
+      
+      var offset = 8;
+      var hasMore = true;
+      var isLoading = false;
+      var searchTimeout = null;
+      var currentQuery = '';
+      
+      searchInput.on('input', function() {
+          var val = $(this).val().trim();
+          if (val.length > 0) {
+              clearBtn.show();
+          } else {
+              clearBtn.hide();
+          }
+          
+          clearTimeout(searchTimeout);
+          searchTimeout = setTimeout(function() {
+              if (val !== currentQuery) {
+                  currentQuery = val;
+                  resetAndFetch();
+              }
+          }, 300);
+      });
+      
+      clearBtn.on('click', function() {
+          searchInput.val('').trigger('input');
+      });
+      
+      function resetAndFetch() {
+          offset = 0;
+          hasMore = true;
+          isLoading = true;
+          spinner.show();
+          vouchersList.find('.voucher-pill').remove();
+          vouchersList.find('.lx-no-data').remove();
+          
+          $.ajax({
+              url: '/wp-admin/admin-ajax.php',
+              type: 'POST',
+              data: {
+                  action: 'load_more_event_kebutuhan',
+                  search: currentQuery,
+                  offset: 0
+              },
+              success: function(response) {
+                  spinner.hide();
+                  isLoading = false;
+                  if (response.success) {
+                      var html = response.data.html;
+                      var count = response.data.count;
+                      
+                      trigger.before(html);
+                      offset = vouchersList.find('.voucher-pill').length;
+                      
+                      if (count < 6 || !html.trim()) {
+                          hasMore = false;
+                      }
+                  } else {
+                      hasMore = false;
+                  }
+              },
+              error: function() {
+                  spinner.hide();
+                  isLoading = false;
+                  hasMore = false;
+              }
+          });
+      }
+      
+      function loadMore() {
+          if (isLoading || !hasMore) return;
+          
+          isLoading = true;
+          spinner.show();
+          
+          $.ajax({
+              url: '/wp-admin/admin-ajax.php',
+              type: 'POST',
+              data: {
+                  action: 'load_more_event_kebutuhan',
+                  search: currentQuery,
+                  offset: offset
+              },
+              success: function(response) {
+                  spinner.hide();
+                  isLoading = false;
+                  if (response.success) {
+                      var html = response.data.html;
+                      var count = response.data.count;
+                      
+                      if (html.trim()) {
+                          trigger.before(html);
+                          offset = vouchersList.find('.voucher-pill').length;
+                      }
+                      
+                      if (count < 6 || !html.trim()) {
+                          hasMore = false;
+                      }
+                  } else {
+                      hasMore = false;
+                  }
+              },
+              error: function() {
+                  spinner.hide();
+                  isLoading = false;
+                  hasMore = false;
+              }
+          });
+      }
+      
+      if ('IntersectionObserver' in window) {
+          var observer = new IntersectionObserver(function(entries) {
+              if (entries[0].isIntersecting) {
+                  loadMore();
+              }
+          }, {
+              root: vouchersList[0],
+              rootMargin: '0px 0px 100px 0px',
+              threshold: 0
+          });
+          
+          observer.observe(trigger[0]);
+      } else {
+          vouchersList.on('scroll', function() {
+              var scrollTop = vouchersList.scrollTop();
+              var innerHeight = vouchersList.innerHeight();
+              var scrollHeight = vouchersList[0].scrollHeight;
+              
+              if (scrollTop + innerHeight >= scrollHeight - 50) {
+                  loadMore();
+              }
+          });
+      }
+  });
+  </script>
 </section>
 
 <!-- PORTOFOLIO -->
@@ -17758,6 +17932,75 @@ function handle_ajax_search_layanan() {
     }
     $output = ob_get_clean();
     wp_die($output);
+}
+
+/**
+ * AJAX Load More Event Articles — Infinite Scroll/Search
+ */
+add_action('wp_ajax_load_more_event_kebutuhan', 'handle_load_more_event_kebutuhan');
+add_action('wp_ajax_nopriv_load_more_event_kebutuhan', 'handle_load_more_event_kebutuhan');
+function handle_load_more_event_kebutuhan() {
+    $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+    $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
+    $posts_per_page = 6;
+
+    $args = array(
+        'post_type'      => 'post',
+        'posts_per_page' => $posts_per_page,
+        'offset'         => $offset,
+        'category_name'  => 'kebutuhan event',
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+        'post_status'    => 'publish'
+    );
+
+    if (!empty($search)) {
+        $args['s'] = $search;
+    }
+
+    $event_query = new WP_Query($args);
+    ob_start();
+    if ($event_query->have_posts()) :
+        while ($event_query->have_posts()) : $event_query->the_post(); 
+            $thumb_url = get_the_post_thumbnail_url(get_the_ID(), 'thumbnail');
+            if (!$thumb_url) $thumb_url = 'https://placehold.co/100x100?text=No+Photo';
+            
+            // Extract raw clean plain text excerpt
+            $raw_content = get_the_excerpt();
+            if (!$raw_content) {
+                $raw_content = get_the_content();
+            }
+            $clean_excerpt = wp_strip_all_tags(strip_shortcodes($raw_content));
+            $clean_excerpt = preg_replace('/Baca Selengkapnya|Read More|Baca Panduan|\\[\\.\\.\\.\\\]/i', '', $clean_excerpt);
+            $clean_excerpt = wp_trim_words($clean_excerpt, 15, '...');
+            ?>
+            <div class="voucher-pill reveal active">
+              <div class="voucher-left">
+                <div class="voucher-circle-thumb">
+                  <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php the_title_attribute(); ?>">
+                </div>
+                <div class="voucher-details">
+                  <h4><?php the_title(); ?></h4>
+                  <p><?php echo esc_html($clean_excerpt); ?></p>
+                </div>
+              </div>
+              <div class="voucher-right">
+                <a href="<?php the_permalink(); ?>" class="btn-voucher-action">Baca Panduan</a>
+              </div>
+            </div>
+            <?php
+        endwhile;
+        wp_reset_postdata();
+    else :
+        if ($offset == 0) {
+            echo '<p class="lx-no-data" style="color:#666; text-align:center; width:100%; padding: 40px 0;">Tidak ada panduan event yang cocok.</p>';
+        }
+    endif;
+    $output = ob_get_clean();
+    wp_send_json_success(array(
+        'html' => $output,
+        'count' => $event_query->post_count
+    ));
 }
 
 /**
