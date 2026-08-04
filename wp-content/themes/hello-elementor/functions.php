@@ -1715,10 +1715,34 @@ function personel_admin_page() {
     
     $personels = $wpdb->get_results("SELECT * FROM $table_name ORDER BY created_at DESC");
     $pending_draft_ids = $wpdb->get_col("SELECT personel_id FROM wp9y_personel_draft_edit") ?: [];
+    
+    $total_personel = count($personels);
+    $total_sosmed_active = 0;
+    foreach($personels as $p) {
+        if (intval($p->show_sosmed) === 1) $total_sosmed_active++;
+    }
+    // Jika lebih dari setengahnya aktif, kita anggap ON secara default untuk toggle all
+    $is_all_sosmed_active = ($total_personel > 0 && $total_sosmed_active >= ($total_personel / 2));
     ?>
+    <style>
+    .switch-all { position: relative; display: inline-block; width: 44px; height: 24px; vertical-align: middle; margin: 0 10px; }
+    .switch-all input { opacity: 0; width: 0; height: 0; }
+    .slider-all { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+    .slider-all:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    .switch-all input:checked + .slider-all { background-color: #00a32a; }
+    .switch-all input:checked + .slider-all:before { transform: translateX(20px); }
+    </style>
     <div class="wrap">
         <h1>👥 Data Personel</h1>
         <br>
+        <div style="margin-bottom: 15px; display: flex; align-items: center; background: #fff; padding: 10px 15px; border-radius: 6px; border: 1px solid #ccd0d4; width: fit-content;">
+            <strong style="font-size: 14px;">Tampilkan Semua Sosmed:</strong>
+            <label class="switch-all">
+                <input type="checkbox" id="lx-toggle-all-sosmed-checkbox" <?php echo ($is_all_sosmed_active ? 'checked' : ''); ?>>
+                <span class="slider-all"></span>
+            </label>
+            <span id="lx-toggle-all-text" style="font-size:13px; font-weight:600; color: <?php echo ($is_all_sosmed_active ? '#00a32a' : '#d63638'); ?>;"><?php echo ($is_all_sosmed_active ? 'ON' : 'OFF'); ?></span>
+        </div>
         
         <table id="personelTable" class="wp-list-table widefat fixed striped">
     <thead>
@@ -8890,6 +8914,25 @@ function lx_handle_update_show_sosmed() {
     wp_die();
 }
 
+add_action('wp_ajax_update_all_show_sosmed', 'lx_handle_update_all_show_sosmed');
+function lx_handle_update_all_show_sosmed() {
+    global $wpdb;
+    $status = isset($_POST['status']) ? intval($_POST['status']) : 0;
+
+    $table_name = 'wp9y_personel';
+    $result = $wpdb->query($wpdb->prepare(
+        "UPDATE $table_name SET show_sosmed = %d",
+        $status
+    ));
+
+    if ($result !== false) {
+        wp_send_json_success(['new_status' => $status]);
+    } else {
+        wp_send_json_error($wpdb->last_error);
+    }
+    wp_die();
+}
+
 add_action('wp_ajax_update_item_rating', 'lx_handle_update_item_rating');
 function lx_handle_update_item_rating() {
     global $wpdb;
@@ -9046,6 +9089,51 @@ function lx_rekomendasi_custom_assets() {
                     (function(){var d=document.createElement('div');d.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:999999;display:flex;align-items:center;justify-content:center;';d.innerHTML='<div style="background:#1a1a1a;border:1px solid #ff4444;border-radius:8px;padding:30px 40px;max-width:400px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.5);"><div style="font-size:48px;margin-bottom:10px;">❌</div><p style="color:#fff;font-size:16px;margin:10px 0 20px;">Koneksi server bermasalah.</p><button onclick="this.parentNode.parentNode.remove()" style="background:#ff4444;color:#fff;border:none;padding:10px 24px;border-radius:4px;font-weight:bold;cursor:pointer;">OK</button></div>';document.body.appendChild(d);})();
                 }).always(function() {
                     btn.prop('disabled', false);
+                });
+            });
+
+            // Handler Toggle All Show Sosmed Switch
+            $(document).on('change', '#lx-toggle-all-sosmed-checkbox', function(e) {
+                var cb = $(this);
+                var isChecked = cb.is(':checked');
+                var status = isChecked ? 1 : 0;
+                var textSpan = $('#lx-toggle-all-text');
+                
+                if(!confirm("Yakin ingin mengubah status Show Sosmed untuk SEMUA personel menjadi " + (isChecked ? "ON" : "OFF") + "?")) {
+                    cb.prop('checked', !isChecked);
+                    return;
+                }
+
+                cb.prop('disabled', true);
+                textSpan.text('Wait...');
+
+                $.post(ajaxurl, {
+                    action: 'update_all_show_sosmed',
+                    status: status
+                }, function(response) {
+                    if (response.success) {
+                        textSpan.text(isChecked ? 'ON' : 'OFF').css('color', isChecked ? '#00a32a' : '#d63638');
+                        // Update individual rows directly
+                        $('.lx-toggle-sosmed-btn').each(function() {
+                            $(this).data('status', status);
+                            $(this).text(isChecked ? 'YA' : 'TIDAK');
+                            if(isChecked) {
+                                $(this).addClass('active');
+                            } else {
+                                $(this).removeClass('active');
+                            }
+                        });
+                    } else {
+                        alert("Gagal memperbarui: " + (response.data || ""));
+                        cb.prop('checked', !isChecked);
+                        textSpan.text(!isChecked ? 'ON' : 'OFF').css('color', !isChecked ? '#00a32a' : '#d63638');
+                    }
+                }).fail(function() {
+                    alert("Koneksi server bermasalah.");
+                    cb.prop('checked', !isChecked);
+                    textSpan.text(!isChecked ? 'ON' : 'OFF').css('color', !isChecked ? '#00a32a' : '#d63638');
+                }).always(function() {
+                    cb.prop('disabled', false);
                 });
             });
 
@@ -12278,11 +12366,13 @@ function render_landing_content_shortcode() {
     
     <div class="hero-visual-area">
       <div class="fluid-blob">
-        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/04/WhatsApp-Image-2026-04-25-at-08.59.52-3.jpeg" alt="fotografer">
+        <img src="https://profesional-indonesia.com/wp-content/uploads/2026/07/468972083_18258960256271922_4987521075476001055_n.jpg.jpeg" alt="fotografer">
       </div>
       <div class="floating-blob-label">
         <h4>Fotografer, Videografer, Drone</h4>
-        <span>Multicam · Sewa kebutuhan Event</span>
+        <span>Multicam · Sewa Videotron · Sewa kebutuhan Event</span>
+        <br>
+        <span>Video Company Profile · Dokumentasi · Iklan · Wedding · Wisuda </span>
       </div>
     </div>
   </div>
@@ -12403,7 +12493,8 @@ function render_landing_content_shortcode() {
             'num' => '02',
             'title' => 'Company Profile',
             'desc' => 'Video company profile, foto corporate, &amp; profile cetak yang merepresentasikan brand Anda secara profesional, meningkatkan kredibilitas di mata klien.',
-            'img' => 'https://profesional-indonesia.com/wp-content/uploads/elementor/thumbs/Jasa-Desain-Company-Profile-768x576-1-rmluc5yugkhq7db0otue7li451zuia6uto9bytcra2.png'
+            'img' => 'https://profesional-indonesia.com/wp-content/uploads/elementor/thumbs/Jasa-Desain-Company-Profile-768x576-1-rmluc5yugkhq7db0otue7li451zuia6uto9bytcra2.png',
+            'link'  => home_url('/company-profile/')
         ],
         'wedding-prawedding' => [
             'num' => '03',
