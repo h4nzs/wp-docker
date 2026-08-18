@@ -541,10 +541,10 @@ function personel_register_form() {
         top: 10px !important; right: 10px !important;
     }
     .select2-dropdown {
-        background-color: var(--lx-surface2) !important;
+        background-color: #1a1825 !important;
         border: 1px solid rgba(255,255,255,0.12) !important;
         border-radius: 12px !important;
-        color: var(--lx-text) !important;
+        color: #f0eef6 !important;
     }
     .select2-container--default .select2-results__option {
         background-color: var(--lx-surface2);
@@ -1280,7 +1280,7 @@ $nama_depan = strtok($nama_panggilan, ' ');
         'thread' => esc_url_raw($_POST['thread'] ?? ''),
         'youtube' => esc_url_raw($_POST['youtube'] ?? ''),
         'tag' => $tags, // wedding,bandung,drone
-        'status' => 'pending',
+        'status' => (get_option('lx_bypass_approval', 'off') === 'on' ? 'approved' : 'pending'),
 		'porto_links' => $porto_links_json
     ];
 
@@ -1735,13 +1735,27 @@ function personel_admin_page() {
     <div class="wrap">
         <h1>👥 Data Personel</h1>
         <br>
-        <div style="margin-bottom: 15px; display: flex; align-items: center; background: #fff; padding: 10px 15px; border-radius: 6px; border: 1px solid #ccd0d4; width: fit-content;">
-            <strong style="font-size: 14px;">Tampilkan Semua Sosmed:</strong>
-            <label class="switch-all">
-                <input type="checkbox" id="lx-toggle-all-sosmed-checkbox" <?php echo ($is_all_sosmed_active ? 'checked' : ''); ?>>
-                <span class="slider-all"></span>
-            </label>
-            <span id="lx-toggle-all-text" style="font-size:13px; font-weight:600; color: <?php echo ($is_all_sosmed_active ? '#00a32a' : '#d63638'); ?>;"><?php echo ($is_all_sosmed_active ? 'ON' : 'OFF'); ?></span>
+        <?php $is_bypass_active = get_option('lx_bypass_approval', 'off') === 'on'; ?>
+        <div style="margin-bottom: 15px; display: flex; align-items: center; background: #fff; padding: 10px 15px; border-radius: 6px; border: 1px solid #ccd0d4; width: fit-content; gap: 20px;">
+            <div>
+                <strong style="font-size: 14px;">Tampilkan Semua Sosmed:</strong>
+                <label class="switch-all">
+                    <input type="checkbox" id="lx-toggle-all-sosmed-checkbox" <?php echo ($is_all_sosmed_active ? 'checked' : ''); ?>>
+                    <span class="slider-all"></span>
+                </label>
+                <span id="lx-toggle-all-text" style="font-size:13px; font-weight:600; color: <?php echo ($is_all_sosmed_active ? '#00a32a' : '#d63638'); ?>;"><?php echo ($is_all_sosmed_active ? 'ON' : 'OFF'); ?></span>
+            </div>
+            
+            <div style="width:1px; height:24px; background:#ccd0d4;"></div>
+            
+            <div>
+                <strong style="font-size: 14px;">Bypass Konfirmasi (Auto Approve):</strong>
+                <label class="switch-all">
+                    <input type="checkbox" id="lx-toggle-bypass-approval-checkbox" <?php echo ($is_bypass_active ? 'checked' : ''); ?>>
+                    <span class="slider-all"></span>
+                </label>
+                <span id="lx-toggle-bypass-text" style="font-size:13px; font-weight:600; color: <?php echo ($is_bypass_active ? '#00a32a' : '#d63638'); ?>;"><?php echo ($is_bypass_active ? 'ON' : 'OFF'); ?></span>
+            </div>
         </div>
         
         <table id="personelTable" class="wp-list-table widefat fixed striped">
@@ -2019,7 +2033,7 @@ function proxy_fetch_wilayah() {
         wp_send_json_error('Invalid request');
     }
 
-    $response = wp_remote_get($url);
+    $response = wp_remote_get($url, array('sslverify' => false));
     if (is_wp_error($response)) {
         wp_send_json_error('Gagal mengambil data wilayah');
     }
@@ -5030,6 +5044,10 @@ function render_personel_edit_profil($personel, $message = '') {
 .select2-container--default .select2-selection--single .select2-selection__rendered,
 .select2-container--default .select2-selection--multiple .select2-selection__choice {
     color: #fff !important;
+}
+.select2-dropdown {
+    background-color: #1a1a1a !important;
+    border: 1px solid #333 !important;
 }
 .select2-container--default .select2-results__option {
     background-color: #1a1a1a;
@@ -8933,6 +8951,14 @@ function lx_handle_update_all_show_sosmed() {
     wp_die();
 }
 
+add_action('wp_ajax_update_bypass_approval', 'lx_handle_update_bypass_approval');
+function lx_handle_update_bypass_approval() {
+    $status = (isset($_POST['status']) && $_POST['status'] == 1) ? 'on' : 'off';
+    update_option('lx_bypass_approval', $status);
+    wp_send_json_success(['new_status' => $status]);
+    wp_die();
+}
+
 add_action('wp_ajax_update_item_rating', 'lx_handle_update_item_rating');
 function lx_handle_update_item_rating() {
     global $wpdb;
@@ -9125,6 +9151,41 @@ function lx_rekomendasi_custom_assets() {
                         });
                     } else {
                         alert("Gagal memperbarui: " + (response.data || ""));
+                        cb.prop('checked', !isChecked);
+                        textSpan.text(!isChecked ? 'ON' : 'OFF').css('color', !isChecked ? '#00a32a' : '#d63638');
+                    }
+                }).fail(function() {
+                    alert("Koneksi server bermasalah.");
+                    cb.prop('checked', !isChecked);
+                    textSpan.text(!isChecked ? 'ON' : 'OFF').css('color', !isChecked ? '#00a32a' : '#d63638');
+                }).always(function() {
+                    cb.prop('disabled', false);
+                });
+            });
+
+            // Handler Toggle Bypass Auto Approve Switch
+            $(document).on('change', '#lx-toggle-bypass-approval-checkbox', function(e) {
+                var cb = $(this);
+                var isChecked = cb.is(':checked');
+                var status = isChecked ? 1 : 0;
+                var textSpan = $('#lx-toggle-bypass-text');
+                
+                if(!confirm("Yakin ingin mengubah Bypass Auto Approve menjadi " + (isChecked ? "ON" : "OFF") + "?")) {
+                    cb.prop('checked', !isChecked);
+                    return;
+                }
+
+                cb.prop('disabled', true);
+                textSpan.text('Wait...');
+
+                $.post(ajaxurl, {
+                    action: 'update_bypass_approval',
+                    status: status
+                }, function(response) {
+                    if (response.success) {
+                        textSpan.text(isChecked ? 'ON' : 'OFF').css('color', isChecked ? '#00a32a' : '#d63638');
+                    } else {
+                        alert('Gagal memperbarui pengaturan bypass.');
                         cb.prop('checked', !isChecked);
                         textSpan.text(!isChecked ? 'ON' : 'OFF').css('color', !isChecked ? '#00a32a' : '#d63638');
                     }
