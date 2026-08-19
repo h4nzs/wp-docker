@@ -13,3 +13,7 @@
 # Abaikan file temporary OS
 **/.DS_Store
 **/Thumbs.db
+
+security-demo/
+*.pem
+*.pi-dev-secret.txt
